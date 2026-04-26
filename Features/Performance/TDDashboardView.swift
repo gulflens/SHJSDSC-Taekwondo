@@ -6,8 +6,7 @@ public struct TDDashboardView: View {
     @State private var clubGrade: LetterGrade = .c
     @State private var branchSummaries: [BranchSummary] = []
     @State private var watchList: [Athlete] = []
-    @State private var readyToGrade: [Athlete] = []
-    @State private var scoreByAthlete: [EntityID: PerformanceScore] = [:]
+    @State private var readyToGrade: [(Athlete, GradingEligibility)] = []
 
     public init() {}
 
@@ -17,8 +16,9 @@ public struct TDDashboardView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     headline
                     branchGrades
-                    section(title: "heading.watch_list", athletes: watchList, empty: "empty.no_athletes_flagged")
-                    section(title: "heading.ready_to_grade", athletes: readyToGrade, empty: "empty.nobody_to_grade")
+                    gradingLink
+                    watchSection
+                    readySection
                 }
                 .padding()
             }
@@ -35,6 +35,7 @@ public struct TDDashboardView: View {
                 Text("heading.club_composite").font(.caption).foregroundStyle(.secondary)
                 Text(verbatim: String(format: "%.0f", clubComposite))
                     .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .environment(\.layoutDirection, .leftToRight)
             }
             Spacer()
         }
@@ -52,6 +53,7 @@ public struct TDDashboardView: View {
                             Text(verbatim: String(format: "%.0f", s.composite))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
+                                .environment(\.layoutDirection, .leftToRight)
                         }
                         Spacer()
                     }
@@ -63,14 +65,28 @@ public struct TDDashboardView: View {
         }
     }
 
-    @ViewBuilder
-    private func section(title: LocalizedStringKey, athletes: [Athlete], empty: LocalizedStringKey) -> some View {
+    private var gradingLink: some View {
+        NavigationLink(destination: GradingDashboardView()) {
+            HStack {
+                Image(systemName: "rosette").foregroundStyle(.tint)
+                Text("grading.dashboard").font(.subheadline.bold()).foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: "chevron.right").foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .background(Color.secondary.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var watchSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.headline)
-            if athletes.isEmpty {
-                Text(empty).foregroundStyle(.secondary)
+            Text("heading.watch_list").font(.headline)
+            if watchList.isEmpty {
+                Text("empty.no_athletes_flagged").foregroundStyle(.secondary)
             } else {
-                ForEach(athletes) { a in
+                ForEach(watchList) { a in
                     NavigationLink(destination: AthleteDetailView(athlete: a)) {
                         HStack(spacing: 10) {
                             Avatar(seed: a.avatarSeed, label: a.initials, size: 32)
@@ -82,6 +98,38 @@ public struct TDDashboardView: View {
                             }
                             Spacer()
                             StatusPill(status: a.status)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private var readySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("heading.ready_to_grade").font(.headline)
+            if readyToGrade.isEmpty {
+                Text("empty.nobody_to_grade").foregroundStyle(.secondary)
+            } else {
+                ForEach(readyToGrade, id: \.0.id) { a, elig in
+                    NavigationLink(destination: AthleteDetailView(athlete: a)) {
+                        HStack(spacing: 10) {
+                            Avatar(seed: a.avatarSeed, label: a.initials, size: 32)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(verbatim: a.fullName).foregroundStyle(.primary)
+                                HStack(spacing: 4) {
+                                    Text(LocalizedStringKey(elig.currentBelt.label))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text(verbatim: "→")
+                                    Text(LocalizedStringKey(elig.targetBelt.label))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
                         }
                     }
                     .buttonStyle(.plain)
@@ -111,11 +159,36 @@ public struct TDDashboardView: View {
             let allScores = try await session.repository.allScores()
             clubComposite = ScoreEngine.branchComposite(allScores)
             clubGrade = LetterGrade.from(score: clubComposite)
-            scoreByAthlete = Dictionary(uniqueKeysWithValues: allScores.map { ($0.athleteID, $0) })
 
             let allAthletes = try await session.repository.athletes()
-            watchList = allAthletes.filter { $0.status == .watch }
-            readyToGrade = allAthletes.filter { $0.status == .readyToGrade }
+
+            // Watch list: status == .watch OR latest composite dropped >10 from previous month
+            var watch: [Athlete] = []
+            for a in allAthletes {
+                if a.status == .watch {
+                    watch.append(a); continue
+                }
+                let history = try await session.repository.scoreHistory(athleteID: a.id)
+                guard history.count >= 2 else { continue }
+                let weights: ScoreWeights = a.status == .competitionTeam
+                    ? .competitionTeam
+                    : (a.ageGroup == .cubs ? .cubs : .standard)
+                let latest = ScoreEngine.composite(history[0], weights: weights)
+                let previous = ScoreEngine.composite(history[1], weights: weights)
+                if latest - previous < -10 { watch.append(a) }
+            }
+            watchList = watch
+
+            // Ready to grade via real eligibility engine
+            var ready: [(Athlete, GradingEligibility)] = []
+            for a in allAthletes {
+                let target = GradingEngine.nextBelt(after: a.currentBelt)
+                let elig = try await session.repository.eligibility(athleteID: a.id, targetBelt: target)
+                if elig.isEligible {
+                    ready.append((a, elig))
+                }
+            }
+            readyToGrade = ready
         } catch {
             print("TDDashboardView.load:", error)
         }

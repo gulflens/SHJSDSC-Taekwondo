@@ -9,6 +9,12 @@ public struct SeedBundle: Sendable {
     public let attendance: [AttendanceRecord]
     public let scores: [PerformanceScore]
     public let matches: [Match]
+    public let physicalTests: [PhysicalTest]
+    public let assessments: [TechnicalAssessment]
+    public let wellness: [WellnessEntry]
+    public let gradingSessions: [GradingSession]
+    public let gradingScores: [GradingScore]
+    public let certificates: [GradingCertificate]
     public let defaultCurrentUserID: EntityID
 }
 
@@ -21,6 +27,7 @@ public enum SeedData {
         func days(_ n: Int) -> Date { cal.date(byAdding: .day, value: n, to: now) ?? now }
         func years(_ n: Int) -> Date { cal.date(byAdding: .year, value: n, to: now) ?? now }
         func dob(age: Int) -> Date { cal.date(byAdding: .year, value: -age, to: now) ?? now }
+        func monthsAgo(_ n: Int) -> Date { cal.date(byAdding: .month, value: -n, to: now) ?? now }
 
         // === Non-coach users ===
         let userAdmin = User(fullName: "Hanadi Al Kabouri", fullNameAr: "هنادي الكعبوري", role: .admin, avatarSeed: "hanadi")
@@ -73,7 +80,6 @@ public enum SeedData {
         )
         let coaches = [coachYassin, coachMohammed, coachAshraf, coachElias, coachLayla]
 
-        // Coach user mirrors the coach entity (shared id)
         let userCoach = User(
             id: coachYassin.id,
             fullName: coachYassin.fullName, fullNameAr: coachYassin.fullNameAr,
@@ -86,7 +92,6 @@ public enum SeedData {
         }
 
         // === Athletes ===
-        // Boys distributed across Al Ramtha / Al Jazzat / Al Khan; girls at Shaghrafa.
         let a1 = Athlete(
             fullName: "Ahmed Al Mazrouei", fullNameAr: "أحمد المزروعي",
             dateOfBirth: dob(age: 14), gender: .male,
@@ -225,7 +230,6 @@ public enum SeedData {
             weightKg: 58, status: .rest, avatarSeed: "abdullah"
         )
 
-        // Girls at Shaghrafa
         let g1 = Athlete(
             fullName: "Maryam Al Suwaidi", fullNameAr: "مريم السويدي",
             dateOfBirth: dob(age: 13), gender: .female,
@@ -297,7 +301,6 @@ public enum SeedData {
 
         let athletes: [Athlete] = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, g1, g2, g3, g4, g5, g6]
 
-        // Athlete user mirrors first athlete
         let userAthlete = User(
             id: a1.id, fullName: a1.fullName, fullNameAr: a1.fullNameAr,
             role: .athlete, primaryBranchID: a1.branchID, avatarSeed: a1.avatarSeed
@@ -321,7 +324,6 @@ public enum SeedData {
             )
         }
 
-        // Athletes per branch, by age band
         func roster(branch: Branch, group: AgeGroup) -> [Athlete] {
             athletes.filter { $0.branchID == branch.id && $0.ageGroup == group }
         }
@@ -344,7 +346,8 @@ public enum SeedData {
             }
         }
 
-        // === Attendance: today's first session pre-populated with up to 10 .present ===
+        // === Attendance ===
+        // Today's first session: prefill 10 .present
         let todayStart = cal.startOfDay(for: now)
         let firstToday = sessions
             .filter { cal.isDate($0.startsAt, inSameDayAs: todayStart) }
@@ -355,11 +358,38 @@ public enum SeedData {
                 attendance.append(AttendanceRecord(sessionID: s.id, athleteID: athleteID, state: .present, recordedAt: now))
             }
         }
+        // Per-athlete synthetic history over last 90 days so eligibility engine has signal.
+        for athlete in athletes {
+            // 12 records, one every ~7 days. Attendance ratio depends on status.
+            let presentRatio: Double
+            switch athlete.status {
+            case .readyToGrade: presentRatio = 0.92
+            case .competitionTeam: presentRatio = 0.88
+            case .active: presentRatio = 0.78
+            case .watch: presentRatio = 0.50
+            case .rest: presentRatio = 0.25
+            }
+            for k in 0..<12 {
+                let dayOffset = -7 * (k + 1)
+                let pseudo = ((athlete.id.hashValue &+ k * 31) & 0xFFFF) % 100
+                let state: AttendanceState
+                if Double(pseudo) / 100.0 < presentRatio {
+                    state = pseudo < 5 ? .late : .present
+                } else {
+                    state = pseudo < 60 ? .absent : .excused
+                }
+                attendance.append(AttendanceRecord(
+                    sessionID: UUID(), // synthetic — not tied to a real session
+                    athleteID: athlete.id,
+                    state: state,
+                    recordedAt: days(dayOffset)
+                ))
+            }
+        }
 
-        // === Performance scores: one per athlete, deterministic but varied ===
+        // === Performance scores: 3 per athlete (current, 1 month ago, 2 months ago) ===
         var scores: [PerformanceScore] = []
         for (idx, athlete) in athletes.enumerated() {
-            // base 60..92 derived from index + status modifier
             let base = 60.0 + Double((idx * 7) % 30)
             let statusBoost: Double = {
                 switch athlete.status {
@@ -370,23 +400,35 @@ public enum SeedData {
                 case .active: return 0
                 }
             }()
-            func clamp(_ v: Double) -> Double { min(100, max(0, v)) }
-            let comp = clamp(base + statusBoost + Double((idx * 3) % 10))
-            let tech = clamp(base + statusBoost - 4 + Double((idx * 5) % 12))
-            let phys = clamp(base + statusBoost - 2 + Double((idx * 11) % 14))
-            let adher = clamp(base + statusBoost + 4 - Double((idx * 2) % 8))
-            let prog = clamp(base + statusBoost + 2 + Double((idx * 4) % 8))
-            let well = clamp(base + statusBoost + 6 - Double((idx * 6) % 10))
-            let char = clamp(85 + Double((idx * 13) % 12))
-            scores.append(PerformanceScore(
-                athleteID: athlete.id,
-                competition: comp, technical: tech, physical: phys,
-                adherence: adher, beltProgression: prog, wellness: well, character: char,
-                calculatedAt: now
-            ))
+            for monthBack in 0...2 {
+                // Watch athletes have a clear MoM drop in latest score.
+                // CompetitionTeam athletes show steady improvement (latest highest).
+                let trend: Double = {
+                    switch athlete.status {
+                    case .watch: return monthBack == 0 ? -10 : 0
+                    case .competitionTeam: return Double(2 - monthBack) * 2
+                    case .readyToGrade: return Double(2 - monthBack) * 1.5
+                    default: return 0
+                    }
+                }()
+                func clamp(_ v: Double) -> Double { min(100, max(0, v)) }
+                let comp = clamp(base + statusBoost + trend + Double((idx * 3) % 10))
+                let tech = clamp(base + statusBoost + trend - 4 + Double((idx * 5) % 12))
+                let phys = clamp(base + statusBoost + trend - 2 + Double((idx * 11) % 14))
+                let adher = clamp(base + statusBoost + trend + 4 - Double((idx * 2) % 8))
+                let prog = clamp(base + statusBoost + trend + 2 + Double((idx * 4) % 8))
+                let well = clamp(base + statusBoost + trend + 6 - Double((idx * 6) % 10))
+                let char = clamp(85 + Double((idx * 13) % 12))
+                scores.append(PerformanceScore(
+                    athleteID: athlete.id,
+                    competition: comp, technical: tech, physical: phys,
+                    adherence: adher, beltProgression: prog, wellness: well, character: char,
+                    calculatedAt: monthsAgo(monthBack)
+                ))
+            }
         }
 
-        // === Matches: one UAE Junior Open result per .competitionTeam athlete ===
+        // === Matches ===
         var matches: [Match] = []
         let competitionAthletes = athletes.filter { $0.status == .competitionTeam }
         let medalCycle: [MedalType] = [.gold, .silver, .bronze, .none, .gold]
@@ -396,15 +438,111 @@ public enum SeedData {
             let ourScore = won ? 18 + (idx * 2) % 10 : 10 + (idx * 3) % 5
             let oppScore = won ? 12 + (idx * 2) % 6 : 16 + (idx * 4) % 8
             let weightClass = (athlete.weightKg / 4).rounded() * 4
-            let m = Match(
+            matches.append(Match(
                 tournamentName: "UAE Junior Open",
                 date: days(-30 - idx * 10),
                 ourAthleteID: athlete.id,
                 weightClassKg: weightClass,
                 ourScore: ourScore, opponentScore: oppScore,
                 won: won, medal: medal
-            )
-            matches.append(m)
+            ))
+        }
+
+        // === Physical tests: 3 per athlete (monthly back), with status-based quality ===
+        var physicalTests: [PhysicalTest] = []
+        for athlete in athletes {
+            let coachID = athlete.primaryCoachID ?? coachYassin.id
+            // Quality tiers chosen so readyToGrade passes the eligibility engine
+            // (composite >=60), and watch trends downward.
+            let baseQuality: Int = {
+                switch athlete.status {
+                case .readyToGrade: return 7
+                case .competitionTeam: return 8
+                case .active: return 5
+                case .watch: return 3
+                case .rest: return 4
+                }
+            }()
+            for monthBack in 0...2 {
+                let q = max(0, baseQuality - (athlete.status == .watch && monthBack == 0 ? 2 : 0)
+                                     + (athlete.status == .competitionTeam ? (2 - monthBack) : 0))
+                physicalTests.append(PhysicalTest(
+                    athleteID: athlete.id,
+                    recordedAt: monthsAgo(monthBack),
+                    recordedByCoachID: coachID,
+                    beepTestStage: 6.0 + Double(q) * 0.5,
+                    verticalJumpCm: 30 + Double(q) * 3.5,
+                    sprint30mSec: max(4.5, 7.5 - Double(q) * 0.18),
+                    agility4x10Sec: max(9.0, 13.5 - Double(q) * 0.25),
+                    pushUps1Min: 25 + q * 3,
+                    notes: nil
+                ))
+            }
+        }
+
+        // === Technical assessments: 3 per athlete ===
+        var assessments: [TechnicalAssessment] = []
+        for athlete in athletes {
+            let coachID = athlete.primaryCoachID ?? coachYassin.id
+            let form = athlete.currentBelt.kind == .gup ? "Taegeuk Sa Jang" : "Koryo"
+            for monthBack in 0...2 {
+                let v: Int = {
+                    switch (athlete.status, monthBack) {
+                    case (.watch, 0): return 5
+                    case (.watch, 1): return 6
+                    case (.watch, 2): return 7
+                    case (.competitionTeam, 0): return 9
+                    case (.competitionTeam, 1): return 8
+                    case (.competitionTeam, 2): return 7
+                    case (.readyToGrade, _): return 8
+                    case (.rest, 0): return 5
+                    case (.rest, _): return 6
+                    default: return 7
+                    }
+                }()
+                assessments.append(TechnicalAssessment(
+                    athleteID: athlete.id,
+                    recordedAt: monthsAgo(monthBack),
+                    recordedByCoachID: coachID,
+                    poomsaeForm: form,
+                    power: v, accuracy: v, rhythm: v, balance: v, expression: v,
+                    notes: nil
+                ))
+            }
+        }
+
+        // === Wellness entries: 7 per athlete (last 7 days) ===
+        var wellness: [WellnessEntry] = []
+        for (idx, athlete) in athletes.enumerated() {
+            for dayBack in 0..<7 {
+                wellness.append(WellnessEntry(
+                    athleteID: athlete.id,
+                    recordedAt: days(-dayBack),
+                    sleepHours: 7.5 + Double((dayBack + idx) % 3) * 0.4,
+                    mood: 3 + ((dayBack + idx) % 3),
+                    soreness: 1 + (idx % 3),
+                    rpePreviousSession: 5 + ((dayBack + idx) % 4),
+                    notes: nil
+                ))
+            }
+        }
+
+        // === Grading sessions: one per branch that has readyToGrade athletes ===
+        var gradingSessions: [GradingSession] = []
+        let readyByBranch = Dictionary(grouping: athletes.filter { $0.status == .readyToGrade }, by: { $0.branchID })
+        for (branchID, ready) in readyByBranch {
+            guard let branch = branches.first(where: { $0.id == branchID }) else { continue }
+            // Use the branch's primary coach (and Layla if Shaghrafa) as examiner.
+            let examiners: [EntityID] = coaches
+                .filter { $0.primaryBranchID == branch.id }
+                .map { $0.id }
+            gradingSessions.append(GradingSession(
+                scheduledAt: days(14),
+                branchID: branch.id,
+                examinerCoachIDs: examiners.isEmpty ? [coachYassin.id] : examiners,
+                candidateAthleteIDs: ready.map { $0.id },
+                status: .scheduled
+            ))
         }
 
         return SeedBundle(
@@ -416,6 +554,12 @@ public enum SeedData {
             attendance: attendance,
             scores: scores,
             matches: matches,
+            physicalTests: physicalTests,
+            assessments: assessments,
+            wellness: wellness,
+            gradingSessions: gradingSessions,
+            gradingScores: [],
+            certificates: [],
             defaultCurrentUserID: userTD.id
         )
     }

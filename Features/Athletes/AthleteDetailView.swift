@@ -14,6 +14,8 @@ public struct AthleteDetailView: View {
                 hero
                 BeltStrip(belt: athlete.currentBelt, history: athlete.beltHistory)
                 statsGrid
+                entryActions
+                PerformanceTrendView(athlete: athlete)
                 beltJourney
                 recentMatches
             }
@@ -54,6 +56,26 @@ public struct AthleteDetailView: View {
             KPITile(title: "kpi.medals", value: "\(medals)", icon: "medal.fill")
             KPITile(title: "kpi.win_rate", value: String(format: "%.0f%%", winRate * 100), icon: "chart.bar.fill")
             KPITile(title: "kpi.weight", value: String(format: "%.0fkg", athlete.weightKg), icon: "scalemass.fill")
+        }
+    }
+
+    private var entryActions: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("heading.entries").font(.headline)
+            HStack(spacing: 8) {
+                NavigationLink(destination: PhysicalTestEntryView(athlete: athlete)) {
+                    Label("physical.add", systemImage: "figure.strengthtraining.traditional")
+                }
+                .buttonStyle(.bordered)
+                NavigationLink(destination: TechnicalAssessmentEntryView(athlete: athlete)) {
+                    Label("assessment.add", systemImage: "figure.taichi")
+                }
+                .buttonStyle(.bordered)
+                NavigationLink(destination: WellnessCheckInView(athlete: athlete)) {
+                    Label("wellness.add", systemImage: "heart.text.square.fill")
+                }
+                .buttonStyle(.bordered)
+            }
         }
     }
 
