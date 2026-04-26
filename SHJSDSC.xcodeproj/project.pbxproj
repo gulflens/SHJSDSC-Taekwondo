@@ -7,19 +7,19 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		F98F49D32F9AC52400E2C304 /* SSDC Taekwondo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SSDC Taekwondo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B05A000000000000000000A1 /* SHJSDSC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SHJSDSC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		F98F49D52F9AC52400E2C304 /* SSDC Taekwondo */ = {
+		B05A000000000000000000B1 /* SHJSDSC */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "SSDC Taekwondo";
+			path = SHJSDSC;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		F98F49D02F9AC52400E2C304 /* Frameworks */ = {
+		B05A000000000000000000C1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -29,18 +29,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		F98F49CA2F9AC52400E2C304 = {
+		B05A000000000000000000D1 = {
 			isa = PBXGroup;
 			children = (
-				F98F49D52F9AC52400E2C304 /* SSDC Taekwondo */,
-				F98F49D42F9AC52400E2C304 /* Products */,
+				B05A000000000000000000B1 /* SHJSDSC */,
+				B05A000000000000000000D2 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		F98F49D42F9AC52400E2C304 /* Products */ = {
+		B05A000000000000000000D2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F98F49D32F9AC52400E2C304 /* SSDC Taekwondo.app */,
+				B05A000000000000000000A1 /* SHJSDSC.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,64 +48,65 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F98F49D22F9AC52400E2C304 /* SSDC Taekwondo */ = {
+		B05A000000000000000000E1 /* SHJSDSC */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F98F49E02F9AC52500E2C304 /* Build configuration list for PBXNativeTarget "SSDC Taekwondo" */;
+			buildConfigurationList = B05A000000000000000000F2 /* Build configuration list for PBXNativeTarget "SHJSDSC" */;
 			buildPhases = (
-				F98F49CF2F9AC52400E2C304 /* Sources */,
-				F98F49D02F9AC52400E2C304 /* Frameworks */,
-				F98F49D12F9AC52400E2C304 /* Resources */,
+				B05A000000000000000000C2 /* Sources */,
+				B05A000000000000000000C1 /* Frameworks */,
+				B05A000000000000000000C3 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				F98F49D52F9AC52400E2C304 /* SSDC Taekwondo */,
+				B05A000000000000000000B1 /* SHJSDSC */,
 			);
-			name = "SSDC Taekwondo";
+			name = SHJSDSC;
 			packageProductDependencies = (
 			);
-			productName = "SSDC Taekwondo";
-			productReference = F98F49D32F9AC52400E2C304 /* SSDC Taekwondo.app */;
+			productName = SHJSDSC;
+			productReference = B05A000000000000000000A1 /* SHJSDSC.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		F98F49CB2F9AC52400E2C304 /* Project object */ = {
+		B05A000000000000000000E2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
-					F98F49D22F9AC52400E2C304 = {
+					B05A000000000000000000E1 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
 			};
-			buildConfigurationList = F98F49CE2F9AC52400E2C304 /* Build configuration list for PBXProject "SSDC Taekwondo" */;
+			buildConfigurationList = B05A000000000000000000F1 /* Build configuration list for PBXProject "SHJSDSC" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ar,
 				Base,
 			);
-			mainGroup = F98F49CA2F9AC52400E2C304;
+			mainGroup = B05A000000000000000000D1;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = F98F49D42F9AC52400E2C304 /* Products */;
+			productRefGroup = B05A000000000000000000D2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F98F49D22F9AC52400E2C304 /* SSDC Taekwondo */,
+				B05A000000000000000000E1 /* SHJSDSC */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		F98F49D12F9AC52400E2C304 /* Resources */ = {
+		B05A000000000000000000C3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -115,7 +116,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		F98F49CF2F9AC52400E2C304 /* Sources */ = {
+		B05A000000000000000000C2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -125,7 +126,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		F98F49DE2F9AC52500E2C304 /* Debug */ = {
+		B05A0000000000000000010A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -187,7 +188,7 @@
 			};
 			name = Debug;
 		};
-		F98F49DF2F9AC52500E2C304 /* Release */ = {
+		B05A0000000000000000010B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -241,7 +242,7 @@
 			};
 			name = Release;
 		};
-		F98F49E12F9AC52500E2C304 /* Debug */ = {
+		B05A0000000000000000020A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -264,28 +265,26 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gulflens.studio.SSDC-Taekwondo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.gulflens.SHJSDSC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.4;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		F98F49E22F9AC52500E2C304 /* Release */ = {
+		B05A0000000000000000020B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -308,49 +307,47 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gulflens.studio.SSDC-Taekwondo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.gulflens.SHJSDSC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.4;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F98F49CE2F9AC52400E2C304 /* Build configuration list for PBXProject "SSDC Taekwondo" */ = {
+		B05A000000000000000000F1 /* Build configuration list for PBXProject "SHJSDSC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F98F49DE2F9AC52500E2C304 /* Debug */,
-				F98F49DF2F9AC52500E2C304 /* Release */,
+				B05A0000000000000000010A /* Debug */,
+				B05A0000000000000000010B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F98F49E02F9AC52500E2C304 /* Build configuration list for PBXNativeTarget "SSDC Taekwondo" */ = {
+		B05A000000000000000000F2 /* Build configuration list for PBXNativeTarget "SHJSDSC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F98F49E12F9AC52500E2C304 /* Debug */,
-				F98F49E22F9AC52500E2C304 /* Release */,
+				B05A0000000000000000020A /* Debug */,
+				B05A0000000000000000020B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = F98F49CB2F9AC52400E2C304 /* Project object */;
+	rootObject = B05A000000000000000000E2 /* Project object */;
 }
