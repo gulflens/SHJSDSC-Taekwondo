@@ -28,11 +28,30 @@ public struct TournamentDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showRegister = true
-                } label: {
-                    Label("tournament.register", systemImage: "person.badge.plus")
+            if let role = session.currentUser?.role,
+               PermissionMatrix.allowed(role: role, permission: .createTournament) {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showRegister = true
+                    } label: {
+                        Label("tournament.register", systemImage: "person.badge.plus")
+                    }
+                }
+            }
+            if let t = tournament, !registrations.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    ExportButton(
+                        baseFilename: "tournament-\(t.name.replacingOccurrences(of: " ", with: "_"))",
+                        csvProvider: {
+                            CSVReportExporter().exportTournamentResults(
+                                tournament: t,
+                                registrations: registrations,
+                                athletes: Array(athleteLookup.values),
+                                matches: [],
+                                format: .csv
+                            )
+                        }
+                    )
                 }
             }
         }
@@ -134,17 +153,20 @@ public struct TournamentDetailView: View {
             HStack {
                 Text("tournament.bracket").font(.headline)
                 Spacer()
-                Button {
-                    Task { await generateBrackets(tournament: t) }
-                } label: {
-                    if generating {
-                        ProgressView()
-                    } else {
-                        Label("tournament.generate_bracket", systemImage: "wand.and.rays")
+                if let role = session.currentUser?.role,
+                   PermissionMatrix.allowed(role: role, permission: .createTournament) {
+                    Button {
+                        Task { await generateBrackets(tournament: t) }
+                    } label: {
+                        if generating {
+                            ProgressView()
+                        } else {
+                            Label("tournament.generate_bracket", systemImage: "wand.and.rays")
+                        }
                     }
+                    .buttonStyle(.bordered)
+                    .disabled(generating || registrations.isEmpty)
                 }
-                .buttonStyle(.bordered)
-                .disabled(generating || registrations.isEmpty)
             }
             if brackets.isEmpty {
                 Text("empty.no_brackets").foregroundStyle(.secondary)

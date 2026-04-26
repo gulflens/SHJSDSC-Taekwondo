@@ -20,11 +20,14 @@ public struct GradingDashboardView: View {
         }
         .navigationTitle(Text("grading.dashboard"))
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showSchedule = true
-                } label: {
-                    Label("grading.schedule", systemImage: "plus.circle")
+            if let role = session.currentUser?.role,
+               PermissionMatrix.allowed(role: role, permission: .scheduleSession) {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showSchedule = true
+                    } label: {
+                        Label("grading.schedule", systemImage: "plus.circle")
+                    }
                 }
             }
         }

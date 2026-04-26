@@ -21,6 +21,10 @@ public actor DemoStore {
     public var brackets: [Bracket]
     public var bracketMatches: [BracketMatch]
     public var activeMatch: Match?
+    public var announcements: [Announcement]
+    public var rsvps: [AnnouncementRSVP]
+    public var certifications: [Certification]
+    public var auditLog: [AuditEntry]
     public var currentUserID: EntityID
 
     public init(seed: SeedBundle) {
@@ -44,6 +48,10 @@ public actor DemoStore {
         self.brackets = seed.brackets
         self.bracketMatches = seed.bracketMatches
         self.activeMatch = nil
+        self.announcements = seed.announcements
+        self.rsvps = seed.rsvps
+        self.certifications = seed.certifications
+        self.auditLog = seed.auditLog
         self.currentUserID = seed.defaultCurrentUserID
     }
 
@@ -113,6 +121,28 @@ public actor DemoStore {
 
     public func setActiveMatch(_ m: Match?) { activeMatch = m }
 
+    public func upsertAnnouncement(_ a: Announcement) {
+        if let i = announcements.firstIndex(where: { $0.id == a.id }) { announcements[i] = a } else { announcements.append(a) }
+    }
+
+    public func upsertRSVP(_ r: AnnouncementRSVP) {
+        if let i = rsvps.firstIndex(where: { $0.announcementID == r.announcementID && $0.userID == r.userID }) { rsvps[i] = r } else { rsvps.append(r) }
+    }
+
+    public func upsertCertification(_ c: Certification) {
+        if let i = certifications.firstIndex(where: { $0.id == c.id }) { certifications[i] = c } else { certifications.append(c) }
+    }
+
+    public func appendAudit(_ entry: AuditEntry) {
+        auditLog.append(entry)
+        if auditLog.count > 200 { auditLog.removeFirst(auditLog.count - 200) }
+    }
+
+    public func logAudit(action: String, target: String, targetID: EntityID, changes: [String: String] = [:]) {
+        let entry = AuditEntry(actorUserID: currentUserID, action: action, targetEntity: target, targetID: targetID, changes: changes)
+        appendAudit(entry)
+    }
+
     public func appendEventToActive(_ e: ScoreEvent) {
         guard var m = activeMatch, e.matchID == m.id else { return }
         m.events.append(e)
@@ -171,7 +201,10 @@ public struct DemoRepository: Repository {
     public func athlete(id: EntityID) async throws -> Athlete? {
         await store.athletes.first { $0.id == id }
     }
-    public func upsert(_ athlete: Athlete) async throws { await store.upsertAthlete(athlete) }
+    public func upsert(_ athlete: Athlete) async throws {
+        await store.upsertAthlete(athlete)
+        await store.logAudit(action: "editAthlete", target: "Athlete", targetID: athlete.id)
+    }
 
     // MARK: Coach
 
@@ -207,9 +240,15 @@ public struct DemoRepository: Repository {
     public func attendance(athleteID: EntityID, since: Date) async throws -> [AttendanceRecord] {
         await store.attendance.filter { $0.athleteID == athleteID && $0.recordedAt >= since }
     }
-    public func upsertAttendance(_ record: AttendanceRecord) async throws { await store.upsertAttendance(record) }
+    public func upsertAttendance(_ record: AttendanceRecord) async throws {
+        await store.upsertAttendance(record)
+        await store.logAudit(action: "recordAttendance", target: "Attendance", targetID: record.id)
+    }
     public func upsertAttendance(_ records: [AttendanceRecord]) async throws {
         for r in records { await store.upsertAttendance(r) }
+        if let first = records.first {
+            await store.logAudit(action: "recordAttendance", target: "Session", targetID: first.sessionID, changes: ["count": "\(records.count)"])
+        }
     }
 
     // MARK: Performance scores
@@ -297,15 +336,24 @@ public struct DemoRepository: Repository {
     public func gradingSession(id: EntityID) async throws -> GradingSession? {
         await store.gradingSessions.first { $0.id == id }
     }
-    public func upsert(_ session: GradingSession) async throws { await store.upsertGradingSession(session) }
+    public func upsert(_ session: GradingSession) async throws {
+        await store.upsertGradingSession(session)
+        await store.logAudit(action: "scheduleGrading", target: "GradingSession", targetID: session.id)
+    }
     public func gradingScores(sessionID: EntityID) async throws -> [GradingScore] {
         await store.gradingScores.filter { $0.sessionID == sessionID }
     }
-    public func upsert(_ score: GradingScore) async throws { await store.upsertGradingScore(score) }
+    public func upsert(_ score: GradingScore) async throws {
+        await store.upsertGradingScore(score)
+        await store.logAudit(action: "scoreGrading", target: "GradingScore", targetID: score.id, changes: ["decision": score.decision.rawValue])
+    }
     public func certificates(athleteID: EntityID) async throws -> [GradingCertificate] {
         await store.certificates.filter { $0.athleteID == athleteID }.sorted { $0.awardedAt > $1.awardedAt }
     }
-    public func issueCertificate(_ certificate: GradingCertificate) async throws { await store.appendCertificate(certificate) }
+    public func issueCertificate(_ certificate: GradingCertificate) async throws {
+        await store.appendCertificate(certificate)
+        await store.logAudit(action: "issueCertificate", target: "GradingCertificate", targetID: certificate.id)
+    }
 
     // MARK: Tournament
 
@@ -315,7 +363,10 @@ public struct DemoRepository: Repository {
     public func tournament(id: EntityID) async throws -> Tournament? {
         await store.tournaments.first { $0.id == id }
     }
-    public func upsert(tournament: Tournament) async throws { await store.upsertTournament(tournament) }
+    public func upsert(tournament: Tournament) async throws {
+        await store.upsertTournament(tournament)
+        await store.logAudit(action: "createTournament", target: "Tournament", targetID: tournament.id)
+    }
 
     public func registrations(tournamentID: EntityID) async throws -> [TournamentRegistration] {
         await store.registrations.filter { $0.tournamentID == tournamentID }
@@ -323,7 +374,10 @@ public struct DemoRepository: Repository {
     public func registrations(athleteID: EntityID) async throws -> [TournamentRegistration] {
         await store.registrations.filter { $0.athleteID == athleteID }
     }
-    public func upsert(registration: TournamentRegistration) async throws { await store.upsertRegistration(registration) }
+    public func upsert(registration: TournamentRegistration) async throws {
+        await store.upsertRegistration(registration)
+        await store.logAudit(action: "registerAthlete", target: "Registration", targetID: registration.id)
+    }
 
     public func weightCutHistory(registrationID: EntityID) async throws -> [WeightCutEntry] {
         await store.weightCuts.filter { $0.registrationID == registrationID }
@@ -334,7 +388,10 @@ public struct DemoRepository: Repository {
     public func brackets(tournamentID: EntityID) async throws -> [Bracket] {
         await store.brackets.filter { $0.tournamentID == tournamentID }
     }
-    public func upsert(bracket: Bracket) async throws { await store.upsertBracket(bracket) }
+    public func upsert(bracket: Bracket) async throws {
+        await store.upsertBracket(bracket)
+        await store.logAudit(action: "generateBracket", target: "Bracket", targetID: bracket.id)
+    }
 
     public func bracketMatches(bracketID: EntityID) async throws -> [BracketMatch] {
         await store.bracketMatches.filter { $0.bracketID == bracketID }
@@ -354,5 +411,65 @@ public struct DemoRepository: Repository {
     public func finalizeMatch(_ match: Match) async throws {
         await store.upsertMatch(match)
         await store.setActiveMatch(nil)
+        await store.logAudit(action: "finalizeMatch", target: "Match", targetID: match.id)
+    }
+
+    // MARK: Operations
+
+    public func announcements(audience: AnnouncementAudience?) async throws -> [Announcement] {
+        let all = await store.announcements
+        let filtered = audience.map { aud in all.filter { $0.audience == aud || $0.audience == .all } } ?? all
+        return filtered.sorted { $0.publishedAt > $1.publishedAt }
+    }
+
+    public func upsert(announcement: Announcement) async throws {
+        await store.upsertAnnouncement(announcement)
+        await store.logAudit(action: "publishAnnouncement", target: "Announcement", targetID: announcement.id)
+    }
+
+    public func rsvps(announcementID: EntityID) async throws -> [AnnouncementRSVP] {
+        await store.rsvps.filter { $0.announcementID == announcementID }
+    }
+
+    public func upsert(rsvp: AnnouncementRSVP) async throws {
+        await store.upsertRSVP(rsvp)
+        await store.logAudit(action: "rsvp", target: "Announcement", targetID: rsvp.announcementID, changes: ["response": rsvp.response.rawValue])
+    }
+
+    public func certifications(coachID: EntityID) async throws -> [Certification] {
+        await store.certifications.filter { $0.coachID == coachID }
+            .sorted { $0.expiresAt < $1.expiresAt }
+    }
+
+    public func certifications() async throws -> [Certification] {
+        await store.certifications.sorted { $0.expiresAt < $1.expiresAt }
+    }
+
+    public func upsert(certification: Certification) async throws {
+        await store.upsertCertification(certification)
+        await store.logAudit(action: "upsertCertification", target: "Certification", targetID: certification.id)
+    }
+
+    public func expiringSoon(within: TimeInterval) async throws -> [Certification] {
+        let cutoff = Date().addingTimeInterval(within)
+        return await store.certifications.filter { $0.expiresAt <= cutoff }
+            .sorted { $0.expiresAt < $1.expiresAt }
+    }
+
+    // MARK: Audit
+
+    public func log(_ entry: AuditEntry) async throws {
+        await store.appendAudit(entry)
+    }
+
+    public func entries(actor: EntityID?, since: Date?) async throws -> [AuditEntry] {
+        var all = await store.auditLog
+        if let actor { all = all.filter { $0.actorUserID == actor } }
+        if let since { all = all.filter { $0.at >= since } }
+        return all.sorted { $0.at > $1.at }
+    }
+
+    public func entries(target: EntityID) async throws -> [AuditEntry] {
+        await store.auditLog.filter { $0.targetID == target }.sorted { $0.at > $1.at }
     }
 }

@@ -3,15 +3,26 @@ import SwiftUI
 @main
 struct SHJSDSCApp: App {
     @State private var session = AppSession(repository: DemoRepository())
+    @State private var notificationScheduler: any NotificationScheduler = LocalNotificationScheduler()
     @AppStorage("appLanguage") private var appLanguage: String = "system"
+    @AppStorage("hasRequestedNotifAuth") private var hasRequestedNotifAuth: Bool = false
 
     var body: some Scene {
         WindowGroup {
             RoleRouter()
                 .environment(session)
+                .environment(\.notificationScheduler, notificationScheduler)
                 .environment(\.locale, locale)
                 .environment(\.layoutDirection, layoutDirection)
-                .task { await session.bootstrap() }
+                .task {
+                    await session.bootstrap()
+                    if !hasRequestedNotifAuth {
+                        _ = await notificationScheduler.requestAuthorization()
+                        hasRequestedNotifAuth = true
+                    }
+                    await scheduleSundayDigestIfEnabled()
+                    await scheduleCertExpiriesIfEnabled()
+                }
         }
     }
 
@@ -28,6 +39,51 @@ struct SHJSDSCApp: App {
         case "ar": .rightToLeft
         case "en": .leftToRight
         default: Locale.current.language.languageCode?.identifier == "ar" ? .rightToLeft : .leftToRight
+        }
+    }
+
+    private func scheduleSundayDigestIfEnabled() async {
+        let enabled = UserDefaults.standard.object(forKey: NotificationKind.tdSundayDigest.preferenceKey) as? Bool ?? true
+        guard enabled else { return }
+        do {
+            let scores = try await session.repository.allScores()
+            let avg = scores.isEmpty ? 0.0 : scores.reduce(0.0) { $0 + ScoreEngine.composite($1) } / Double(scores.count)
+            let athletes = try await session.repository.athletes()
+            let watch = athletes.filter { $0.status == .watch }.count
+            let expiring = try await session.repository.expiringSoon(within: 30 * 24 * 3600)
+            let digest = DigestBuilder.buildSundayDigest(
+                date: Date(),
+                scoresAvg: avg,
+                watchListCount: watch,
+                certsExpiring: expiring.count
+            )
+            let title = String(localized: "notif.sunday_digest.title")
+            let body = String(format: NSLocalizedString("notif.sunday_digest.body", comment: ""), avg, watch, expiring.count)
+            try await notificationScheduler.scheduleLocal(
+                id: "sunday-digest",
+                title: title,
+                body: body,
+                fireAt: digest.fireAt
+            )
+        } catch {
+            print("SHJSDSCApp.scheduleSundayDigestIfEnabled:", error)
+        }
+    }
+
+    private func scheduleCertExpiriesIfEnabled() async {
+        let enabled = UserDefaults.standard.object(forKey: NotificationKind.certExpiring.preferenceKey) as? Bool ?? true
+        guard enabled else { return }
+        do {
+            let expiring = try await session.repository.expiringSoon(within: 30 * 24 * 3600)
+            for cert in expiring {
+                let id = "cert-\(cert.id.uuidString)"
+                let title = String(localized: "notif.cert_expiring.title")
+                let body = String(format: NSLocalizedString("notif.cert_expiring.body", comment: ""), String(localized: LocalizedStringResource(stringLiteral: cert.kind.labelKey)), cert.daysUntilExpiry)
+                let fireAt = max(Date().addingTimeInterval(60), cert.expiresAt.addingTimeInterval(-7 * 24 * 3600))
+                try await notificationScheduler.scheduleLocal(id: id, title: title, body: body, fireAt: fireAt)
+            }
+        } catch {
+            print("SHJSDSCApp.scheduleCertExpiriesIfEnabled:", error)
         }
     }
 }

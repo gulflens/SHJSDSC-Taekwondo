@@ -23,6 +23,11 @@ public struct AdminTabView: View {
             }
             .tabItem { Label("tab.tournaments", systemImage: "rosette") }
 
+            NavigationStack {
+                AnnouncementsView()
+            }
+            .tabItem { Label("tab.announcements", systemImage: "megaphone") }
+
             MoreView()
                 .tabItem { Label("tab.more", systemImage: "ellipsis.circle.fill") }
         }

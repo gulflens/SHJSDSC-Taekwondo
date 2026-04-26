@@ -101,6 +101,23 @@ public protocol LiveMatchRepository: Sendable {
     func finalizeMatch(_ match: Match) async throws
 }
 
+public protocol OperationsRepository: Sendable {
+    func announcements(audience: AnnouncementAudience?) async throws -> [Announcement]
+    func upsert(announcement: Announcement) async throws
+    func rsvps(announcementID: EntityID) async throws -> [AnnouncementRSVP]
+    func upsert(rsvp: AnnouncementRSVP) async throws
+    func certifications(coachID: EntityID) async throws -> [Certification]
+    func certifications() async throws -> [Certification]
+    func upsert(certification: Certification) async throws
+    func expiringSoon(within: TimeInterval) async throws -> [Certification]
+}
+
+public protocol AuditRepository: Sendable {
+    func log(_ entry: AuditEntry) async throws
+    func entries(actor: EntityID?, since: Date?) async throws -> [AuditEntry]
+    func entries(target: EntityID) async throws -> [AuditEntry]
+}
+
 public protocol Repository:
     UserRepository,
     BranchRepository,
@@ -114,4 +131,6 @@ public protocol Repository:
     GradingRepository,
     TournamentRepository,
     LiveMatchRepository,
+    OperationsRepository,
+    AuditRepository,
     Sendable {}

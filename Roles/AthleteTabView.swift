@@ -17,6 +17,11 @@ public struct AthleteTabView: View {
                 AthleteSelfProfileView()
             }
             .tabItem { Label("tab.profile", systemImage: "person.crop.circle.fill") }
+
+            NavigationStack {
+                AnnouncementsView()
+            }
+            .tabItem { Label("tab.announcements", systemImage: "megaphone") }
         }
     }
 }

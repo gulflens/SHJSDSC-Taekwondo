@@ -28,6 +28,19 @@ public struct AthleteDetailView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .toolbar {
+            if let role = session.currentUser?.role,
+               PermissionMatrix.allowed(role: role, permission: .exportReports) {
+                ToolbarItem(placement: .primaryAction) {
+                    ExportButton(
+                        baseFilename: "athlete-\(athlete.fullName.replacingOccurrences(of: " ", with: "_"))",
+                        csvProvider: {
+                            CSVReportExporter().exportAthletes([athlete], format: .csv)
+                        }
+                    )
+                }
+            }
+        }
         .task { await load() }
     }
 

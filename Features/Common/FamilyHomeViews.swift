@@ -167,14 +167,18 @@ public struct MyScheduleView: View {
 }
 
 public struct MoreView: View {
+    @Environment(AppSession.self) private var session
+    @Environment(\.notificationScheduler) private var notificationScheduler
     @AppStorage("appLanguage") private var appLanguage: String = "system"
+    @State private var exportShareURL: URL?
+    @State private var firingTest = false
 
     public init() {}
 
     public var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section(header: Text("settings.language")) {
                     Picker(selection: $appLanguage) {
                         Text("language.system").tag("system")
                         Text("language.english").tag("en")
@@ -182,18 +186,105 @@ public struct MoreView: View {
                     } label: {
                         Text("settings.language")
                     }
-                } header: {
-                    Text("settings.language")
+                }
+                Section {
+                    NavigationLink(destination: NotificationsCenterView()) {
+                        Label("settings.notifications", systemImage: "bell")
+                    }
+                    Button {
+                        Task { await fireTestDigest() }
+                    } label: {
+                        if firingTest {
+                            HStack { ProgressView(); Text("settings.fire_test") }
+                        } else {
+                            Label("settings.fire_test", systemImage: "bolt.badge.clock")
+                        }
+                    }
+                }
+                if let role = session.currentUser?.role {
+                    if PermissionMatrix.allowed(role: role, permission: .viewAuditLog) {
+                        Section {
+                            NavigationLink(destination: AuditLogView()) {
+                                Label("audit.title", systemImage: "list.bullet.rectangle")
+                            }
+                        }
+                    }
+                    Section {
+                        NavigationLink(destination: CertificationsListView()) {
+                            Label("tab.certifications", systemImage: "checkmark.shield")
+                        }
+                    }
+                }
+                Section(header: Text("settings.privacy")) {
+                    Link(destination: URL(string: "https://gulflens.studio/privacy")!) {
+                        Label("settings.privacy", systemImage: "hand.raised")
+                    }
                 }
                 Section(header: Text("settings.about")) {
                     HStack {
                         Text("settings.about")
                         Spacer()
-                        Text(verbatim: "SHJSDSC v1.0").foregroundStyle(.secondary)
+                        Text(verbatim: "SHJSDSC v1.0 · gulflens.studio").foregroundStyle(.secondary).font(.caption)
                     }
                 }
+                Section {
+                    Button {
+                        Task { await exportMyData() }
+                    } label: {
+                        Label("settings.export_data", systemImage: "square.and.arrow.down.on.square")
+                    }
+                    if let url = exportShareURL {
+                        ShareLink(item: url) {
+                            Label("export.share", systemImage: "square.and.arrow.up")
+                        }
+                    }
+                    Button(role: .destructive) {
+                        // Sign out placeholder for Stage 5.
+                    } label: {
+                        Label("settings.sign_out", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                    .disabled(true)
+                }
             }
-            .navigationTitle(Text("tab.more"))
+            .navigationTitle(Text("settings.title"))
+        }
+    }
+
+    private func fireTestDigest() async {
+        firingTest = true
+        defer { firingTest = false }
+        do {
+            let title = String(localized: "notif.sunday_digest.title")
+            let body = String(localized: "notif.sunday_digest.body_test")
+            try await notificationScheduler.scheduleLocal(
+                id: "sunday-digest-test",
+                title: title,
+                body: body,
+                fireAt: Date().addingTimeInterval(5)
+            )
+        } catch {
+            print("MoreView.fireTestDigest:", error)
+        }
+    }
+
+    private func exportMyData() async {
+        guard let user = session.currentUser else { return }
+        do {
+            let athlete = try? await session.repository.athlete(id: user.id)
+            let registrations = try await session.repository.registrations(athleteID: user.id)
+            let matches = try await session.repository.matches(athleteID: user.id)
+            let exporter = CSVReportExporter()
+            let data = exporter.exportMyData(
+                user: user,
+                athlete: athlete,
+                registrations: registrations,
+                matches: matches
+            )
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent("my-data.json")
+            try data.write(to: url)
+            exportShareURL = url
+        } catch {
+            print("MoreView.exportMyData:", error)
         }
     }
 }

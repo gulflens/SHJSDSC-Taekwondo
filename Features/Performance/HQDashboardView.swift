@@ -35,6 +35,25 @@ public struct HQDashboardView: View {
             }
             .navigationTitle(Text("tab.overview"))
             .demoRoleSwitcher()
+            .toolbar {
+                if let role = session.currentUser?.role,
+                   PermissionMatrix.allowed(role: role, permission: .exportReports),
+                   !branchSummaries.isEmpty {
+                    ToolbarItem(placement: .primaryAction) {
+                        ExportButton(
+                            baseFilename: "branch-performance",
+                            csvProvider: {
+                                let branches = branchSummaries.map { $0.branch }
+                                return CSVReportExporter().exportBranchPerformance(
+                                    branches: branches,
+                                    summaries: branchSummaries,
+                                    format: .csv
+                                )
+                            }
+                        )
+                    }
+                }
+            }
         }
         .task { await load() }
     }

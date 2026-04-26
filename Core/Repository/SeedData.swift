@@ -20,6 +20,10 @@ public struct SeedBundle: Sendable {
     public let weightCuts: [WeightCutEntry]
     public let brackets: [Bracket]
     public let bracketMatches: [BracketMatch]
+    public let announcements: [Announcement]
+    public let rsvps: [AnnouncementRSVP]
+    public let certifications: [Certification]
+    public let auditLog: [AuditEntry]
     public let defaultCurrentUserID: EntityID
 }
 
@@ -493,6 +497,66 @@ public enum SeedData {
             ))
         }
 
+        // === Announcements (1 club-wide, 1 branch-specific, 1 with RSVP) ===
+        var announcements: [Announcement] = []
+        announcements.append(Announcement(
+            title: "Q2 schedule update",
+            titleAr: "تحديث جدول الربع الثاني",
+            body: "Updated training times for all branches starting next week. See your branch coach for the new slots.",
+            bodyAr: "تم تحديث أوقات التدريب لجميع الفروع بدءاً من الأسبوع القادم. راجع مدرب فرعك للحصول على المواعيد الجديدة.",
+            audience: .all,
+            publishedAt: days(-2),
+            publishedByUserID: userAdmin.id
+        ))
+        announcements.append(Announcement(
+            branchID: branchAlRamtha.id,
+            title: "Mat cleaning Saturday",
+            titleAr: "تنظيف البساط يوم السبت",
+            body: "Al Ramtha mats will be deep-cleaned this Saturday. No classes after 12:00.",
+            bodyAr: "سيتم تنظيف بساط الرمثاء يوم السبت. لا توجد حصص بعد الساعة 12:00.",
+            audience: .coaches,
+            publishedAt: days(-5),
+            publishedByUserID: userManager.id
+        ))
+        announcements.append(Announcement(
+            title: "Parent meeting — Q2 Open",
+            titleAr: "اجتماع أولياء الأمور — بطولة الربع الثاني",
+            body: "Mandatory briefing for all parents of competition-team athletes registering for the UAE Junior Open Q2. Please RSVP.",
+            bodyAr: "اجتماع إلزامي لجميع أولياء أمور رياضيي فريق المنافسة المسجلين في بطولة الإمارات للربع الثاني. الرجاء تأكيد الحضور.",
+            audience: .parents,
+            publishedAt: days(-1),
+            publishedByUserID: userTD.id,
+            requiresRSVP: true,
+            rsvpDeadline: days(7)
+        ))
+
+        // === Certifications: mirror existing coach cert dates + add a few extras ===
+        var certifications: [Certification] = []
+        for c in coaches {
+            certifications.append(Certification(
+                coachID: c.id, kind: .firstAid, issuer: "UAE Red Crescent",
+                issuedAt: cal.date(byAdding: .year, value: -1, to: c.firstAidExpiry) ?? c.firstAidExpiry,
+                expiresAt: c.firstAidExpiry
+            ))
+            certifications.append(Certification(
+                coachID: c.id, kind: .safeguarding, issuer: "WT",
+                issuedAt: cal.date(byAdding: .year, value: -2, to: c.safeguardingExpiry) ?? c.safeguardingExpiry,
+                expiresAt: c.safeguardingExpiry
+            ))
+            certifications.append(Certification(
+                coachID: c.id, kind: .wtCoaching, issuer: "World Taekwondo",
+                issuedAt: c.hiredAt,
+                expiresAt: cal.date(byAdding: .year, value: 4, to: c.hiredAt) ?? days(365)
+            ))
+        }
+
+        // === Initial audit log: a few synthesized entries ===
+        var auditLog: [AuditEntry] = []
+        auditLog.append(AuditEntry(at: days(-7), actorUserID: userTD.id, action: "viewDashboard", targetEntity: "Dashboard", targetID: userTD.id))
+        auditLog.append(AuditEntry(at: days(-5), actorUserID: userManager.id, action: "publishAnnouncement", targetEntity: "Announcement", targetID: announcements[1].id))
+        auditLog.append(AuditEntry(at: days(-2), actorUserID: userAdmin.id, action: "publishAnnouncement", targetEntity: "Announcement", targetID: announcements[0].id))
+        auditLog.append(AuditEntry(at: days(-1), actorUserID: userTD.id, action: "publishAnnouncement", targetEntity: "Announcement", targetID: announcements[2].id))
+
         // === Weight cut history for the first registration ===
         var weightCuts: [WeightCutEntry] = []
         if let firstReg = registrations.first,
@@ -627,6 +691,10 @@ public enum SeedData {
             weightCuts: weightCuts,
             brackets: [],
             bracketMatches: [],
+            announcements: announcements,
+            rsvps: [],
+            certifications: certifications,
+            auditLog: auditLog,
             defaultCurrentUserID: userTD.id
         )
     }

@@ -98,4 +98,19 @@ public struct SupabaseRepository: Repository {
     public func recordEvent(_ event: ScoreEvent) async throws {}
     public func endRound(matchID: EntityID) async throws {}
     public func finalizeMatch(_ match: Match) async throws {}
+
+    // MARK: Operations
+    public func announcements(audience: AnnouncementAudience?) async throws -> [Announcement] { [] }
+    public func upsert(announcement: Announcement) async throws {}
+    public func rsvps(announcementID: EntityID) async throws -> [AnnouncementRSVP] { [] }
+    public func upsert(rsvp: AnnouncementRSVP) async throws {}
+    public func certifications(coachID: EntityID) async throws -> [Certification] { [] }
+    public func certifications() async throws -> [Certification] { [] }
+    public func upsert(certification: Certification) async throws {}
+    public func expiringSoon(within: TimeInterval) async throws -> [Certification] { [] }
+
+    // MARK: Audit
+    public func log(_ entry: AuditEntry) async throws {}
+    public func entries(actor: EntityID?, since: Date?) async throws -> [AuditEntry] { [] }
+    public func entries(target: EntityID) async throws -> [AuditEntry] { [] }
 }
