@@ -22,6 +22,11 @@ public struct TechnicalDirectorTabView: View {
                 CoachListView()
             }
             .tabItem { Label("tab.coaches", systemImage: "person.crop.rectangle.stack.fill") }
+
+            NavigationStack {
+                TournamentListView()
+            }
+            .tabItem { Label("tab.tournaments", systemImage: "rosette") }
         }
     }
 }

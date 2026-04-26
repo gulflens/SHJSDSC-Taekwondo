@@ -18,6 +18,11 @@ public struct AdminTabView: View {
             }
             .tabItem { Label("tab.people", systemImage: "person.3.fill") }
 
+            NavigationStack {
+                TournamentListView()
+            }
+            .tabItem { Label("tab.tournaments", systemImage: "rosette") }
+
             MoreView()
                 .tabItem { Label("tab.more", systemImage: "ellipsis.circle.fill") }
         }

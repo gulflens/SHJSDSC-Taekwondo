@@ -5,6 +5,8 @@ public struct AthleteDetailView: View {
     public let athlete: Athlete
     @State private var matches: [Match] = []
     @State private var score: PerformanceScore?
+    @State private var registrations: [TournamentRegistration] = []
+    @State private var tournamentLookup: [EntityID: Tournament] = [:]
 
     public init(athlete: Athlete) { self.athlete = athlete }
 
@@ -16,6 +18,7 @@ public struct AthleteDetailView: View {
                 statsGrid
                 entryActions
                 PerformanceTrendView(athlete: athlete)
+                tournamentsSection
                 beltJourney
                 recentMatches
             }
@@ -102,6 +105,35 @@ public struct AthleteDetailView: View {
         }
     }
 
+    private var tournamentsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("tab.tournaments").font(.headline)
+            if registrations.isEmpty {
+                Text("empty.no_tournaments").foregroundStyle(.secondary)
+            } else {
+                ForEach(registrations) { r in
+                    let t = tournamentLookup[r.tournamentID]
+                    HStack(spacing: 8) {
+                        Image(systemName: "rosette").foregroundStyle(.tint)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(verbatim: t?.name ?? "—").font(.subheadline)
+                            HStack(spacing: 4) {
+                                Text(verbatim: r.weightCategory.shortLabel).font(.caption2)
+                                Text(verbatim: "·").font(.caption2)
+                                Text(LocalizedStringKey(r.status.labelKey)).font(.caption2)
+                            }
+                            .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if let date = t?.startsAt {
+                            Text(date, style: .date).font(.caption2).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private var recentMatches: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("heading.recent_matches").font(.headline)
@@ -140,6 +172,15 @@ public struct AthleteDetailView: View {
         do {
             matches = try await session.repository.matches(athleteID: athlete.id)
             score = try await session.repository.score(athleteID: athlete.id)
+            registrations = try await session.repository.registrations(athleteID: athlete.id)
+            var lookup: [EntityID: Tournament] = [:]
+            for r in registrations {
+                if lookup[r.tournamentID] == nil,
+                   let t = try await session.repository.tournament(id: r.tournamentID) {
+                    lookup[r.tournamentID] = t
+                }
+            }
+            tournamentLookup = lookup
         } catch {
             print("AthleteDetailView.load:", error)
         }

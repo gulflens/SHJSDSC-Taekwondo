@@ -97,8 +97,11 @@ public enum MedalType: String, Codable, CaseIterable, Sendable, Hashable {
 public struct Match: Codable, Identifiable, Hashable, Sendable {
     public let id: EntityID
     public var tournamentName: String
+    public var tournamentID: EntityID?
     public var date: Date
     public var ourAthleteID: EntityID
+    public var opponentAthleteID: EntityID?
+    public var opponentName: String?
     public var weightClassKg: Double
     public var rounds: Int
     public var ourScore: Int
@@ -110,8 +113,11 @@ public struct Match: Codable, Identifiable, Hashable, Sendable {
     public init(
         id: EntityID = UUID(),
         tournamentName: String,
+        tournamentID: EntityID? = nil,
         date: Date,
         ourAthleteID: EntityID,
+        opponentAthleteID: EntityID? = nil,
+        opponentName: String? = nil,
         weightClassKg: Double,
         rounds: Int = 3,
         ourScore: Int,
@@ -122,8 +128,11 @@ public struct Match: Codable, Identifiable, Hashable, Sendable {
     ) {
         self.id = id
         self.tournamentName = tournamentName
+        self.tournamentID = tournamentID
         self.date = date
         self.ourAthleteID = ourAthleteID
+        self.opponentAthleteID = opponentAthleteID
+        self.opponentName = opponentName
         self.weightClassKg = weightClassKg
         self.rounds = rounds
         self.ourScore = ourScore

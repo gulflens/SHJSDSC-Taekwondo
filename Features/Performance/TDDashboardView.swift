@@ -7,6 +7,7 @@ public struct TDDashboardView: View {
     @State private var branchSummaries: [BranchSummary] = []
     @State private var watchList: [Athlete] = []
     @State private var readyToGrade: [(Athlete, GradingEligibility)] = []
+    @State private var liveMatch: Match?
 
     public init() {}
 
@@ -15,6 +16,9 @@ public struct TDDashboardView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     headline
+                    if let match = liveMatch {
+                        liveMatchBanner(match: match)
+                    }
                     branchGrades
                     gradingLink
                     watchSection
@@ -63,6 +67,28 @@ public struct TDDashboardView: View {
                 }
             }
         }
+    }
+
+    private func liveMatchBanner(match: Match) -> some View {
+        HStack(spacing: 10) {
+            Circle().fill(Color.red).frame(width: 8, height: 8)
+                .overlay(
+                    Circle().stroke(Color.red.opacity(0.4), lineWidth: 4)
+                )
+            VStack(alignment: .leading, spacing: 2) {
+                Text("match.live").font(.subheadline.bold())
+                Text(verbatim: "\(match.tournamentName)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(verbatim: "\(match.ourScore) — \(match.opponentScore)")
+                .font(.headline.monospacedDigit())
+                .environment(\.layoutDirection, .leftToRight)
+        }
+        .padding(12)
+        .background(Color.red.opacity(0.10))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private var gradingLink: some View {
@@ -189,6 +215,8 @@ public struct TDDashboardView: View {
                 }
             }
             readyToGrade = ready
+
+            liveMatch = try await session.repository.activeMatch()
         } catch {
             print("TDDashboardView.load:", error)
         }

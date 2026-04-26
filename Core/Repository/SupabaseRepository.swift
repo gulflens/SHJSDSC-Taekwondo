@@ -50,6 +50,8 @@ public struct SupabaseRepository: Repository {
     // MARK: Match
     public func matches(athleteID: EntityID) async throws -> [Match] { [] }
     public func matches(branchID: EntityID) async throws -> [Match] { [] }
+    public func matches(tournamentID: EntityID) async throws -> [Match] { [] }
+    public func upsertMatch(_ match: Match) async throws {}
 
     // MARK: Performance entry
     public func physicalTests(athleteID: EntityID) async throws -> [PhysicalTest] { [] }
@@ -75,4 +77,25 @@ public struct SupabaseRepository: Repository {
     public func upsert(_ score: GradingScore) async throws {}
     public func certificates(athleteID: EntityID) async throws -> [GradingCertificate] { [] }
     public func issueCertificate(_ certificate: GradingCertificate) async throws {}
+
+    // MARK: Tournament
+    public func tournaments() async throws -> [Tournament] { [] }
+    public func tournament(id: EntityID) async throws -> Tournament? { nil }
+    public func upsert(tournament: Tournament) async throws {}
+    public func registrations(tournamentID: EntityID) async throws -> [TournamentRegistration] { [] }
+    public func registrations(athleteID: EntityID) async throws -> [TournamentRegistration] { [] }
+    public func upsert(registration: TournamentRegistration) async throws {}
+    public func weightCutHistory(registrationID: EntityID) async throws -> [WeightCutEntry] { [] }
+    public func upsert(weightCut: WeightCutEntry) async throws {}
+    public func brackets(tournamentID: EntityID) async throws -> [Bracket] { [] }
+    public func upsert(bracket: Bracket) async throws {}
+    public func bracketMatches(bracketID: EntityID) async throws -> [BracketMatch] { [] }
+    public func upsert(bracketMatch: BracketMatch) async throws {}
+
+    // MARK: Live match
+    public func activeMatch() async throws -> Match? { nil }
+    public func startMatch(_ match: Match) async throws {}
+    public func recordEvent(_ event: ScoreEvent) async throws {}
+    public func endRound(matchID: EntityID) async throws {}
+    public func finalizeMatch(_ match: Match) async throws {}
 }

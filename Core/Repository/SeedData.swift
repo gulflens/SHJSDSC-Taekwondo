@@ -15,6 +15,11 @@ public struct SeedBundle: Sendable {
     public let gradingSessions: [GradingSession]
     public let gradingScores: [GradingScore]
     public let certificates: [GradingCertificate]
+    public let tournaments: [Tournament]
+    public let registrations: [TournamentRegistration]
+    public let weightCuts: [WeightCutEntry]
+    public let brackets: [Bracket]
+    public let bracketMatches: [BracketMatch]
     public let defaultCurrentUserID: EntityID
 }
 
@@ -428,7 +433,32 @@ public enum SeedData {
             }
         }
 
-        // === Matches ===
+        // === Tournaments ===
+        let pastTournament = Tournament(
+            name: "UAE Junior Open",
+            nameAr: "بطولة الإمارات للناشئين",
+            hostingFederation: .uae,
+            startsAt: days(-45),
+            endsAt: days(-43),
+            location: "Abu Dhabi",
+            locationAr: "أبوظبي",
+            isOfficial: true,
+            weightCategoriesOffered: [.cadetsUnder45, .cadetsUnder53, .juniorsUnder55, .juniorsUnder63, .juniorsUnder73]
+        )
+        let upcomingTournament = Tournament(
+            name: "UAE Junior Open Q2",
+            nameAr: "بطولة الإمارات للناشئين — الربع الثاني",
+            hostingFederation: .uae,
+            startsAt: days(30),
+            endsAt: days(32),
+            location: "Sharjah",
+            locationAr: "الشارقة",
+            isOfficial: true,
+            weightCategoriesOffered: [.cadetsUnder45, .cadetsUnder53, .juniorsUnder55, .juniorsUnder63, .juniorsUnder73]
+        )
+        let tournaments = [pastTournament, upcomingTournament]
+
+        // === Matches (linked to past tournament) ===
         var matches: [Match] = []
         let competitionAthletes = athletes.filter { $0.status == .competitionTeam }
         let medalCycle: [MedalType] = [.gold, .silver, .bronze, .none, .gold]
@@ -439,13 +469,45 @@ public enum SeedData {
             let oppScore = won ? 12 + (idx * 2) % 6 : 16 + (idx * 4) % 8
             let weightClass = (athlete.weightKg / 4).rounded() * 4
             matches.append(Match(
-                tournamentName: "UAE Junior Open",
+                tournamentName: pastTournament.name,
+                tournamentID: pastTournament.id,
                 date: days(-30 - idx * 10),
                 ourAthleteID: athlete.id,
                 weightClassKg: weightClass,
                 ourScore: ourScore, opponentScore: oppScore,
                 won: won, medal: medal
             ))
+        }
+
+        // === Tournament registrations: pre-register competition team for the upcoming Q2 ===
+        var registrations: [TournamentRegistration] = []
+        for (idx, athlete) in competitionAthletes.enumerated() {
+            guard let cat = WeightCategory.suggested(for: athlete) else { continue }
+            registrations.append(TournamentRegistration(
+                tournamentID: upcomingTournament.id,
+                athleteID: athlete.id,
+                weightCategory: cat,
+                seedRank: idx + 1,
+                registeredAt: days(-7),
+                status: .registered
+            ))
+        }
+
+        // === Weight cut history for the first registration ===
+        var weightCuts: [WeightCutEntry] = []
+        if let firstReg = registrations.first,
+           let athlete = athletes.first(where: { $0.id == firstReg.athleteID }) {
+            let target = firstReg.weightCategory.range.upper ?? athlete.weightKg
+            for dayBack in 0..<14 {
+                let trend = athlete.weightKg + Double(dayBack) * 0.3 // older = heavier
+                weightCuts.append(WeightCutEntry(
+                    registrationID: firstReg.id,
+                    recordedAt: days(-dayBack),
+                    currentKg: trend,
+                    targetKg: target,
+                    notes: nil
+                ))
+            }
         }
 
         // === Physical tests: 3 per athlete (monthly back), with status-based quality ===
@@ -560,6 +622,11 @@ public enum SeedData {
             gradingSessions: gradingSessions,
             gradingScores: [],
             certificates: [],
+            tournaments: tournaments,
+            registrations: registrations,
+            weightCuts: weightCuts,
+            brackets: [],
+            bracketMatches: [],
             defaultCurrentUserID: userTD.id
         )
     }

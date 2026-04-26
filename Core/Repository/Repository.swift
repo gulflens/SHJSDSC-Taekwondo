@@ -41,19 +41,17 @@ public protocol AttendanceRepository: Sendable {
 }
 
 public protocol PerformanceRepository: Sendable {
-    /// Latest performance score for the athlete.
     func score(athleteID: EntityID) async throws -> PerformanceScore?
-    /// Full history of scores for an athlete, sorted newest first.
     func scoreHistory(athleteID: EntityID) async throws -> [PerformanceScore]
-    /// Latest score per athlete in branch.
     func scores(branchID: EntityID) async throws -> [PerformanceScore]
-    /// Latest score per athlete across the club.
     func allScores() async throws -> [PerformanceScore]
 }
 
 public protocol MatchRepository: Sendable {
     func matches(athleteID: EntityID) async throws -> [Match]
     func matches(branchID: EntityID) async throws -> [Match]
+    func matches(tournamentID: EntityID) async throws -> [Match]
+    func upsertMatch(_ match: Match) async throws
 }
 
 public protocol PerformanceEntryRepository: Sendable {
@@ -76,6 +74,33 @@ public protocol GradingRepository: Sendable {
     func issueCertificate(_ certificate: GradingCertificate) async throws
 }
 
+public protocol TournamentRepository: Sendable {
+    func tournaments() async throws -> [Tournament]
+    func tournament(id: EntityID) async throws -> Tournament?
+    func upsert(tournament: Tournament) async throws
+
+    func registrations(tournamentID: EntityID) async throws -> [TournamentRegistration]
+    func registrations(athleteID: EntityID) async throws -> [TournamentRegistration]
+    func upsert(registration: TournamentRegistration) async throws
+
+    func weightCutHistory(registrationID: EntityID) async throws -> [WeightCutEntry]
+    func upsert(weightCut: WeightCutEntry) async throws
+
+    func brackets(tournamentID: EntityID) async throws -> [Bracket]
+    func upsert(bracket: Bracket) async throws
+
+    func bracketMatches(bracketID: EntityID) async throws -> [BracketMatch]
+    func upsert(bracketMatch: BracketMatch) async throws
+}
+
+public protocol LiveMatchRepository: Sendable {
+    func activeMatch() async throws -> Match?
+    func startMatch(_ match: Match) async throws
+    func recordEvent(_ event: ScoreEvent) async throws
+    func endRound(matchID: EntityID) async throws
+    func finalizeMatch(_ match: Match) async throws
+}
+
 public protocol Repository:
     UserRepository,
     BranchRepository,
@@ -87,4 +112,6 @@ public protocol Repository:
     MatchRepository,
     PerformanceEntryRepository,
     GradingRepository,
+    TournamentRepository,
+    LiveMatchRepository,
     Sendable {}

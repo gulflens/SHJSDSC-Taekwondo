@@ -1,0 +1,78 @@
+import SwiftUI
+
+public struct TournamentListView: View {
+    @Environment(AppSession.self) private var session
+    @State private var store: TournamentsStore?
+    @State private var scope: Scope = .upcoming
+
+    public enum Scope: Hashable { case upcoming, past }
+
+    public init() {}
+
+    public var body: some View {
+        Group {
+            if let store {
+                content(store: store)
+            } else {
+                ProgressView()
+            }
+        }
+        .navigationTitle(Text("tab.tournaments"))
+        .task {
+            if store == nil { store = TournamentsStore(repository: session.repository) }
+            await store?.loadTournaments()
+        }
+    }
+
+    @ViewBuilder
+    private func content(store: TournamentsStore) -> some View {
+        VStack(spacing: 0) {
+            Picker(selection: $scope) {
+                Text("tournament.upcoming").tag(Scope.upcoming)
+                Text("tournament.past").tag(Scope.past)
+            } label: { EmptyView() }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(.horizontal)
+            .padding(.top, 8)
+
+            let items = scope == .upcoming ? store.upcoming : store.past
+            List {
+                if items.isEmpty {
+                    Text("empty.no_tournaments").foregroundStyle(.secondary)
+                } else {
+                    ForEach(items) { t in
+                        NavigationLink(destination: TournamentDetailView(tournamentID: t.id)) {
+                            row(tournament: t)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func row(tournament t: Tournament) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(verbatim: t.name).font(.headline)
+                Spacer()
+                if t.isOfficial {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(.tint)
+                        .accessibilityLabel(Text("tournament.official"))
+                }
+            }
+            if let nameAr = t.nameAr {
+                Text(verbatim: nameAr).font(.caption).foregroundStyle(.secondary)
+            }
+            HStack(spacing: 6) {
+                Image(systemName: "calendar")
+                    .font(.caption2)
+                Text(t.startsAt, style: .date).font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Text(verbatim: t.location).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
