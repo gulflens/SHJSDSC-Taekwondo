@@ -11,9 +11,29 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B05A000000000000000000B1 /* SHJSDSC */ = {
+		B05A000000000000000000B2 /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SHJSDSC;
+			path = App;
+			sourceTree = "<group>";
+		};
+		B05A000000000000000000B3 /* Core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B05A000000000000000000B4 /* Features */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Features;
+			sourceTree = "<group>";
+		};
+		B05A000000000000000000B5 /* Roles */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Roles;
+			sourceTree = "<group>";
+		};
+		B05A000000000000000000B6 /* Resources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +52,11 @@
 		B05A000000000000000000D1 = {
 			isa = PBXGroup;
 			children = (
-				B05A000000000000000000B1 /* SHJSDSC */,
+				B05A000000000000000000B2 /* App */,
+				B05A000000000000000000B3 /* Core */,
+				B05A000000000000000000B4 /* Features */,
+				B05A000000000000000000B5 /* Roles */,
+				B05A000000000000000000B6 /* Resources */,
 				B05A000000000000000000D2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +85,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				B05A000000000000000000B1 /* SHJSDSC */,
+				B05A000000000000000000B2 /* App */,
+				B05A000000000000000000B3 /* Core */,
+				B05A000000000000000000B4 /* Features */,
+				B05A000000000000000000B5 /* Roles */,
+				B05A000000000000000000B6 /* Resources */,
 			);
 			name = SHJSDSC;
 			packageProductDependencies = (
