@@ -62,6 +62,20 @@ public final class LiveMatchStore {
         }
     }
 
+    /// Apply an event received from a realtime channel. Idempotent — skips
+    /// if the event id is already in the local match's events (which is what
+    /// happens when our own `recordEvent` call echoes back through the
+    /// realtime subscription).
+    public func applyRemoteEvent(_ event: ScoreEvent) {
+        guard var m = match, m.id == event.matchID, !isFinalized else { return }
+        guard !m.events.contains(where: { $0.id == event.id }) else { return }
+        m = ScoringEngine.applyEvent(to: m, event: event)
+        match = m
+        if ScoringEngine.isMatchOver(m, currentRound: currentRound) {
+            winner = ScoringEngine.declareWinner(m)
+        }
+    }
+
     public func undoLast(side: MatchSide) {
         guard var m = match, !isFinalized else { return }
         guard let lastIdx = m.events.lastIndex(where: { $0.side == side }) else { return }

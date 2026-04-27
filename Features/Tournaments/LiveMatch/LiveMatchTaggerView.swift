@@ -64,6 +64,15 @@ public struct LiveMatchTaggerView: View {
                     tournament: tournament
                 )
             }
+            // Realtime: stream remote score events into the local store.
+            // Demo repository returns an empty stream; Supabase opens a channel
+            // filtered by match_id. Stream auto-cancels when this Task ends
+            // (i.e. when the view goes away).
+            if let matchID = store?.match?.id {
+                for await event in session.repository.scoreEventStream(matchID: matchID) {
+                    store?.applyRemoteEvent(event)
+                }
+            }
         }
         .sheet(isPresented: $showSummary) {
             if let m = finalMatch {

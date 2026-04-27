@@ -546,4 +546,18 @@ public struct DemoRepository: Repository {
     public func entries(target: EntityID) async throws -> [AuditEntry] {
         await store.auditLog.filter { $0.targetID == target }.sorted { $0.at > $1.at }
     }
+
+    // MARK: Storage
+
+    public func uploadAthletePhoto(athleteID: EntityID, data: Data, contentType: String) async throws -> String {
+        let documents = try FileManager.default.url(
+            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+        )
+        let dir = documents.appendingPathComponent("athletePhotos", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let ext = contentType.contains("png") ? "png" : "jpg"
+        let dest = dir.appendingPathComponent("\(athleteID.uuidString).\(ext)")
+        try data.write(to: dest, options: .atomic)
+        return dest.absoluteString
+    }
 }

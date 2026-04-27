@@ -473,7 +473,7 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     /// Subscribe to score events for a match. Implementation note: the
     /// supabase-swift Realtime API has shifted across versions; this is the
     /// 2.x v2 channel pattern. Adjust to your installed version.
-    public func subscribeToScoreEvents(matchID: EntityID) -> AsyncStream<ScoreEvent> {
+    public func scoreEventStream(matchID: EntityID) -> AsyncStream<ScoreEvent> {
         AsyncStream { continuation in
             Task {
                 let channel = client.realtimeV2.channel("score-events-\(matchID.uuidString)")
@@ -589,6 +589,20 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
             avatarSeed: String(fullName.prefix(2)).lowercased()
         )
         try await client.from("user_profiles").upsert(row).execute()
+    }
+
+    // MARK: Storage
+
+    public func uploadAthletePhoto(athleteID: EntityID, data: Data, contentType: String) async throws -> String {
+        let ext = contentType.contains("png") ? "png" : "jpg"
+        let path = "\(athleteID.uuidString).\(ext)"
+        let bucket = client.storage.from("athletePhotos")
+        _ = try await bucket.upload(
+            path,
+            data: data,
+            options: FileOptions(contentType: contentType, upsert: true)
+        )
+        return try bucket.getPublicURL(path: path).absoluteString
     }
 }
 

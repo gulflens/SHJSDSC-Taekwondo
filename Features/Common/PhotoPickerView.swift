@@ -1,10 +1,13 @@
 import SwiftUI
 import PhotosUI
 
-/// Lightweight photo picker that hands off the raw bytes to a caller-provided
-/// uploader. In demo mode the uploader writes to the app's tmp directory and
-/// returns a `file://` URL; in Supabase mode the uploader uses Storage.
+/// Photo picker that uploads via the active repository's storage backend.
+/// Demo mode writes to documents/athletePhotos and returns a `file://` URL;
+/// Supabase mode uploads to the athletePhotos Storage bucket and returns the
+/// public URL.
 public struct PhotoPickerView: View {
+    @Environment(AppSession.self) private var session
+
     public let athleteID: EntityID
     public let onUploaded: (String) -> Void
 
@@ -57,7 +60,12 @@ public struct PhotoPickerView: View {
                 status = .failed("photo.load_failed")
                 return
             }
-            let url = try await defaultUploader(data: data, athleteID: athleteID)
+            let contentType = sniffContentType(data)
+            let url = try await session.repository.uploadAthletePhoto(
+                athleteID: athleteID,
+                data: data,
+                contentType: contentType
+            )
             onUploaded(url)
             status = .ready(url)
         } catch {
@@ -65,20 +73,16 @@ public struct PhotoPickerView: View {
         }
     }
 
-    /// Demo uploader: persists to the app's documents/athletePhotos folder
-    /// and returns the resulting `file://` URL string. Swap this out with a
-    /// Supabase Storage call by injecting a different closure.
-    private func defaultUploader(data: Data, athleteID: EntityID) async throws -> String {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
-        let photosDir = documents.appendingPathComponent("athletePhotos", isDirectory: true)
-        try? FileManager.default.createDirectory(at: photosDir, withIntermediateDirectories: true)
-        let dest = photosDir.appendingPathComponent("\(athleteID.uuidString).jpg")
-        try data.write(to: dest, options: .atomic)
-        return dest.absoluteString
+    /// PhotosPicker yields whatever the source asset is — usually JPEG, sometimes PNG
+    /// or HEIC. Sniff the magic bytes so the upload reports the right MIME type and
+    /// hits the bucket's allowed_mime_types whitelist.
+    private func sniffContentType(_ data: Data) -> String {
+        guard data.count >= 12 else { return "application/octet-stream" }
+        let header = data.prefix(12)
+        if header.starts(with: [0xFF, 0xD8, 0xFF]) { return "image/jpeg" }
+        if header.starts(with: [0x89, 0x50, 0x4E, 0x47]) { return "image/png" }
+        if header.dropFirst(4).starts(with: [0x66, 0x74, 0x79, 0x70]) { return "image/heic" }
+        if header.starts(with: [0x52, 0x49, 0x46, 0x46]) { return "image/webp" }
+        return "image/jpeg"
     }
 }

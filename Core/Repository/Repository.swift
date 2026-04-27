@@ -104,6 +104,15 @@ public protocol LiveMatchRepository: Sendable {
     func recordEvent(_ event: ScoreEvent) async throws
     func endRound(matchID: EntityID) async throws
     func finalizeMatch(_ match: Match) async throws
+    /// AsyncStream of score events for the given match. Demo repository returns
+    /// an empty stream; Supabase backend bridges the realtime channel.
+    func scoreEventStream(matchID: EntityID) -> AsyncStream<ScoreEvent>
+}
+
+public extension LiveMatchRepository {
+    func scoreEventStream(matchID: EntityID) -> AsyncStream<ScoreEvent> {
+        AsyncStream { $0.finish() }
+    }
 }
 
 public protocol OperationsRepository: Sendable {
@@ -123,6 +132,12 @@ public protocol AuditRepository: Sendable {
     func entries(target: EntityID) async throws -> [AuditEntry]
 }
 
+public protocol StorageRepository: Sendable {
+    /// Uploads athlete photo bytes and returns a publicly-resolvable URL string
+    /// the Avatar view can render via AsyncImage.
+    func uploadAthletePhoto(athleteID: EntityID, data: Data, contentType: String) async throws -> String
+}
+
 public protocol Repository:
     UserRepository,
     BranchRepository,
@@ -138,4 +153,5 @@ public protocol Repository:
     LiveMatchRepository,
     OperationsRepository,
     AuditRepository,
+    StorageRepository,
     Sendable {}
