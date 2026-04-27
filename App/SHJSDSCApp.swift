@@ -9,7 +9,15 @@ struct SHJSDSCApp: App {
 
     init() {
         let hasSetPref = UserDefaults.standard.object(forKey: "useDemoData") != nil
-        let useDemoData = hasSetPref ? UserDefaults.standard.bool(forKey: "useDemoData") : true
+        // First-launch default: prefer the configured Supabase backend if present,
+        // fall back to demo only when no real backend is wired. Reinstalling the
+        // app no longer silently lands on demo data.
+        let firstLaunchDefault = !SupabaseConfig.url.isEmpty && !SupabaseConfig.anonKey.isEmpty
+            ? false
+            : true
+        let useDemoData = hasSetPref
+            ? UserDefaults.standard.bool(forKey: "useDemoData")
+            : firstLaunchDefault
         let repo = SHJSDSCApp.makeRepository(useDemoData: useDemoData)
         _session = State(initialValue: AppSession(repository: repo))
     }
