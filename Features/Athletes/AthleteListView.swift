@@ -11,6 +11,7 @@ public struct AthleteListView: View {
     @State private var store: AthletesStore?
     @State private var query: String = ""
     @State private var statusFilter: AthleteStatus?
+    @State private var showingAdd = false
 
     public let scope: AthleteListScope
 
@@ -71,7 +72,35 @@ public struct AthleteListView: View {
                 }
                 .accessibilityLabel(Text("filter.title"))
             }
+            if let role = session.currentUser?.role,
+               PermissionMatrix.allowed(role: role, permission: .editAthlete) {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingAdd = true
+                    } label: {
+                        Label("athlete.add", systemImage: "plus")
+                    }
+                }
+            }
         }
+        .sheet(isPresented: $showingAdd) {
+            NavigationStack {
+                AddAthleteView(initialBranchID: scopeBranchID()) { _ in
+                    Task {
+                        switch scope {
+                        case .all: await store.loadAll()
+                        case .byBranch(let bid): await store.load(branchID: bid)
+                        case .myAthletes(let cid): await store.loadForCoach(cid)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func scopeBranchID() -> EntityID? {
+        if case .byBranch(let id) = scope { return id }
+        return session.currentUser?.primaryBranchID
     }
 }
 

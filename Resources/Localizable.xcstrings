@@ -6005,7 +6005,19 @@
           }
         }
       }
-    }
+    },
+    "athlete.add" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Add athlete" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "إضافة رياضي" } } } },
+    "athlete.identity" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Identity" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الهوية" } } } },
+    "athlete.member_number" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Member number" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "رقم العضوية" } } } },
+    "athlete.date_of_birth" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Date of birth" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تاريخ الميلاد" } } } },
+    "athlete.gender" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Gender" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الجنس" } } } },
+    "athlete.gender.male" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Male" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "ذكر" } } } },
+    "athlete.gender.female" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Female" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "أنثى" } } } },
+    "athlete.placement" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Placement" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "التوزيع" } } } },
+    "athlete.status" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Status" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الحالة" } } } },
+    "athlete.belt_color" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Belt color" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "لون الحزام" } } } },
+    "athlete.belt_kind" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Belt kind" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "نوع الحزام" } } } },
+    "athlete.belt_number" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Belt number" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "رقم الحزام" } } } }
   },
   "version" : "1.1"
 }
