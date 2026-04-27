@@ -239,12 +239,20 @@ public struct MoreView: View {
                         }
                     }
                     Button(role: .destructive) {
-                        // Sign out placeholder for Stage 5.
+                        Task { await session.signOut() }
                     } label: {
                         Label("settings.sign_out", systemImage: "rectangle.portrait.and.arrow.right")
                     }
-                    .disabled(true)
                 }
+                #if DEBUG
+                Section(header: Text("settings.developer")) {
+                    Toggle("settings.use_demo_data", isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "useDemoData") },
+                        set: { UserDefaults.standard.set($0, forKey: "useDemoData") }
+                    ))
+                    Text("settings.use_demo_data_help").font(.caption2).foregroundStyle(.secondary)
+                }
+                #endif
             }
             .navigationTitle(Text("settings.title"))
         }

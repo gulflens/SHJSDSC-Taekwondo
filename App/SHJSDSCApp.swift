@@ -2,10 +2,41 @@ import SwiftUI
 
 @main
 struct SHJSDSCApp: App {
-    @State private var session = AppSession(repository: DemoRepository())
+    @State private var session: AppSession
     @State private var notificationScheduler: any NotificationScheduler = LocalNotificationScheduler()
     @AppStorage("appLanguage") private var appLanguage: String = "system"
     @AppStorage("hasRequestedNotifAuth") private var hasRequestedNotifAuth: Bool = false
+
+    init() {
+        let useDemoData = UserDefaults.standard.bool(forKey: "useDemoData")
+        let repo = SHJSDSCApp.makeRepository(useDemoData: useDemoData)
+        _session = State(initialValue: AppSession(repository: repo))
+    }
+
+    /// Repository selection:
+    ///   • useDemoData true → DemoRepository (Stages 1-4 behaviour)
+    ///   • useDemoData false + Supabase package added + xcconfig wired →
+    ///     real SupabaseRepository
+    ///   • Anything missing → silent fallback to DemoRepository with a log
+    private static func makeRepository(useDemoData: Bool) -> any Repository {
+        if useDemoData { return DemoRepository() }
+
+        let urlString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String
+        let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String
+        guard let urlString, let url = URL(string: urlString),
+              let key, !key.isEmpty,
+              !urlString.contains("your-project-ref") else {
+            print("Supabase config missing or unedited — using demo data.")
+            return DemoRepository()
+        }
+
+        #if canImport(Supabase)
+        return SupabaseRepository(url: url, anonKey: key)
+        #else
+        print("supabase-swift package not added — using demo data.")
+        return DemoRepository()
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup {

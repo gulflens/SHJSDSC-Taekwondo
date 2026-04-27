@@ -1,0 +1,15 @@
+## macOS
+.DS_Store
+
+## Xcode user data
+xcuserdata/
+*.xcuserstate
+
+## Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+Package.resolved
+
+## Supabase configuration with secrets — committed only as a template
+Supabase.xcconfig

@@ -1,0 +1,12 @@
+// Copy this file to Supabase.xcconfig (which is gitignored) and fill in the
+// real values from your Supabase project Settings → API page.
+//
+// In Xcode:  Project → Info → Configurations → set both Debug and Release
+// to use Supabase.xcconfig as the project-level configuration file.
+//
+// The values are surfaced into Info.plist via these matching keys:
+//   SUPABASE_URL
+//   SUPABASE_ANON_KEY
+
+SUPABASE_URL = https:/$()/your-project-ref.supabase.co
+SUPABASE_ANON_KEY = your-anon-key-here

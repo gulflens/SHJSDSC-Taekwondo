@@ -42,6 +42,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
     public var weightKg: Double
     public var status: AthleteStatus
     public var avatarSeed: String
+    public var avatarURL: String?
 
     public init(
         id: EntityID = UUID(),
@@ -58,7 +59,8 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         beltHistory: [Belt] = [],
         weightKg: Double,
         status: AthleteStatus,
-        avatarSeed: String
+        avatarSeed: String,
+        avatarURL: String? = nil
     ) {
         self.id = id
         self.fullName = fullName
@@ -75,6 +77,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         self.weightKg = weightKg
         self.status = status
         self.avatarSeed = avatarSeed
+        self.avatarURL = avatarURL
     }
 
     public var age: Int {

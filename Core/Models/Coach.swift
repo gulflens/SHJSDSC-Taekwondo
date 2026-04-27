@@ -17,6 +17,7 @@ public struct Coach: Codable, Identifiable, Hashable, Sendable {
     public var contractType: ContractType
     public var hiredAt: Date
     public var avatarSeed: String
+    public var avatarURL: String?
 
     public init(
         id: EntityID = UUID(),
@@ -30,7 +31,8 @@ public struct Coach: Codable, Identifiable, Hashable, Sendable {
         safeguardingExpiry: Date,
         contractType: ContractType,
         hiredAt: Date,
-        avatarSeed: String
+        avatarSeed: String,
+        avatarURL: String? = nil
     ) {
         self.id = id
         self.fullName = fullName
@@ -44,6 +46,7 @@ public struct Coach: Codable, Identifiable, Hashable, Sendable {
         self.contractType = contractType
         self.hiredAt = hiredAt
         self.avatarSeed = avatarSeed
+        self.avatarURL = avatarURL
     }
 
     public var initials: String {

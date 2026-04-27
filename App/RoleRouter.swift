@@ -7,17 +7,23 @@ public struct RoleRouter: View {
 
     public var body: some View {
         Group {
-            switch session.currentUser?.role {
-            case .admin: AdminTabView()
-            case .technicalDirector: TechnicalDirectorTabView()
-            case .branchManager: BranchManagerTabView()
-            case .coach: CoachTabView()
-            case .athlete: AthleteTabView()
-            case .parent: ParentTabView()
-            case .analyst: AnalystTabView()
-            case nil:
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if !session.isAuthenticated {
+                SignInView()
+            } else if session.needsRoleClaim {
+                RoleClaimView()
+            } else {
+                switch session.currentUser?.role {
+                case .admin: AdminTabView()
+                case .technicalDirector: TechnicalDirectorTabView()
+                case .branchManager: BranchManagerTabView()
+                case .coach: CoachTabView()
+                case .athlete: AthleteTabView()
+                case .parent: ParentTabView()
+                case .analyst: AnalystTabView()
+                case nil:
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
         }
     }

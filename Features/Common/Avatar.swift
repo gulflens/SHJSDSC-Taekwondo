@@ -19,21 +19,46 @@ public struct Avatar: View {
     public let seed: String
     public let label: String
     public let size: CGFloat
+    public let urlString: String?
 
-    public init(seed: String, label: String, size: CGFloat = 40) {
+    public init(seed: String, label: String, size: CGFloat = 40, urlString: String? = nil) {
         self.seed = seed
         self.label = label
         self.size = size
+        self.urlString = urlString
     }
 
     public var body: some View {
         ZStack {
             Circle().fill(palette.color.opacity(0.85))
-            Text(verbatim: label)
-                .font(.system(size: size * 0.4, weight: .semibold))
-                .foregroundStyle(.white)
+            if let url = remoteURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    default:
+                        initialsLabel
+                    }
+                }
+            } else {
+                initialsLabel
+            }
         }
         .frame(width: size, height: size)
+        .clipShape(Circle())
+    }
+
+    private var initialsLabel: some View {
+        Text(verbatim: label)
+            .font(.system(size: size * 0.4, weight: .semibold))
+            .foregroundStyle(.white)
+    }
+
+    private var remoteURL: URL? {
+        guard let urlString, !urlString.isEmpty else { return nil }
+        return URL(string: urlString)
     }
 
     private var palette: AvatarPalette {
