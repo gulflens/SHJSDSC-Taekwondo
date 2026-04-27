@@ -9,6 +9,13 @@ import Foundation
 import Supabase
 import AuthenticationServices
 
+private struct AnyCodingKey: CodingKey {
+    var stringValue: String
+    var intValue: Int?
+    init(stringValue: String) { self.stringValue = stringValue; self.intValue = nil }
+    init(intValue: Int) { self.stringValue = String(intValue); self.intValue = intValue }
+}
+
 public final class SupabaseRepository: Repository, AuthenticatingRepository, @unchecked Sendable {
 
     private let client: SupabaseClient
@@ -26,25 +33,64 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         )
     }
 
+    /// Foundation's built-in snake_case strategies don't know about our
+    /// `ID` / `IDs` acronym convention — `branch_id` becomes `branchId`
+    /// (lowercase 'd') instead of `branchID`, and decoding silently fails on
+    /// every type that has an ID-suffixed property. These custom strategies
+    /// special-case `_id` ↔ `ID` and `_ids` ↔ `IDs`, then fall back to the
+    /// standard camelCase ↔ snake_case rule.
     private static func makeEncoder() -> JSONEncoder {
         let e = JSONEncoder()
-        e.keyEncodingStrategy = .convertToSnakeCase
+        e.keyEncodingStrategy = .custom { codingPath in
+            AnyCodingKey(stringValue: camelToSnake(codingPath.last!.stringValue))
+        }
         e.dateEncodingStrategy = .iso8601
         return e
     }
 
     private static func makeDecoder() -> JSONDecoder {
         let d = JSONDecoder()
-        d.keyDecodingStrategy = .convertFromSnakeCase
+        d.keyDecodingStrategy = .custom { codingPath in
+            AnyCodingKey(stringValue: snakeToCamel(codingPath.last!.stringValue))
+        }
         d.dateDecodingStrategy = .iso8601
         return d
+    }
+
+    private static func snakeToCamel(_ key: String) -> String {
+        guard key.contains("_") else { return key }
+        let parts = key.split(separator: "_")
+        let camel = parts.enumerated().map { i, part in
+            i == 0 ? String(part) : part.capitalized
+        }.joined()
+        if camel.hasSuffix("Ids") { return String(camel.dropLast(3)) + "IDs" }
+        if camel.hasSuffix("Id")  { return String(camel.dropLast(2)) + "ID" }
+        return camel
+    }
+
+    private static func camelToSnake(_ key: String) -> String {
+        var k = key
+        if k.hasSuffix("IDs") { k = String(k.dropLast(3)) + "Ids" }
+        else if k.hasSuffix("ID") { k = String(k.dropLast(2)) + "Id" }
+        var out = ""
+        for (i, c) in k.enumerated() {
+            if c.isUppercase && i > 0 { out += "_" }
+            out.append(c.lowercased())
+        }
+        return out
     }
 
     // MARK: User
 
     public func currentUser() async throws -> User? {
+        let session: Session
         do {
-            let session = try await client.auth.session
+            session = try await client.auth.session
+        } catch {
+            // No session = not authenticated yet, normal at first launch.
+            return nil
+        }
+        do {
             let response: [User] = try await client
                 .from("user_profiles")
                 .select()
@@ -54,6 +100,9 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
                 .value
             return response.first
         } catch {
+            // Session exists but profile fetch failed (decode mismatch, RLS,
+            // network). Surface it so the auth flow doesn't silently stall.
+            print("SupabaseRepository.currentUser profile fetch failed:", error)
             return nil
         }
     }
