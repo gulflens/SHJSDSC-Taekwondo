@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B05A000000000000000003A3 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B05A000000000000000003A2 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B05A000000000000000000A1 /* SHJSDSC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SHJSDSC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -43,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B05A000000000000000003A3 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +98,7 @@
 			);
 			name = SHJSDSC;
 			packageProductDependencies = (
+				B05A000000000000000003A2 /* Supabase */,
 			);
 			productName = SHJSDSC;
 			productReference = B05A000000000000000000A1 /* SHJSDSC.app */;
@@ -127,6 +133,9 @@
 			productRefGroup = B05A000000000000000000D2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				B05A000000000000000003A1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			targets = (
 				B05A000000000000000000E1 /* SHJSDSC */,
 			);
@@ -376,6 +385,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B05A000000000000000003A1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B05A000000000000000003A2 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B05A000000000000000003A1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B05A000000000000000000E2 /* Project object */;
 }
