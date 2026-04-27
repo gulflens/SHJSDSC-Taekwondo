@@ -28,6 +28,15 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
                 db: SupabaseClientOptions.DatabaseOptions(
                     encoder: SupabaseRepository.makeEncoder(),
                     decoder: SupabaseRepository.makeDecoder()
+                ),
+                auth: SupabaseClientOptions.AuthOptions(
+                    // Opt in to the supabase-swift v3 behavior so the
+                    // locally stored session is always emitted as the
+                    // initial session regardless of validity. We then
+                    // guard with isExpired in currentUser() below to
+                    // treat expired sessions as "no session".
+                    // ref: https://github.com/supabase/supabase-swift/pull/822
+                    emitLocalSessionAsInitialSession: true
                 )
             )
         )
@@ -88,6 +97,13 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
             session = try await client.auth.session
         } catch {
             // No session = not authenticated yet, normal at first launch.
+            return nil
+        }
+        // With emitLocalSessionAsInitialSession=true the local session is
+        // returned even when expired. Treat expired as not-signed-in so
+        // RoleRouter falls through to SignInView instead of trying to
+        // fetch a profile with a stale JWT.
+        if session.isExpired {
             return nil
         }
         do {
