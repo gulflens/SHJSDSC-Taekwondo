@@ -167,4 +167,30 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         let parts = fullName.split(separator: " ").prefix(2)
         return parts.map { String($0.prefix(1)) }.joined().uppercased()
     }
+
+    /// Returns localization keys for fields that are recommended but missing.
+    /// Empty result = profile is "complete enough". Used by the AthleteDetail
+    /// warning banner to nudge the user without blocking creation.
+    public var missingProfileFields: [String] {
+        var missing: [String] = []
+        if (emiratesID ?? "").isEmpty && (passportNumber ?? "").isEmpty {
+            missing.append("athlete.missing.id_document")
+        }
+        if bloodType == nil { missing.append("athlete.missing.blood_type") }
+        if (federationLicenceNumber ?? "").isEmpty { missing.append("athlete.missing.federation_licence") }
+        if (avatarURL ?? "").isEmpty { missing.append("athlete.missing.photo") }
+        if emergencyContacts.isEmpty { missing.append("athlete.missing.emergency_contact") }
+        if (school ?? "").isEmpty { missing.append("athlete.missing.school") }
+        if heightCm == nil { missing.append("athlete.missing.height") }
+        if !imageRightsConsent { missing.append("athlete.missing.image_rights") }
+        if !travelPermission { missing.append("athlete.missing.travel_permission") }
+        return missing
+    }
+
+    /// 0...1, equally weighted across the recommended fields.
+    public var profileCompleteness: Double {
+        let totalChecked = 9.0
+        let missingCount = Double(missingProfileFields.count)
+        return max(0, min(1, (totalChecked - missingCount) / totalChecked))
+    }
 }

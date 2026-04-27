@@ -5,6 +5,7 @@ public struct AddAthleteView: View {
     @Environment(\.dismiss) private var dismiss
 
     public let initialBranchID: EntityID?
+    public let editing: Athlete?
     public let onCreated: (Athlete) -> Void
 
     // === Identity ===
@@ -56,8 +57,9 @@ public struct AddAthleteView: View {
     @State private var expandedMedical = false
     @State private var expandedTechnical = false
 
-    public init(initialBranchID: EntityID? = nil, onCreated: @escaping (Athlete) -> Void) {
+    public init(initialBranchID: EntityID? = nil, editing: Athlete? = nil, onCreated: @escaping (Athlete) -> Void) {
         self.initialBranchID = initialBranchID
+        self.editing = editing
         self.onCreated = onCreated
     }
 
@@ -298,14 +300,54 @@ public struct AddAthleteView: View {
     private func load() async {
         do {
             branches = try await session.repository.branches()
-            if branchID == nil {
-                branchID = initialBranchID ?? branches.first?.id
+            if let editing {
+                hydrate(from: editing)
+            } else {
+                if branchID == nil {
+                    branchID = initialBranchID ?? branches.first?.id
+                }
+                memberNumber = (try? await session.repository.nextMemberNumber()) ?? 1001
             }
             await loadCoaches()
-            memberNumber = (try? await session.repository.nextMemberNumber()) ?? 1001
         } catch {
             self.error = error.localizedDescription
         }
+    }
+
+    /// Pre-fill every @State from an existing athlete when the form is
+    /// opened in edit mode (e.g. via the Complete-profile CTA).
+    private func hydrate(from a: Athlete) {
+        memberNumber = a.memberNumber
+        fullName = a.fullName
+        fullNameAr = a.fullNameAr
+        dateOfBirth = a.dateOfBirth
+        gender = a.gender
+        nationality = a.nationality
+        emiratesID = a.emiratesID ?? ""
+        passportNumber = a.passportNumber ?? ""
+        bloodType = a.bloodType ?? .unknown
+        federationLicenceNumber = a.federationLicenceNumber ?? ""
+        branchID = a.branchID
+        joinedAt = a.joinedAt
+        emergencyContacts = a.emergencyContacts
+        school = a.school ?? ""
+        imageRightsConsent = a.imageRightsConsent
+        travelPermission = a.travelPermission
+        heightCm = a.heightCm ?? 140
+        weightKg = a.weightKg
+        allergiesText = a.allergies.joined(separator: ", ")
+        medicalConditionsText = a.medicalConditions.joined(separator: ", ")
+        medicationsText = a.medications.joined(separator: ", ")
+        fitToTrain = a.fitToTrain
+        beltColor = a.currentBelt.color
+        beltKind = a.currentBelt.kind
+        beltNumber = a.currentBelt.number
+        status = a.status
+        weightClass = a.weightClass
+        dominantStance = a.dominantStance ?? .orthodox
+        poomsaeSyllabus = a.poomsaeSyllabus ?? ""
+        kyorugiTier = a.kyorugiTier ?? .recreational
+        primaryCoachID = a.primaryCoachID
     }
 
     private func loadCoaches() async {
@@ -319,8 +361,9 @@ public struct AddAthleteView: View {
         guard let branchID else { return }
         saving = true
         defer { saving = false }
-        let belt = Belt(color: beltColor, kind: beltKind, number: beltNumber, awardedAt: Date())
+        let belt = Belt(color: beltColor, kind: beltKind, number: beltNumber, awardedAt: editing?.currentBelt.awardedAt ?? Date())
         let athlete = Athlete(
+            id: editing?.id ?? UUID(),
             memberNumber: memberNumber,
             fullName: fullName,
             fullNameAr: fullNameAr.isEmpty ? fullName : fullNameAr,
@@ -332,15 +375,15 @@ public struct AddAthleteView: View {
             primaryCoachID: primaryCoachID,
             joinedAt: joinedAt,
             currentBelt: belt,
-            beltHistory: [belt],
+            beltHistory: editing?.beltHistory ?? [belt],
             weightKg: weightKg,
             status: status,
-            avatarSeed: String(fullName.prefix(2)).lowercased(),
-            avatarURL: nil,
+            avatarSeed: editing?.avatarSeed ?? String(fullName.prefix(2)).lowercased(),
+            avatarURL: editing?.avatarURL,
             passportNumber: passportNumber.isEmpty ? nil : passportNumber,
             bloodType: bloodType == .unknown ? nil : bloodType,
             federationLicenceNumber: federationLicenceNumber.isEmpty ? nil : federationLicenceNumber,
-            parentUserIDs: [],
+            parentUserIDs: editing?.parentUserIDs ?? [],
             emergencyContacts: emergencyContacts.filter { !$0.name.isEmpty },
             school: school.isEmpty ? nil : school,
             imageRightsConsent: imageRightsConsent,
@@ -348,12 +391,12 @@ public struct AddAthleteView: View {
             travelPermission: travelPermission,
             travelPermissionDate: travelPermission ? Date() : nil,
             heightCm: heightCm > 0 ? heightCm : nil,
-            weightHistory: [WeightEntry(weightKg: weightKg)],
+            weightHistory: appendedWeightHistory(),
             allergies: parseList(allergiesText),
             medicalConditions: parseList(medicalConditionsText),
             medications: parseList(medicationsText),
             fitToTrain: fitToTrain,
-            injuries: [],
+            injuries: editing?.injuries ?? [],
             weightClass: weightClass,
             dominantStance: dominantStance,
             poomsaeSyllabus: poomsaeSyllabus.isEmpty ? nil : poomsaeSyllabus,
@@ -373,5 +416,17 @@ public struct AddAthleteView: View {
         raw.split(separator: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+    }
+
+    /// On edit, append a new WeightEntry only if the value actually changed
+    /// from the most recent reading — avoids polluting weight history with
+    /// duplicate same-day entries every time the form is reopened.
+    private func appendedWeightHistory() -> [WeightEntry] {
+        guard let editing else { return [WeightEntry(weightKg: weightKg)] }
+        let last = editing.weightHistory.max(by: { $0.recordedAt < $1.recordedAt })
+        if let last, abs(last.weightKg - weightKg) < 0.01 {
+            return editing.weightHistory
+        }
+        return editing.weightHistory + [WeightEntry(weightKg: weightKg)]
     }
 }

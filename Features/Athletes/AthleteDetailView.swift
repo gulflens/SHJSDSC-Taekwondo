@@ -2,18 +2,24 @@ import SwiftUI
 
 public struct AthleteDetailView: View {
     @Environment(AppSession.self) private var session
-    public let athlete: Athlete
+    @State private var athlete: Athlete
     @State private var matches: [Match] = []
     @State private var score: PerformanceScore?
     @State private var registrations: [TournamentRegistration] = []
     @State private var tournamentLookup: [EntityID: Tournament] = [:]
+    @State private var showingEdit = false
 
-    public init(athlete: Athlete) { self.athlete = athlete }
+    public init(athlete: Athlete) {
+        _athlete = State(initialValue: athlete)
+    }
 
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 hero
+                if !athlete.missingProfileFields.isEmpty {
+                    profileWarningBanner
+                }
                 BeltStrip(belt: athlete.currentBelt, history: athlete.beltHistory)
                 statsGrid
                 entryActions
@@ -23,6 +29,13 @@ public struct AthleteDetailView: View {
                 recentMatches
             }
             .padding()
+        }
+        .sheet(isPresented: $showingEdit) {
+            NavigationStack {
+                AddAthleteView(initialBranchID: athlete.branchID, editing: athlete) { updated in
+                    athlete = updated
+                }
+            }
         }
         .navigationTitle(Text(verbatim: athlete.fullName))
         #if os(iOS)
@@ -42,6 +55,53 @@ public struct AthleteDetailView: View {
             }
         }
         .task { await load() }
+    }
+
+    private var profileWarningBanner: some View {
+        let missing = athlete.missingProfileFields
+        let pct = Int((athlete.profileCompleteness * 100).rounded())
+        let canEdit = (session.currentUser?.role).map {
+            PermissionMatrix.allowed(role: $0, permission: .editAthlete)
+        } ?? false
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("athlete.profile_incomplete").font(.subheadline.bold())
+                    Text(verbatim: String(format: NSLocalizedString("athlete.profile_completeness", comment: ""), pct, missing.count))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            ProgressView(value: athlete.profileCompleteness)
+                .tint(.orange)
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(missing, id: \.self) { key in
+                    HStack(spacing: 6) {
+                        Image(systemName: "circle").font(.caption2).foregroundStyle(.secondary)
+                        Text(LocalizedStringKey(key)).font(.caption)
+                    }
+                }
+            }
+            if canEdit {
+                Button {
+                    showingEdit = true
+                } label: {
+                    Label("athlete.complete_profile", systemImage: "pencil")
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+            }
+        }
+        .padding(12)
+        .background(Color.orange.opacity(0.10))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private var hero: some View {
