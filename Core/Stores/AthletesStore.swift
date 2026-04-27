@@ -63,4 +63,12 @@ public final class AthletesStore {
     public func grade(_ athlete: Athlete) -> LetterGrade {
         LetterGrade.from(score: composite(athlete))
     }
+
+    public func insertOrUpdate(_ athlete: Athlete) {
+        if let i = athletes.firstIndex(where: { $0.id == athlete.id }) {
+            athletes[i] = athlete
+        } else {
+            athletes.append(athlete)
+        }
+    }
 }

@@ -261,6 +261,10 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         return rows.first
     }
 
+    public func upsert(_ coach: Coach) async throws {
+        try await client.from("coaches").upsert(coach).execute()
+    }
+
     // MARK: Schedule
 
     public func sessions(branchID: EntityID, on day: Date) async throws -> [ClassSession] {
@@ -671,6 +675,45 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         )
         return try bucket.getPublicURL(path: path).absoluteString
     }
+
+    // MARK: BranchProfile (Stage 5 will fill these in against new tables)
+    //
+    // Returning nil/empty arrays keeps the protocol satisfied while the
+    // backend tables are still under design — the demo backend exercises
+    // every code path that depends on these reads.
+
+    public func facility(branchID: EntityID) async throws -> BranchFacility? { nil }
+    public func upsert(_ facility: BranchFacility) async throws {}
+
+    public func hours(branchID: EntityID) async throws -> BranchHours? { nil }
+    public func upsert(_ hours: BranchHours) async throws {}
+
+    public func programs(branchID: EntityID) async throws -> [BranchProgram] { [] }
+    public func upsert(_ program: BranchProgram) async throws {}
+
+    public func inventory(branchID: EntityID) async throws -> BranchInventory? { nil }
+    public func upsert(_ inventory: BranchInventory) async throws {}
+
+    public func compliance(branchID: EntityID) async throws -> BranchCompliance? { nil }
+    public func upsert(_ compliance: BranchCompliance) async throws {}
+
+    public func pricing(branchID: EntityID) async throws -> BranchPricing? { nil }
+    public func upsert(_ pricing: BranchPricing) async throws {}
+
+    public func financials(branchID: EntityID, monthsBack: Int) async throws -> [BranchFinancials] { [] }
+    public func upsert(_ financials: BranchFinancials) async throws {}
+
+    public func media(branchID: EntityID) async throws -> BranchMedia? { nil }
+    public func upsert(_ media: BranchMedia) async throws {}
+
+    public func socialLinks(branchID: EntityID) async throws -> BranchSocialLinks? { nil }
+    public func upsert(_ links: BranchSocialLinks) async throws {}
+
+    public func safeguarding(branchID: EntityID) async throws -> BranchSafeguarding? { nil }
+    public func upsert(_ safe: BranchSafeguarding) async throws {}
+
+    public func milestones(branchID: EntityID) async throws -> [BranchMilestone] { [] }
+    public func upsert(_ milestone: BranchMilestone) async throws {}
 }
 
 #endif

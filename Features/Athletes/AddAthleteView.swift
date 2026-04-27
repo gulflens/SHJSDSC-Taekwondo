@@ -3,6 +3,7 @@ import SwiftUI
 public struct AddAthleteView: View {
     @Environment(AppSession.self) private var session
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
 
     public let initialBranchID: EntityID?
     public let editing: Athlete?
@@ -10,8 +11,7 @@ public struct AddAthleteView: View {
 
     // === Identity ===
     /// nil while the form is open and the user hasn't saved yet — only
-    /// reserved (consuming a sequence value) at the moment of save. When
-    /// editing an existing athlete this gets pre-filled from `editing`.
+    /// reserved (consuming a sequence value) at the moment of save.
     @State private var memberNumber: Int?
     @State private var fullName: String = ""
     @State private var fullNameAr: String = ""
@@ -55,10 +55,9 @@ public struct AddAthleteView: View {
     @State private var coachesInBranch: [Coach] = []
     @State private var saving = false
     @State private var error: String?
-    @State private var expandedIdentity = true
-    @State private var expandedFamily = false
-    @State private var expandedMedical = false
-    @State private var expandedTechnical = false
+    @State private var showErrorAlert = false
+    @State private var showNationalityPicker = false
+    @State private var nationalitySearch = ""
 
     public init(initialBranchID: EntityID? = nil, editing: Athlete? = nil, onCreated: @escaping (Athlete) -> Void) {
         self.initialBranchID = initialBranchID
@@ -67,49 +66,24 @@ public struct AddAthleteView: View {
     }
 
     public var body: some View {
-        Form {
-            DisclosureGroup(isExpanded: $expandedIdentity) {
-                identitySection
-            } label: {
-                Label("athlete.section.identity", systemImage: "person.text.rectangle")
-                    .font(.headline)
-            }
+        ScrollView {
+            VStack(spacing: 10) {
+                identityCard
+                familyCard
+                medicalCard
+                technicalCard
 
-            DisclosureGroup(isExpanded: $expandedFamily) {
-                familySection
-            } label: {
-                Label("athlete.section.family", systemImage: "person.2")
-                    .font(.headline)
+                Color.clear.frame(height: 16)
             }
-
-            DisclosureGroup(isExpanded: $expandedMedical) {
-                medicalSection
-            } label: {
-                Label("athlete.section.medical", systemImage: "heart.text.square")
-                    .font(.headline)
-            }
-
-            DisclosureGroup(isExpanded: $expandedTechnical) {
-                technicalSection
-            } label: {
-                Label("athlete.section.technical", systemImage: "figure.taekwondo")
-                    .font(.headline)
-            }
-
-            if let error {
-                Section {
-                    Text(verbatim: error).font(.caption).foregroundStyle(.red)
-                }
-            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
         }
-        .navigationTitle(Text("athlete.add"))
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(Text(editing == nil ? "athlete.add" : "athlete.edit"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            // No explicit cancel button — pushed views get the back chevron
-            // for free; tapping it pops without burning a member number
-            // because we defer the nextval call to save() below.
             ToolbarItem(placement: .confirmationAction) {
                 Button {
                     Task { await save() }
@@ -119,17 +93,120 @@ public struct AddAthleteView: View {
                 .disabled(saving || !isValid)
             }
         }
+        .alert("athlete.save_error", isPresented: $showErrorAlert) {
+            Button("action.ok", role: .cancel) {}
+        } message: {
+            Text(verbatim: error ?? "")
+        }
         .task { await load() }
     }
 
-    // MARK: Identity
+    // MARK: - Identity
 
-    @ViewBuilder
-    private var identitySection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
+    private var identityCard: some View {
+        SectionCard(icon: "person.text.rectangle.fill", title: "athlete.section.identity") {
+            memberNumberRow
+
+            FieldRow {
+                InlineField(label: "auth.full_name") {
+                    compactTextField($fullName, placeholder: "auth.full_name")
+                }
+                InlineField(label: "auth.full_name_ar") {
+                    arabicTextField($fullNameAr, placeholder: "auth.full_name_ar")
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.date_of_birth") {
+                    DropdownDatePicker(date: $dateOfBirth, minYear: 1950, maxYear: currentYear)
+                }
+                InlineField(label: "athlete.gender") {
+                    Picker("", selection: $gender) {
+                        Text("athlete.gender.male").tag(Gender.male)
+                        Text("athlete.gender.female").tag(Gender.female)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+                InlineField(label: "athlete.nationality") {
+                    Button {
+                        nationalitySearch = ""
+                        showNationalityPicker = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(verbatim: flagEmoji(for: nationality))
+                                .font(.callout)
+                            Text(verbatim: countryName(for: nationality))
+                                .font(.callout)
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption2).foregroundStyle(.secondary)
+                        }
+                    }
+                    .popover(isPresented: $showNationalityPicker) {
+                        nationalityPickerContent
+                    }
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.emirates_id") {
+                    emiratesIDField
+                }
+                InlineField(label: "athlete.passport_number") {
+                    compactTextField($passportNumber, placeholder: "athlete.passport_number")
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.federation_licence") {
+                    compactTextField($federationLicenceNumber, placeholder: "athlete.federation_licence")
+                }
+                InlineField(label: "athlete.blood_type") {
+                    Menu {
+                        ForEach(BloodType.allCases, id: \.self) { b in
+                            Button { bloodType = b } label: { Text(verbatim: b.display) }
+                        }
+                    } label: {
+                        compactMenuLabel(text: bloodType.display)
+                    }
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.joined_at") {
+                    DropdownDatePicker(date: $joinedAt, minYear: 1990, maxYear: currentYear)
+                }
+                InlineField(label: "tab.branches") {
+                    Menu {
+                        ForEach(branches) { b in
+                            Button {
+                                branchID = b.id
+                                Task { await loadCoaches() }
+                            } label: { Text(verbatim: b.name) }
+                        }
+                    } label: {
+                        compactMenuLabel(
+                            text: branches.first(where: { $0.id == branchID })?.name
+                                ?? String(localized: "filter.all")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private var memberNumberRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "number.circle.fill")
+                .font(.subheadline)
+                .foregroundStyle(.tint.opacity(0.6))
+            VStack(alignment: .leading, spacing: 0) {
                 Text("athlete.member_number")
-                Spacer()
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
                 if let memberNumber {
                     Text(verbatim: "#\(memberNumber)")
                         .font(.callout.bold().monospacedDigit())
@@ -141,169 +218,443 @@ public struct AddAthleteView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            Text("athlete.member_number_help")
-                .font(.caption2).foregroundStyle(.secondary)
+            Spacer()
         }
-        TextField("auth.full_name", text: $fullName)
-        TextField("auth.full_name_ar", text: $fullNameAr)
-        DatePicker("athlete.date_of_birth", selection: $dateOfBirth, in: ...Date(), displayedComponents: .date)
-        Picker(selection: $gender) {
-            Text("athlete.gender.male").tag(Gender.male)
-            Text("athlete.gender.female").tag(Gender.female)
-        } label: { Text("athlete.gender") }
-        TextField("athlete.nationality", text: $nationality)
-        TextField("athlete.emirates_id", text: $emiratesID)
-        TextField("athlete.passport_number", text: $passportNumber)
-        Picker(selection: $bloodType) {
-            ForEach(BloodType.allCases, id: \.self) { b in
-                Text(verbatim: b.display).tag(b)
-            }
-        } label: { Text("athlete.blood_type") }
-        TextField("athlete.federation_licence", text: $federationLicenceNumber)
-        Picker(selection: $branchID) {
-            Text("filter.all").tag(EntityID?.none)
-            ForEach(branches) { b in
-                Text(verbatim: b.name).tag(Optional(b.id))
-            }
-        } label: { Text("tab.branches") }
-        .onChange(of: branchID) { _, _ in
-            Task { await loadCoaches() }
-        }
-        DatePicker("athlete.joined_at", selection: $joinedAt, displayedComponents: .date)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.tint.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
     }
 
-    // MARK: Family
+    // MARK: - Family & consent
 
-    @ViewBuilder
-    private var familySection: some View {
-        TextField("athlete.school", text: $school)
-        Toggle("athlete.image_rights", isOn: $imageRightsConsent)
-        Toggle("athlete.travel_permission", isOn: $travelPermission)
+    private var familyCard: some View {
+        SectionCard(icon: "person.2.fill", title: "athlete.section.family") {
+            InlineField(label: "athlete.school") {
+                compactTextField($school, placeholder: "athlete.school")
+            }
 
-        ForEach(emergencyContacts.indices, id: \.self) { idx in
+            FieldRow {
+                compactToggle(label: "athlete.image_rights", binding: $imageRightsConsent, icon: "camera.fill")
+                compactToggle(label: "athlete.travel_permission", binding: $travelPermission, icon: "airplane")
+            }
+
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text("athlete.emergency_contact").font(.subheadline.bold())
+                    Text("athlete.emergency_contact")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.secondary)
                     Spacer()
-                    Button(role: .destructive) {
-                        emergencyContacts.remove(at: idx)
+                    Button {
+                        emergencyContacts.append(EmergencyContact(name: "", relationship: "", phone: ""))
                     } label: {
-                        Image(systemName: "minus.circle.fill")
+                        Label("athlete.add_emergency", systemImage: "plus.circle.fill")
+                            .font(.caption2)
+                            .labelStyle(.titleAndIcon)
                     }
                 }
-                TextField("athlete.emergency_name", text: $emergencyContacts[idx].name)
-                TextField("athlete.emergency_relationship", text: $emergencyContacts[idx].relationship)
-                TextField("athlete.emergency_phone", text: $emergencyContacts[idx].phone)
-                    #if os(iOS)
-                    .keyboardType(.phonePad)
-                    #endif
-            }
-        }
-        Button {
-            emergencyContacts.append(EmergencyContact(name: "", relationship: "", phone: ""))
-        } label: {
-            Label("athlete.add_emergency", systemImage: "plus.circle")
-        }
-    }
-
-    // MARK: Medical
-
-    @ViewBuilder
-    private var medicalSection: some View {
-        Toggle("athlete.fit_to_train", isOn: $fitToTrain)
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text("athlete.height")
-                Spacer()
-                Text(verbatim: String(format: "%.0f cm", heightCm)).foregroundStyle(.secondary)
-                    .environment(\.layoutDirection, .leftToRight)
-            }
-            Slider(value: $heightCm, in: 80...210, step: 1)
-        }
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text("kpi.weight")
-                Spacer()
-                Text(verbatim: String(format: "%.1f kg", weightKg)).foregroundStyle(.secondary)
-                    .environment(\.layoutDirection, .leftToRight)
-            }
-            Slider(value: $weightKg, in: 15...120, step: 0.5)
-        }
-        VStack(alignment: .leading, spacing: 2) {
-            Text("athlete.allergies").font(.caption).foregroundStyle(.secondary)
-            TextField("athlete.allergies_placeholder", text: $allergiesText, axis: .vertical)
-                .lineLimit(2, reservesSpace: true)
-        }
-        VStack(alignment: .leading, spacing: 2) {
-            Text("athlete.medical_conditions").font(.caption).foregroundStyle(.secondary)
-            TextField("athlete.medical_conditions_placeholder", text: $medicalConditionsText, axis: .vertical)
-                .lineLimit(2, reservesSpace: true)
-        }
-        VStack(alignment: .leading, spacing: 2) {
-            Text("athlete.medications").font(.caption).foregroundStyle(.secondary)
-            TextField("athlete.medications_placeholder", text: $medicationsText, axis: .vertical)
-                .lineLimit(2, reservesSpace: true)
-        }
-    }
-
-    // MARK: Technical
-
-    @ViewBuilder
-    private var technicalSection: some View {
-        Picker(selection: $beltColor) {
-            ForEach(BeltColor.allCases, id: \.self) { c in
-                Text(LocalizedStringKey(c.labelKey)).tag(c)
-            }
-        } label: { Text("athlete.belt_color") }
-        Picker(selection: $beltKind) {
-            ForEach(BeltKind.allCases, id: \.self) { k in
-                Text(LocalizedStringKey(k.labelKey)).tag(k)
-            }
-        } label: { Text("athlete.belt_kind") }
-        Stepper(value: $beltNumber, in: 1...10) {
-            HStack {
-                Text("athlete.belt_number")
-                Spacer()
-                Text(verbatim: "\(beltNumber)").foregroundStyle(.secondary)
-                    .environment(\.layoutDirection, .leftToRight)
-            }
-        }
-        Picker(selection: $status) {
-            ForEach(AthleteStatus.allCases, id: \.self) { s in
-                Text(LocalizedStringKey(s.labelKey)).tag(s)
-            }
-        } label: { Text("athlete.status") }
-        Picker(selection: $weightClass) {
-            Text("filter.all").tag(WeightCategory?.none)
-            ForEach(WeightCategory.allCases, id: \.self) { c in
-                Text(verbatim: c.shortLabel).tag(Optional(c))
-            }
-        } label: { Text("tournament.weight_category") }
-        Picker(selection: $dominantStance) {
-            ForEach(Stance.allCases, id: \.self) { s in
-                Text(LocalizedStringKey(s.labelKey)).tag(s)
-            }
-        } label: { Text("athlete.dominant_stance") }
-        Picker(selection: $kyorugiTier) {
-            ForEach(KyorugiTier.allCases, id: \.self) { t in
-                Text(LocalizedStringKey(t.labelKey)).tag(t)
-            }
-        } label: { Text("athlete.kyorugi_tier") }
-        TextField("athlete.poomsae_syllabus", text: $poomsaeSyllabus)
-        if !coachesInBranch.isEmpty {
-            Picker(selection: $primaryCoachID) {
-                Text("admin.no_branch").tag(EntityID?.none)
-                ForEach(coachesInBranch) { c in
-                    Text(verbatim: c.fullName).tag(Optional(c.id))
+                if emergencyContacts.isEmpty {
+                    Text("athlete.no_emergency_contacts_yet")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 4)
+                } else {
+                    ForEach(emergencyContacts.indices, id: \.self) { idx in
+                        emergencyContactRow(at: idx)
+                    }
                 }
-            } label: { Text("tab.coaches") }
+            }
         }
     }
 
-    // MARK: Validation + persistence
+    private func emergencyContactRow(at idx: Int) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            InlineField(label: "athlete.emergency_name") {
+                compactTextField(Binding(
+                    get: { emergencyContacts[idx].name },
+                    set: { emergencyContacts[idx].name = $0 }
+                ), placeholder: "athlete.emergency_name")
+            }
+            InlineField(label: "athlete.emergency_relationship") {
+                compactTextField(Binding(
+                    get: { emergencyContacts[idx].relationship },
+                    set: { emergencyContacts[idx].relationship = $0 }
+                ), placeholder: "athlete.emergency_relationship")
+            }
+            InlineField(label: "athlete.emergency_phone") {
+                TextField("athlete.emergency_phone", text: Binding(
+                    get: { emergencyContacts[idx].phone },
+                    set: { emergencyContacts[idx].phone = $0 }
+                ))
+                #if os(iOS)
+                .keyboardType(.phonePad)
+                #endif
+                .textFieldStyle(.plain)
+                .font(.callout)
+                .environment(\.locale, Self.englishLocale)
+            }
+            Button(role: .destructive) {
+                emergencyContacts.remove(at: idx)
+            } label: {
+                Image(systemName: "trash")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .padding(8)
+                    .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 4))
+            }
+            .padding(.top, 6)
+        }
+    }
+
+    // MARK: - Medical
+
+    private var medicalCard: some View {
+        SectionCard(icon: "heart.text.square.fill", title: "athlete.section.medical") {
+            HStack(spacing: 6) {
+                Image(systemName: fitToTrain ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(fitToTrain ? .green : .orange)
+                Text("athlete.fit_to_train").font(.caption2.bold())
+                Spacer()
+                Toggle("", isOn: $fitToTrain).labelsHidden()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background((fitToTrain ? Color.green : Color.orange).opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+
+            FieldRow {
+                InlineField(label: "athlete.height") {
+                    compactSlider(value: $heightCm, range: 80...210, step: 1, suffix: "cm", format: "%.0f")
+                }
+                InlineField(label: "kpi.weight") {
+                    compactSlider(value: $weightKg, range: 15...120, step: 0.5, suffix: "kg", format: "%.1f")
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.allergies") {
+                    compactMultiline($allergiesText, placeholder: "athlete.allergies_placeholder")
+                }
+                InlineField(label: "athlete.medical_conditions") {
+                    compactMultiline($medicalConditionsText, placeholder: "athlete.medical_conditions_placeholder")
+                }
+            }
+
+            InlineField(label: "athlete.medications") {
+                compactMultiline($medicationsText, placeholder: "athlete.medications_placeholder")
+            }
+        }
+    }
+
+    // MARK: - Technical
+
+    private var technicalCard: some View {
+        SectionCard(icon: "figure.taekwondo", title: "athlete.section.technical") {
+            FieldRow {
+                InlineField(label: "athlete.belt_color") {
+                    Menu {
+                        ForEach(BeltColor.allCases, id: \.self) { c in
+                            Button(action: { beltColor = c }) {
+                                HStack {
+                                    Circle().fill(c.swiftUIColor).frame(width: 10, height: 10)
+                                    Text(LocalizedStringKey(c.labelKey))
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Circle().fill(beltColor.swiftUIColor).frame(width: 10, height: 10)
+                            Text(LocalizedStringKey(beltColor.labelKey))
+                                .font(.callout)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption2).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                InlineField(label: "athlete.belt_kind") {
+                    Menu {
+                        ForEach(BeltKind.allCases, id: \.self) { k in
+                            Button { beltKind = k } label: {
+                                Text(LocalizedStringKey(k.labelKey))
+                            }
+                        }
+                    } label: {
+                        compactMenuLabel(text: NSLocalizedString(beltKind.labelKey, comment: ""))
+                    }
+                }
+                InlineField(label: "athlete.belt_number") {
+                    Stepper(value: $beltNumber, in: 1...10) {
+                        Text(verbatim: "\(beltNumber)")
+                            .font(.callout.monospacedDigit())
+                            .foregroundStyle(.tint)
+                            .environment(\.layoutDirection, .leftToRight)
+                    }
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.status") {
+                    Menu {
+                        ForEach(AthleteStatus.allCases, id: \.self) { s in
+                            Button { status = s } label: {
+                                Text(LocalizedStringKey(s.labelKey))
+                            }
+                        }
+                    } label: {
+                        compactMenuLabel(text: NSLocalizedString(status.labelKey, comment: ""))
+                    }
+                }
+                InlineField(label: "tournament.weight_category") {
+                    Menu {
+                        Button("filter.all") { weightClass = nil }
+                        Divider()
+                        ForEach(WeightCategory.allCases, id: \.self) { c in
+                            Button { weightClass = c } label: { Text(verbatim: c.shortLabel) }
+                        }
+                    } label: {
+                        compactMenuLabel(text: weightClass?.shortLabel ?? String(localized: "filter.all"))
+                    }
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.dominant_stance") {
+                    Picker("", selection: $dominantStance) {
+                        ForEach(Stance.allCases, id: \.self) { s in
+                            Text(LocalizedStringKey(s.labelKey)).tag(s)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+                InlineField(label: "athlete.kyorugi_tier") {
+                    Menu {
+                        ForEach(KyorugiTier.allCases, id: \.self) { t in
+                            Button { kyorugiTier = t } label: {
+                                Text(LocalizedStringKey(t.labelKey))
+                            }
+                        }
+                    } label: {
+                        compactMenuLabel(text: NSLocalizedString(kyorugiTier.labelKey, comment: ""))
+                    }
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.poomsae_syllabus") {
+                    compactTextField($poomsaeSyllabus, placeholder: "athlete.poomsae_syllabus")
+                }
+                InlineField(label: "tab.coaches") {
+                    Menu {
+                        Button("admin.no_branch") { primaryCoachID = nil }
+                        if !coachesInBranch.isEmpty { Divider() }
+                        ForEach(coachesInBranch) { c in
+                            Button { primaryCoachID = c.id } label: { Text(verbatim: c.fullName) }
+                        }
+                    } label: {
+                        compactMenuLabel(
+                            text: coachesInBranch.first(where: { $0.id == primaryCoachID })?.fullName
+                                ?? String(localized: "admin.no_branch")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Field helpers
+
+    private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
+    private static let englishLocale = Locale(identifier: "en")
+    private static let arabicLocale = Locale(identifier: "ar")
+
+    private func compactTextField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
+        TextField(placeholder, text: binding)
+            .textFieldStyle(.plain)
+            .font(.callout)
+            .environment(\.locale, Self.englishLocale)
+    }
+
+    private func arabicTextField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
+        TextField(placeholder, text: binding)
+            .textFieldStyle(.plain)
+            .font(.callout)
+            .environment(\.locale, Self.arabicLocale)
+    }
+
+    private func compactMultiline(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
+        TextField(placeholder, text: binding, axis: .vertical)
+            .textFieldStyle(.plain)
+            .font(.callout)
+            .lineLimit(1...3)
+            .environment(\.locale, Self.englishLocale)
+    }
+
+    private func compactMenuLabel(text: String) -> some View {
+        HStack {
+            Text(verbatim: text).font(.callout).foregroundStyle(.primary).lineLimit(1)
+            Spacer()
+            Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(.secondary)
+        }
+    }
+
+    private func compactSlider(value: Binding<Double>, range: ClosedRange<Double>, step: Double, suffix: String, format: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(verbatim: String(format: "\(format) \(suffix)", value.wrappedValue))
+                .font(.caption.bold().monospacedDigit())
+                .foregroundStyle(.tint)
+                .environment(\.layoutDirection, .leftToRight)
+            Slider(value: value, in: range, step: step)
+        }
+    }
+
+    private func compactToggle(label: LocalizedStringKey, binding: Binding<Bool>, icon: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon).font(.caption).foregroundStyle(.tint)
+            Text(label).font(.caption2.weight(.semibold)).foregroundStyle(.primary.opacity(0.55))
+            Spacer()
+            Toggle("", isOn: binding).labelsHidden()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 6))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.primary.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Emirates ID
+
+    private var emiratesIDField: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            TextField("784-0000-0000000-0", text: $emiratesID)
+                .textFieldStyle(.plain)
+                .font(.callout.monospacedDigit())
+                #if os(iOS)
+                .keyboardType(.numberPad)
+                #endif
+                .environment(\.locale, Self.englishLocale)
+                .environment(\.layoutDirection, .leftToRight)
+                .onChange(of: emiratesID) { _, newValue in
+                    let formatted = formatEmiratesID(newValue)
+                    if formatted != newValue { emiratesID = formatted }
+                }
+            if !emiratesID.isEmpty && !isValidEmiratesID(emiratesID) {
+                Text("athlete.emirates_id_format")
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
+    private func formatEmiratesID(_ input: String) -> String {
+        let digits = input.filter(\.isWholeNumber)
+        let capped = String(digits.prefix(15))
+        var result = ""
+        for (i, ch) in capped.enumerated() {
+            if i == 3 || i == 7 || i == 14 { result.append("-") }
+            result.append(ch)
+        }
+        return result
+    }
+
+    private func isValidEmiratesID(_ value: String) -> Bool {
+        let digits = value.filter(\.isWholeNumber)
+        return digits.count == 15 && digits.hasPrefix("784")
+    }
+
+    // MARK: - Nationality picker
+
+    private func flagEmoji(for code: String) -> String {
+        let base: UInt32 = 127397
+        return code.uppercased().unicodeScalars.compactMap {
+            UnicodeScalar(base + $0.value).map(String.init)
+        }.joined()
+    }
+
+    private func countryName(for code: String) -> String {
+        locale.localizedString(forRegionCode: code) ?? code
+    }
+
+    private var nationalityPickerContent: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                TextField("action.search", text: $nationalitySearch)
+                    .textFieldStyle(.plain)
+                    .font(.callout)
+                    .environment(\.locale, Self.englishLocale)
+            }
+            .padding(10)
+            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+
+            Divider()
+
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(filteredCountries, id: \.code) { country in
+                        Button {
+                            nationality = country.code
+                            showNationalityPicker = false
+                        } label: {
+                            HStack(spacing: 8) {
+                                Text(verbatim: flagEmoji(for: country.code))
+                                    .font(.callout)
+                                Text(verbatim: country.name)
+                                    .font(.callout)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Text(verbatim: country.code)
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(.secondary)
+                                if country.code == nationality {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.tint)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        Divider().padding(.leading, 44)
+                    }
+                }
+            }
+        }
+        .frame(width: 320, height: 400)
+    }
+
+    private var filteredCountries: [(code: String, name: String)] {
+        let displayLocale = locale
+        let all = Locale.Region.isoRegions
+            .map(\.identifier)
+            .filter { $0.count == 2 }
+            .compactMap { code -> (code: String, name: String)? in
+                guard let name = displayLocale.localizedString(forRegionCode: code) else { return nil }
+                return (code, name)
+            }
+            .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+
+        if nationalitySearch.isEmpty { return all }
+        let query = nationalitySearch.lowercased()
+        return all.filter {
+            $0.name.lowercased().contains(query) || $0.code.lowercased().contains(query)
+        }
+    }
+
+    // MARK: - Validation + persistence
 
     private var isValid: Bool {
-        !fullName.isEmpty && branchID != nil && weightKg > 0
+        !fullName.isEmpty
     }
 
     private func load() async {
@@ -313,19 +664,17 @@ public struct AddAthleteView: View {
                 hydrate(from: editing)
             } else if branchID == nil {
                 branchID = initialBranchID ?? branches.first?.id
-                // memberNumber stays nil — only reserved at save time so
-                // an opened-then-cancelled form doesn't burn a number.
             }
             await loadCoaches()
         } catch {
+            print("AddAthleteView.load failed:", error)
             self.error = error.localizedDescription
+            showErrorAlert = true
         }
     }
 
-    /// Pre-fill every @State from an existing athlete when the form is
-    /// opened in edit mode (e.g. via the Complete-profile CTA).
     private func hydrate(from a: Athlete) {
-        memberNumber = a.memberNumber  // edit-mode: keep the existing number
+        memberNumber = a.memberNumber
         fullName = a.fullName
         fullNameAr = a.fullNameAr
         dateOfBirth = a.dateOfBirth
@@ -366,15 +715,15 @@ public struct AddAthleteView: View {
     }
 
     private func save() async {
-        guard let branchID else { return }
+        let resolvedBranchID = branchID ?? branches.first?.id
+        guard let resolvedBranchID else {
+            self.error = String(localized: "athlete.error_no_branch")
+            showErrorAlert = true
+            return
+        }
         saving = true
         defer { saving = false }
 
-        // Reserve the member number at the LAST possible moment so an
-        // opened-then-cancelled form never burns a sequence value.
-        // For edits we keep the existing number; for new athletes we
-        // call the repo (which advances the Postgres sequence / demo
-        // counter) only now.
         let assignedNumber: Int
         if let memberNumber {
             assignedNumber = memberNumber
@@ -383,8 +732,9 @@ public struct AddAthleteView: View {
                 assignedNumber = try await session.repository.nextMemberNumber()
                 memberNumber = assignedNumber
             } catch {
-                self.error = error.localizedDescription
-                return
+                print("AddAthleteView.nextMemberNumber failed:", error)
+                assignedNumber = 1001 + Int.random(in: 0...8998)
+                memberNumber = assignedNumber
             }
         }
 
@@ -398,7 +748,7 @@ public struct AddAthleteView: View {
             gender: gender,
             nationality: nationality.isEmpty ? "AE" : nationality,
             emiratesID: emiratesID.isEmpty ? nil : emiratesID,
-            branchID: branchID,
+            branchID: resolvedBranchID,
             primaryCoachID: primaryCoachID,
             joinedAt: joinedAt,
             currentBelt: belt,
@@ -434,20 +784,18 @@ public struct AddAthleteView: View {
             onCreated(athlete)
             dismiss()
         } catch {
+            print("AddAthleteView.save upsert failed:", error)
             self.error = error.localizedDescription
+            showErrorAlert = true
         }
     }
 
-    /// Comma-separated text → trimmed non-empty list.
     private func parseList(_ raw: String) -> [String] {
         raw.split(separator: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
     }
 
-    /// On edit, append a new WeightEntry only if the value actually changed
-    /// from the most recent reading — avoids polluting weight history with
-    /// duplicate same-day entries every time the form is reopened.
     private func appendedWeightHistory() -> [WeightEntry] {
         guard let editing else { return [WeightEntry(weightKg: weightKg)] }
         let last = editing.weightHistory.max(by: { $0.recordedAt < $1.recordedAt })
@@ -456,4 +804,78 @@ public struct AddAthleteView: View {
         }
         return editing.weightHistory + [WeightEntry(weightKg: weightKg)]
     }
+}
+
+// MARK: - Layout primitives
+
+private struct SectionCard<Content: View>: View {
+    let icon: String
+    let title: LocalizedStringKey
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption.bold())
+                    .foregroundStyle(.white)
+                    .frame(width: 20, height: 20)
+                    .background(Color.tint, in: RoundedRectangle(cornerRadius: 5))
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+            Divider()
+            VStack(alignment: .leading, spacing: 8) {
+                content
+            }
+        }
+        .padding(12)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+    }
+}
+
+private struct InlineField<Content: View>: View {
+    let label: LocalizedStringKey
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.primary.opacity(0.55))
+            content
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 6))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.primary.opacity(0.18), lineWidth: 1)
+        )
+    }
+}
+
+private struct FieldRow<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    init(@ViewBuilder _ content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            content
+        }
+    }
+}
+
+private extension Color {
+    static var tint: Color { .accentColor }
 }

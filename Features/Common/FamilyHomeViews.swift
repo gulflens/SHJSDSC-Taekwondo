@@ -3,6 +3,7 @@ import SwiftUI
 public struct AthleteHomeView: View {
     @Environment(AppSession.self) private var session
     @State private var nextSession: ClassSession?
+    @State private var showingFindBranch = false
 
     public init() {}
 
@@ -14,6 +15,7 @@ public struct AthleteHomeView: View {
                         Text("greeting.morning").font(.title3).foregroundStyle(.secondary)
                         Text(verbatim: user.fullName).font(.largeTitle.bold())
                     }
+                    findBranchCard
                     GroupBox {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -41,8 +43,31 @@ public struct AthleteHomeView: View {
             }
             .navigationTitle(Text("tab.home"))
             .demoRoleSwitcher()
+            .sheet(isPresented: $showingFindBranch) {
+                NavigationStack { BranchListView() }
+            }
         }
         .task { await load() }
+    }
+
+    private var findBranchCard: some View {
+        Button {
+            showingFindBranch = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "mappin.and.ellipse")
+                    .font(.title2).foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("find_branch.title").font(.subheadline.bold())
+                    Text("find_branch.subtitle").font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .background(Color.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
     }
 
     private func load() async {
@@ -61,6 +86,7 @@ public struct AthleteHomeView: View {
 public struct ParentHomeView: View {
     @Environment(AppSession.self) private var session
     @State private var children: [Athlete] = []
+    @State private var showingFindBranch = false
 
     public init() {}
 
@@ -72,6 +98,21 @@ public struct ParentHomeView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("greeting.morning").font(.title3).foregroundStyle(.secondary)
                             Text(verbatim: user.fullName).font(.title2.bold())
+                        }
+                    }
+                }
+                Section {
+                    Button {
+                        showingFindBranch = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "mappin.and.ellipse").font(.title3).foregroundStyle(.tint)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("find_branch.title").font(.subheadline.bold())
+                                Text("find_branch.subtitle").font(.caption).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -97,6 +138,9 @@ public struct ParentHomeView: View {
             }
             .navigationTitle(Text("tab.home"))
             .demoRoleSwitcher()
+            .sheet(isPresented: $showingFindBranch) {
+                NavigationStack { BranchListView() }
+            }
         }
         .task { await load() }
     }

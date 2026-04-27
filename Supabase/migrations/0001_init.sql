@@ -71,6 +71,7 @@ alter table user_profiles
 -- =====================================================================
 create table if not exists athletes (
     id uuid primary key default gen_random_uuid(),
+    member_number int unique,
     user_id uuid references auth.users(id),
     full_name text not null,
     full_name_ar text not null,

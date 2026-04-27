@@ -30,6 +30,7 @@ public protocol CoachRepository: Sendable {
     func coaches() async throws -> [Coach]
     func coaches(branchID: EntityID) async throws -> [Coach]
     func coach(id: EntityID) async throws -> Coach?
+    func upsert(_ coach: Coach) async throws
 }
 
 public protocol ScheduleRepository: Sendable {
@@ -138,6 +139,41 @@ public protocol StorageRepository: Sendable {
     func uploadAthletePhoto(athleteID: EntityID, data: Data, contentType: String) async throws -> String
 }
 
+public protocol BranchProfileRepository: Sendable {
+    func facility(branchID: EntityID) async throws -> BranchFacility?
+    func upsert(_ facility: BranchFacility) async throws
+
+    func hours(branchID: EntityID) async throws -> BranchHours?
+    func upsert(_ hours: BranchHours) async throws
+
+    func programs(branchID: EntityID) async throws -> [BranchProgram]
+    func upsert(_ program: BranchProgram) async throws
+
+    func inventory(branchID: EntityID) async throws -> BranchInventory?
+    func upsert(_ inventory: BranchInventory) async throws
+
+    func compliance(branchID: EntityID) async throws -> BranchCompliance?
+    func upsert(_ compliance: BranchCompliance) async throws
+
+    func pricing(branchID: EntityID) async throws -> BranchPricing?
+    func upsert(_ pricing: BranchPricing) async throws
+
+    func financials(branchID: EntityID, monthsBack: Int) async throws -> [BranchFinancials]
+    func upsert(_ financials: BranchFinancials) async throws
+
+    func media(branchID: EntityID) async throws -> BranchMedia?
+    func upsert(_ media: BranchMedia) async throws
+
+    func socialLinks(branchID: EntityID) async throws -> BranchSocialLinks?
+    func upsert(_ links: BranchSocialLinks) async throws
+
+    func safeguarding(branchID: EntityID) async throws -> BranchSafeguarding?
+    func upsert(_ safe: BranchSafeguarding) async throws
+
+    func milestones(branchID: EntityID) async throws -> [BranchMilestone]
+    func upsert(_ milestone: BranchMilestone) async throws
+}
+
 public protocol Repository:
     UserRepository,
     BranchRepository,
@@ -154,4 +190,5 @@ public protocol Repository:
     OperationsRepository,
     AuditRepository,
     StorageRepository,
+    BranchProfileRepository,
     Sendable {}

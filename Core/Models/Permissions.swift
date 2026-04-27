@@ -3,6 +3,7 @@ import Foundation
 public enum Permission: String, CaseIterable, Sendable, Hashable {
     case viewAllAthletes
     case editAthlete
+    case editCoach
     case recordAttendance
     case scoreGrading
     case scheduleSession
@@ -13,6 +14,12 @@ public enum Permission: String, CaseIterable, Sendable, Hashable {
     case viewBilling
     case manageStaff
     case viewAuditLog
+    // Stage 1.5: branch profile editing. Stage 4 will tighten the matrix.
+    case editBranchProfile
+    case editBranchFinancials
+    case editBranchInventory
+    case editBranchPrograms
+    case viewBranchFinancials
 }
 
 public enum PermissionMatrix {
@@ -35,13 +42,18 @@ public enum PermissionMatrix {
             switch permission {
             case .viewAllAthletes,
                  .editAthlete,
+                 .editCoach,
                  .recordAttendance,
                  .scoreGrading,
                  .scheduleSession,
                  .publishAnnouncement,
                  .exportReports,
                  .viewAuditLog,
-                 .createTournament:
+                 .createTournament,
+                 .editBranchProfile,
+                 .editBranchInventory,
+                 .editBranchPrograms,
+                 .viewBranchFinancials:
                 return true
             default: return false
             }

@@ -3,6 +3,7 @@
 -- rows survive without migration data.
 
 alter table athletes
+    add column if not exists member_number int unique,
     add column if not exists passport_number text,
     add column if not exists blood_type text,
     add column if not exists federation_licence_number text,

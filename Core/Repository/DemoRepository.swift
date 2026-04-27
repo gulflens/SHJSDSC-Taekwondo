@@ -44,6 +44,17 @@ public actor DemoStore {
     public var rsvps: [AnnouncementRSVP]
     public var certifications: [Certification]
     public var auditLog: [AuditEntry]
+    public var facilities: [BranchFacility]
+    public var branchHours: [BranchHours]
+    public var branchPrograms: [BranchProgram]
+    public var branchInventories: [BranchInventory]
+    public var branchCompliances: [BranchCompliance]
+    public var branchPricings: [BranchPricing]
+    public var branchFinancials: [BranchFinancials]
+    public var branchMedias: [BranchMedia]
+    public var branchSocialLinks: [BranchSocialLinks]
+    public var branchSafeguardings: [BranchSafeguarding]
+    public var branchMilestones: [BranchMilestone]
     public var currentUserID: EntityID
     private var emailPasswordHashes: [String: String] = [:]
     private var emailUserIDs: [String: EntityID] = [:]
@@ -78,6 +89,17 @@ public actor DemoStore {
         self.rsvps = seed.rsvps
         self.certifications = seed.certifications
         self.auditLog = seed.auditLog
+        self.facilities = seed.facilities
+        self.branchHours = seed.branchHours
+        self.branchPrograms = seed.branchPrograms
+        self.branchInventories = seed.branchInventories
+        self.branchCompliances = seed.branchCompliances
+        self.branchPricings = seed.branchPricings
+        self.branchFinancials = seed.branchFinancials
+        self.branchMedias = seed.branchMedias
+        self.branchSocialLinks = seed.branchSocialLinks
+        self.branchSafeguardings = seed.branchSafeguardings
+        self.branchMilestones = seed.branchMilestones
         self.currentUserID = seed.defaultCurrentUserID
         for cred in seed.credentials {
             emailPasswordHashes[cred.email] = cred.passwordHash
@@ -108,6 +130,88 @@ public actor DemoStore {
 
     public func upsertAthlete(_ a: Athlete) {
         if let i = athletes.firstIndex(where: { $0.id == a.id }) { athletes[i] = a } else { athletes.append(a) }
+    }
+
+    public func upsertCoach(_ c: Coach) {
+        if let i = coaches.firstIndex(where: { $0.id == c.id }) { coaches[i] = c } else { coaches.append(c) }
+    }
+
+    public func upsertFacility(_ f: BranchFacility) {
+        if let i = facilities.firstIndex(where: { $0.branchID == f.branchID }) {
+            facilities[i] = f
+        } else {
+            facilities.append(f)
+        }
+    }
+    public func upsertBranchHours(_ h: BranchHours) {
+        if let i = branchHours.firstIndex(where: { $0.branchID == h.branchID }) {
+            branchHours[i] = h
+        } else {
+            branchHours.append(h)
+        }
+    }
+    public func upsertBranchProgram(_ p: BranchProgram) {
+        if let i = branchPrograms.firstIndex(where: { $0.id == p.id }) {
+            branchPrograms[i] = p
+        } else {
+            branchPrograms.append(p)
+        }
+    }
+    public func upsertBranchInventory(_ inv: BranchInventory) {
+        if let i = branchInventories.firstIndex(where: { $0.branchID == inv.branchID }) {
+            branchInventories[i] = inv
+        } else {
+            branchInventories.append(inv)
+        }
+    }
+    public func upsertBranchCompliance(_ c: BranchCompliance) {
+        if let i = branchCompliances.firstIndex(where: { $0.branchID == c.branchID }) {
+            branchCompliances[i] = c
+        } else {
+            branchCompliances.append(c)
+        }
+    }
+    public func upsertBranchPricing(_ p: BranchPricing) {
+        if let i = branchPricings.firstIndex(where: { $0.branchID == p.branchID }) {
+            branchPricings[i] = p
+        } else {
+            branchPricings.append(p)
+        }
+    }
+    public func upsertBranchFinancials(_ f: BranchFinancials) {
+        if let i = branchFinancials.firstIndex(where: { $0.id == f.id }) {
+            branchFinancials[i] = f
+        } else {
+            branchFinancials.append(f)
+        }
+    }
+    public func upsertBranchMedia(_ m: BranchMedia) {
+        if let i = branchMedias.firstIndex(where: { $0.branchID == m.branchID }) {
+            branchMedias[i] = m
+        } else {
+            branchMedias.append(m)
+        }
+    }
+    public func upsertBranchSocialLinks(_ s: BranchSocialLinks) {
+        if let i = branchSocialLinks.firstIndex(where: { $0.branchID == s.branchID }) {
+            branchSocialLinks[i] = s
+        } else {
+            branchSocialLinks.append(s)
+        }
+    }
+    public func upsertBranchSafeguarding(_ s: BranchSafeguarding) {
+        if let i = branchSafeguardings.firstIndex(where: { $0.branchID == s.branchID }) {
+            branchSafeguardings[i] = s
+        } else {
+            branchSafeguardings.append(s)
+        }
+    }
+    public func upsertBranchMilestone(_ m: BranchMilestone) {
+        if let i = branchMilestones.firstIndex(where: { $0.id == m.id }) {
+            branchMilestones[i] = m
+        } else {
+            branchMilestones.append(m)
+        }
     }
 
     public func upsertAttendance(_ r: AttendanceRecord) {
@@ -298,6 +402,10 @@ public struct DemoRepository: Repository {
         await store.coaches.filter { $0.primaryBranchID == branchID || $0.secondaryBranchIDs.contains(branchID) }
     }
     public func coach(id: EntityID) async throws -> Coach? { await store.coaches.first { $0.id == id } }
+    public func upsert(_ coach: Coach) async throws {
+        await store.upsertCoach(coach)
+        await store.logAudit(action: "editCoach", target: "Coach", targetID: coach.id)
+    }
 
     // MARK: Schedule
 
@@ -570,5 +678,100 @@ public struct DemoRepository: Repository {
         let dest = dir.appendingPathComponent("\(athleteID.uuidString).\(ext)")
         try data.write(to: dest, options: .atomic)
         return dest.absoluteString
+    }
+
+    // MARK: BranchProfile
+
+    public func facility(branchID: EntityID) async throws -> BranchFacility? {
+        await store.facilities.first { $0.branchID == branchID }
+    }
+    public func upsert(_ facility: BranchFacility) async throws {
+        await store.upsertFacility(facility)
+        await store.logAudit(action: "upsertFacility", target: "BranchFacility", targetID: facility.id)
+    }
+
+    public func hours(branchID: EntityID) async throws -> BranchHours? {
+        await store.branchHours.first { $0.branchID == branchID }
+    }
+    public func upsert(_ hours: BranchHours) async throws {
+        await store.upsertBranchHours(hours)
+        await store.logAudit(action: "upsertHours", target: "BranchHours", targetID: hours.id)
+    }
+
+    public func programs(branchID: EntityID) async throws -> [BranchProgram] {
+        await store.branchPrograms.filter { $0.branchID == branchID }
+    }
+    public func upsert(_ program: BranchProgram) async throws {
+        await store.upsertBranchProgram(program)
+        await store.logAudit(action: "upsertProgram", target: "BranchProgram", targetID: program.id)
+    }
+
+    public func inventory(branchID: EntityID) async throws -> BranchInventory? {
+        await store.branchInventories.first { $0.branchID == branchID }
+    }
+    public func upsert(_ inventory: BranchInventory) async throws {
+        await store.upsertBranchInventory(inventory)
+        await store.logAudit(action: "upsertInventory", target: "BranchInventory", targetID: inventory.id)
+    }
+
+    public func compliance(branchID: EntityID) async throws -> BranchCompliance? {
+        await store.branchCompliances.first { $0.branchID == branchID }
+    }
+    public func upsert(_ compliance: BranchCompliance) async throws {
+        await store.upsertBranchCompliance(compliance)
+        await store.logAudit(action: "upsertCompliance", target: "BranchCompliance", targetID: compliance.id)
+    }
+
+    public func pricing(branchID: EntityID) async throws -> BranchPricing? {
+        await store.branchPricings.first { $0.branchID == branchID }
+    }
+    public func upsert(_ pricing: BranchPricing) async throws {
+        await store.upsertBranchPricing(pricing)
+        await store.logAudit(action: "upsertPricing", target: "BranchPricing", targetID: pricing.id)
+    }
+
+    public func financials(branchID: EntityID, monthsBack: Int) async throws -> [BranchFinancials] {
+        let cutoff = Calendar.current.date(byAdding: .month, value: -monthsBack, to: Date()) ?? Date()
+        return await store.branchFinancials
+            .filter { $0.branchID == branchID && $0.month >= cutoff }
+            .sorted { $0.month < $1.month }
+    }
+    public func upsert(_ financials: BranchFinancials) async throws {
+        await store.upsertBranchFinancials(financials)
+        await store.logAudit(action: "upsertFinancials", target: "BranchFinancials", targetID: financials.id)
+    }
+
+    public func media(branchID: EntityID) async throws -> BranchMedia? {
+        await store.branchMedias.first { $0.branchID == branchID }
+    }
+    public func upsert(_ media: BranchMedia) async throws {
+        await store.upsertBranchMedia(media)
+        await store.logAudit(action: "upsertMedia", target: "BranchMedia", targetID: media.id)
+    }
+
+    public func socialLinks(branchID: EntityID) async throws -> BranchSocialLinks? {
+        await store.branchSocialLinks.first { $0.branchID == branchID }
+    }
+    public func upsert(_ links: BranchSocialLinks) async throws {
+        await store.upsertBranchSocialLinks(links)
+        await store.logAudit(action: "upsertSocialLinks", target: "BranchSocialLinks", targetID: links.id)
+    }
+
+    public func safeguarding(branchID: EntityID) async throws -> BranchSafeguarding? {
+        await store.branchSafeguardings.first { $0.branchID == branchID }
+    }
+    public func upsert(_ safe: BranchSafeguarding) async throws {
+        await store.upsertBranchSafeguarding(safe)
+        await store.logAudit(action: "upsertSafeguarding", target: "BranchSafeguarding", targetID: safe.id)
+    }
+
+    public func milestones(branchID: EntityID) async throws -> [BranchMilestone] {
+        await store.branchMilestones
+            .filter { $0.branchID == branchID }
+            .sorted { $0.occurredAt > $1.occurredAt }
+    }
+    public func upsert(_ milestone: BranchMilestone) async throws {
+        await store.upsertBranchMilestone(milestone)
+        await store.logAudit(action: "upsertMilestone", target: "BranchMilestone", targetID: milestone.id)
     }
 }

@@ -60,9 +60,29 @@ public struct Branch: Codable, Identifiable, Hashable, Sendable {
     public var name: String
     public var nameAr: String
     public var area: String
+    /// Max registered athletes the dojang is sized for. Compared against the
+    /// roster count to surface the utilisation pill on dashboards.
     public var capacity: Int
     public var managerID: EntityID?
     public var focus: String
+
+    // === Identity / contact (Stage 1.5) ===
+    public var streetAddress: String
+    public var streetAddressAr: String
+    public var emirate: String
+    public var country: String
+    public var poBox: String?
+    public var latitude: Double
+    public var longitude: Double
+    public var googlePlaceID: String?
+    public var phone: String
+    public var whatsappBusiness: String?
+    public var email: String
+    public var foundedAt: Date
+    public var isActive: Bool
+    public var brandHexColor: String?
+    public var taglineEn: String?
+    public var taglineAr: String?
 
     public init(
         id: EntityID = UUID(),
@@ -72,7 +92,23 @@ public struct Branch: Codable, Identifiable, Hashable, Sendable {
         area: String,
         capacity: Int,
         managerID: EntityID? = nil,
-        focus: String
+        focus: String,
+        streetAddress: String = "",
+        streetAddressAr: String = "",
+        emirate: String = "Sharjah",
+        country: String = "AE",
+        poBox: String? = nil,
+        latitude: Double = 0,
+        longitude: Double = 0,
+        googlePlaceID: String? = nil,
+        phone: String = "",
+        whatsappBusiness: String? = nil,
+        email: String = "",
+        foundedAt: Date = Date(),
+        isActive: Bool = true,
+        brandHexColor: String? = nil,
+        taglineEn: String? = nil,
+        taglineAr: String? = nil
     ) {
         self.id = id
         self.code = code
@@ -82,5 +118,21 @@ public struct Branch: Codable, Identifiable, Hashable, Sendable {
         self.capacity = capacity
         self.managerID = managerID
         self.focus = focus
+        self.streetAddress = streetAddress
+        self.streetAddressAr = streetAddressAr
+        self.emirate = emirate
+        self.country = country
+        self.poBox = poBox
+        self.latitude = latitude
+        self.longitude = longitude
+        self.googlePlaceID = googlePlaceID
+        self.phone = phone
+        self.whatsappBusiness = whatsappBusiness
+        self.email = email
+        self.foundedAt = foundedAt
+        self.isActive = isActive
+        self.brandHexColor = brandHexColor
+        self.taglineEn = taglineEn
+        self.taglineAr = taglineAr
     }
 }

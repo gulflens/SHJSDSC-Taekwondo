@@ -84,14 +84,8 @@ public struct AthleteListView: View {
             }
         }
         .navigationDestination(isPresented: $showingAdd) {
-            AddAthleteView(initialBranchID: scopeBranchID()) { _ in
-                Task {
-                    switch scope {
-                    case .all: await store.loadAll()
-                    case .byBranch(let bid): await store.load(branchID: bid)
-                    case .myAthletes(let cid): await store.loadForCoach(cid)
-                    }
-                }
+            AddAthleteView(initialBranchID: scopeBranchID()) { newAthlete in
+                store.insertOrUpdate(newAthlete)
             }
         }
     }

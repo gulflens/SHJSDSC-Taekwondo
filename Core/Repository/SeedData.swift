@@ -31,6 +31,17 @@ public struct SeedBundle: Sendable {
     public let certifications: [Certification]
     public let auditLog: [AuditEntry]
     public let credentials: [SeedCredential]
+    public let facilities: [BranchFacility]
+    public let branchHours: [BranchHours]
+    public let branchPrograms: [BranchProgram]
+    public let branchInventories: [BranchInventory]
+    public let branchCompliances: [BranchCompliance]
+    public let branchPricings: [BranchPricing]
+    public let branchFinancials: [BranchFinancials]
+    public let branchMedias: [BranchMedia]
+    public let branchSocialLinks: [BranchSocialLinks]
+    public let branchSafeguardings: [BranchSafeguarding]
+    public let branchMilestones: [BranchMilestone]
     public let defaultCurrentUserID: EntityID
 }
 
@@ -53,10 +64,55 @@ public enum SeedData {
         let userParent = User(fullName: "Mohammed Al Marzooqi", fullNameAr: "محمد المرزوقي", role: .parent, avatarSeed: "marzooqi")
 
         // === Branches ===
-        let branchAlRamtha = Branch(code: "BR-A", name: "Al Ramtha", nameAr: "الرمثاء", area: "Sharjah", capacity: 80, managerID: userManager.id, focus: "fundamentals")
-        let branchAlJazzat = Branch(code: "BR-B", name: "Al Jazzat", nameAr: "الجزات", area: "Sharjah", capacity: 60, focus: "competition")
-        let branchAlKhan = Branch(code: "BR-C", name: "Al Khan", nameAr: "الخان", area: "Sharjah", capacity: 70, focus: "poomsae")
-        let branchShaghrafa = Branch(code: "BR-D", name: "Shaghrafa", nameAr: "الشغرفة", area: "Sharjah", capacity: 50, focus: "girls only")
+        let branchAlRamtha = Branch(
+            code: "BR-A", name: "Al Ramtha", nameAr: "الرمثاء",
+            area: "Sharjah", capacity: 80, managerID: userManager.id, focus: "fundamentals",
+            streetAddress: "Al Ramtha — Wasit Suburb, near Sharjah Cultural Square",
+            streetAddressAr: "الرمثاء — ضاحية وسيط، بالقرب من ساحة الشارقة الثقافية",
+            poBox: "12345",
+            latitude: 25.3463, longitude: 55.4209,
+            phone: "+971 6 555 1001", whatsappBusiness: "+971 50 555 1001",
+            email: "ramtha@ssdsc.ae",
+            foundedAt: cal.date(from: DateComponents(year: 2015, month: 4, day: 29)) ?? years(-11),
+            brandHexColor: "#E24B4A",
+            taglineEn: "Where champions train", taglineAr: "حيث يتدرب الأبطال"
+        )
+        let branchAlJazzat = Branch(
+            code: "BR-B", name: "Al Jazzat", nameAr: "الجزات",
+            area: "Sharjah", capacity: 60, focus: "competition",
+            streetAddress: "Al Jazzat District, Sharjah",
+            streetAddressAr: "منطقة الجزات، الشارقة",
+            latitude: 25.3306, longitude: 55.4063,
+            phone: "+971 6 555 1002", whatsappBusiness: "+971 50 555 1002",
+            email: "jazzat@ssdsc.ae",
+            foundedAt: cal.date(from: DateComponents(year: 2018, month: 9, day: 1)) ?? years(-8),
+            brandHexColor: "#1F8FFF",
+            taglineEn: "Junior & cadet powerhouse", taglineAr: "قوة الناشئين والكاديت"
+        )
+        let branchAlKhan = Branch(
+            code: "BR-C", name: "Al Khan", nameAr: "الخان",
+            area: "Sharjah", capacity: 70, focus: "poomsae",
+            streetAddress: "Al Khan Community Centre, Sharjah Corniche",
+            streetAddressAr: "مركز الخان المجتمعي، كورنيش الشارقة",
+            latitude: 25.3252, longitude: 55.3793,
+            phone: "+971 6 555 1003",
+            email: "khan@ssdsc.ae",
+            foundedAt: cal.date(from: DateComponents(year: 2020, month: 1, day: 15)) ?? years(-6),
+            brandHexColor: "#3FB950",
+            taglineEn: "Poomsae for everyone", taglineAr: "بومساي للجميع"
+        )
+        let branchShaghrafa = Branch(
+            code: "BR-D", name: "Shaghrafa", nameAr: "الشغرفة",
+            area: "Sharjah", capacity: 50, focus: "girls only",
+            streetAddress: "Shaghrafa District — Women's Sports Centre",
+            streetAddressAr: "منطقة الشغرفة — مركز رياضة المرأة",
+            latitude: 25.3601, longitude: 55.4322,
+            phone: "+971 6 555 1004", whatsappBusiness: "+971 50 555 1004",
+            email: "shaghrafa@ssdsc.ae",
+            foundedAt: cal.date(from: DateComponents(year: 2022, month: 3, day: 8)) ?? years(-4),
+            brandHexColor: "#A855F7",
+            taglineEn: "Strong women, sharper minds", taglineAr: "نساء قويات، عقول حادة"
+        )
         let branches = [branchAlRamtha, branchAlJazzat, branchAlKhan, branchShaghrafa]
 
         // === Coaches ===
@@ -713,6 +769,441 @@ public enum SeedData {
             SeedCredential(email: "coach@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userCoach.id),
         ]
 
+        // === Stage 1.5: branch profile seed data ===
+
+        func standardWeek(closedFri: Bool = false) -> [DayHours] {
+            let weekday: [(DayOfWeek, String, String)] = [
+                (.sun, "14:00", "22:00"),
+                (.mon, "14:00", "22:00"),
+                (.tue, "14:00", "22:00"),
+                (.wed, "14:00", "22:00"),
+                (.thu, "14:00", "22:00"),
+            ]
+            var rows = weekday.map { DayHours(day: $0.0, isOpen: true, opensAt: $0.1, closesAt: $0.2) }
+            rows.append(DayHours(day: .fri, isOpen: !closedFri,
+                                 opensAt: closedFri ? nil : "16:00",
+                                 closesAt: closedFri ? nil : "21:00"))
+            rows.append(DayHours(day: .sat, isOpen: true, opensAt: "09:00", closesAt: "21:00"))
+            return rows
+        }
+
+        func ramadanWeek() -> [DayHours] {
+            DayOfWeek.allCases.map { d in
+                if d == .fri { return DayHours(day: d, isOpen: false) }
+                return DayHours(day: d, isOpen: true, opensAt: "21:00", closesAt: "01:00")
+            }
+        }
+
+        let ramadanStart = cal.date(from: DateComponents(year: 2026, month: 2, day: 17)) ?? days(60)
+        let ramadanEnd = cal.date(from: DateComponents(year: 2026, month: 3, day: 18)) ?? days(90)
+
+        let hoursRamtha = BranchHours(
+            branchID: branchAlRamtha.id, regular: standardWeek(),
+            ramadan: ramadanWeek(), ramadanStart: ramadanStart, ramadanEnd: ramadanEnd,
+            holidayClosures: [days(20), days(45)]
+        )
+        let hoursJazzat = BranchHours(branchID: branchAlJazzat.id, regular: standardWeek())
+        let hoursKhan = BranchHours(branchID: branchAlKhan.id, regular: standardWeek())
+        let hoursShaghrafa = BranchHours(branchID: branchShaghrafa.id, regular: standardWeek(closedFri: true))
+        let allBranchHours = [hoursRamtha, hoursJazzat, hoursKhan, hoursShaghrafa]
+
+        // Facilities: Al Ramtha is the flagship (1200 sqm, 2 halls, PSS).
+        let facilityRamtha = BranchFacility(
+            branchID: branchAlRamtha.id,
+            floorAreaSqm: 1200, hallCount: 2,
+            hallDimensions: [
+                HallSpec(name: "Main Hall", lengthM: 14, widthM: 12,
+                         matSpec: "WT 12x12 puzzle, 30mm", isCompetitionGrade: true),
+                HallSpec(name: "Studio 2", lengthM: 10, widthM: 8,
+                         matSpec: "Training mats 25mm")
+            ],
+            hasMirrorWalls: true, hasSoundSystem: true, hasAC: true,
+            hasInstalledScoreboard: true, hasPSS: true,
+            pssBrand: "Daedo", pssLastCalibrationAt: days(-90),
+            changingRoomsM: 2, changingRoomsF: 2,
+            spectatorSeats: 80, parkingSpots: 30,
+            hasPrayerRoom: true, hasWudu: true,
+            photoURLs: [
+                "https://placehold.co/1200x800/png?text=Al+Ramtha+Main",
+                "https://placehold.co/1200x800/png?text=Al+Ramtha+Hall",
+                "https://placehold.co/1200x800/png?text=Al+Ramtha+Lobby",
+                "https://placehold.co/1200x800/png?text=Al+Ramtha+Spectators"
+            ]
+        )
+        let facilityJazzat = BranchFacility(
+            branchID: branchAlJazzat.id,
+            floorAreaSqm: 600, hallCount: 1,
+            hallDimensions: [HallSpec(name: "Main Hall", lengthM: 12, widthM: 10,
+                                      matSpec: "WT puzzle 25mm", isCompetitionGrade: true)],
+            hasMirrorWalls: true, hasSoundSystem: true, hasAC: true,
+            hasInstalledScoreboard: true,
+            changingRoomsM: 1, changingRoomsF: 1,
+            spectatorSeats: 40, parkingSpots: 12,
+            hasPrayerRoom: true, hasWudu: true
+        )
+        let facilityKhan = BranchFacility(
+            branchID: branchAlKhan.id,
+            floorAreaSqm: 500, hallCount: 1,
+            hallDimensions: [HallSpec(name: "Community Hall", lengthM: 10, widthM: 9,
+                                      matSpec: "Foam tatami 20mm")],
+            hasMirrorWalls: false, hasSoundSystem: true, hasAC: true,
+            changingRoomsM: 1, changingRoomsF: 1,
+            spectatorSeats: 20, parkingSpots: 8,
+            hasPrayerRoom: false, hasWudu: false
+        )
+        let facilityShaghrafa = BranchFacility(
+            branchID: branchShaghrafa.id,
+            floorAreaSqm: 700, hallCount: 1,
+            hallDimensions: [HallSpec(name: "Women's Hall", lengthM: 12, widthM: 10,
+                                      matSpec: "WT puzzle 25mm", isCompetitionGrade: true)],
+            hasMirrorWalls: true, hasSoundSystem: true, hasAC: true,
+            changingRoomsM: 0, changingRoomsF: 3,
+            spectatorSeats: 30, parkingSpots: 16,
+            hasPrayerRoom: true, hasWudu: true
+        )
+        let allFacilities = [facilityRamtha, facilityJazzat, facilityKhan, facilityShaghrafa]
+
+        // Programs (5–6 per branch)
+        func program(_ branch: Branch, name: String, nameAr: String,
+                     age: AgeGroup, disciplines: [ClassDiscipline],
+                     pattern: [DayOfWeek], start: String, end: String,
+                     capacity: Int, fee: Double,
+                     womenOnly: Bool = false) -> BranchProgram {
+            BranchProgram(
+                branchID: branch.id,
+                customName: name, customNameAr: nameAr,
+                descriptionEn: name, descriptionAr: nameAr,
+                ageGroup: age, disciplines: disciplines,
+                schedulePattern: pattern,
+                startTime: start, endTime: end,
+                capacity: capacity, currentEnrolment: Int.random(in: capacity / 4 ... capacity),
+                monthlyFeeAED: fee,
+                trialClassFeeAED: 50,
+                registrationFeeAED: 200,
+                equipmentPackageFeeAED: 350,
+                siblingDiscountPct: 0.10,
+                annualPrepayDiscountPct: 0.05,
+                isWomenOnly: womenOnly
+            )
+        }
+
+        let programsRamtha = [
+            program(branchAlRamtha, name: "Cubs after-school", nameAr: "أشبال بعد المدرسة",
+                    age: .cubs, disciplines: [.fundamentals],
+                    pattern: [.sun, .tue, .thu], start: "16:00", end: "17:00",
+                    capacity: 16, fee: 350),
+            program(branchAlRamtha, name: "Junior fundamentals", nameAr: "أساسيات الناشئين",
+                    age: .kids, disciplines: [.fundamentals, .poomsae],
+                    pattern: [.sun, .tue, .thu], start: "17:15", end: "18:30",
+                    capacity: 20, fee: 450),
+            program(branchAlRamtha, name: "Cadet kyorugi", nameAr: "كيوروجي كاديت",
+                    age: .cadets, disciplines: [.kyorugi],
+                    pattern: [.mon, .wed, .sat], start: "18:30", end: "20:00",
+                    capacity: 18, fee: 500),
+            program(branchAlRamtha, name: "Junior comp team", nameAr: "فريق منافسات الناشئين",
+                    age: .juniors, disciplines: [.kyorugi, .competition],
+                    pattern: [.mon, .wed, .fri], start: "19:00", end: "21:00",
+                    capacity: 12, fee: 650),
+            program(branchAlRamtha, name: "Senior fitness", nameAr: "لياقة الكبار",
+                    age: .seniors, disciplines: [.fitness],
+                    pattern: [.tue, .thu], start: "20:00", end: "21:00",
+                    capacity: 20, fee: 400),
+            program(branchAlRamtha, name: "Adult beginners", nameAr: "مبتدئين بالغين",
+                    age: .seniors, disciplines: [.fundamentals],
+                    pattern: [.mon, .wed], start: "20:30", end: "21:30",
+                    capacity: 16, fee: 400),
+        ]
+        let programsJazzat = [
+            program(branchAlJazzat, name: "Junior fundamentals", nameAr: "أساسيات الناشئين",
+                    age: .kids, disciplines: [.fundamentals],
+                    pattern: [.sun, .tue, .thu], start: "16:30", end: "18:00",
+                    capacity: 18, fee: 350),
+            program(branchAlJazzat, name: "Cadet kyorugi", nameAr: "كيوروجي كاديت",
+                    age: .cadets, disciplines: [.kyorugi],
+                    pattern: [.mon, .wed, .sat], start: "18:00", end: "19:30",
+                    capacity: 16, fee: 450),
+            program(branchAlJazzat, name: "Cadet poomsae", nameAr: "بومساي كاديت",
+                    age: .cadets, disciplines: [.poomsae],
+                    pattern: [.tue, .thu], start: "16:30", end: "18:00",
+                    capacity: 14, fee: 400),
+            program(branchAlJazzat, name: "Junior comp", nameAr: "منافسات الناشئين",
+                    age: .juniors, disciplines: [.competition, .kyorugi],
+                    pattern: [.sun, .tue, .thu], start: "19:00", end: "20:30",
+                    capacity: 12, fee: 550),
+        ]
+        let programsKhan = [
+            program(branchAlKhan, name: "Cubs club", nameAr: "نادي الأشبال",
+                    age: .cubs, disciplines: [.fundamentals],
+                    pattern: [.mon, .wed], start: "16:30", end: "17:30",
+                    capacity: 14, fee: 250),
+            program(branchAlKhan, name: "Kids poomsae", nameAr: "بومساي الأطفال",
+                    age: .kids, disciplines: [.poomsae],
+                    pattern: [.sun, .tue, .thu], start: "17:30", end: "18:45",
+                    capacity: 16, fee: 350),
+            program(branchAlKhan, name: "Open class", nameAr: "حصة مفتوحة",
+                    age: .seniors, disciplines: [.fundamentals, .fitness],
+                    pattern: [.tue, .thu, .sat], start: "19:00", end: "20:30",
+                    capacity: 20, fee: 400),
+        ]
+        let programsShaghrafa = [
+            program(branchShaghrafa, name: "Girls cubs", nameAr: "بنات الأشبال",
+                    age: .cubs, disciplines: [.fundamentals],
+                    pattern: [.sun, .tue, .thu], start: "16:00", end: "17:00",
+                    capacity: 14, fee: 350, womenOnly: true),
+            program(branchShaghrafa, name: "Junior girls", nameAr: "ناشئات",
+                    age: .kids, disciplines: [.fundamentals, .poomsae],
+                    pattern: [.sun, .tue, .thu], start: "17:15", end: "18:30",
+                    capacity: 16, fee: 450, womenOnly: true),
+            program(branchShaghrafa, name: "Women's kyorugi", nameAr: "كيوروجي للنساء",
+                    age: .seniors, disciplines: [.kyorugi],
+                    pattern: [.mon, .wed], start: "19:00", end: "20:30",
+                    capacity: 14, fee: 500, womenOnly: true),
+            program(branchShaghrafa, name: "Women's fitness", nameAr: "لياقة النساء",
+                    age: .seniors, disciplines: [.fitness],
+                    pattern: [.tue, .thu, .sat], start: "10:00", end: "11:00",
+                    capacity: 18, fee: 400, womenOnly: true),
+        ]
+        let allBranchPrograms = programsRamtha + programsJazzat + programsKhan + programsShaghrafa
+
+        // Inventories
+        func inventory(branch: Branch, scale: Double) -> BranchInventory {
+            func qty(_ n: Int) -> Int { Int((Double(n) * scale).rounded()) }
+            let items = [
+                InventoryItem(category: .hogu, labelKey: "inventory.hogu", size: "S",
+                              quantity: qty(10), conditionGood: qty(7), conditionFair: qty(2), conditionPoor: qty(1)),
+                InventoryItem(category: .hogu, labelKey: "inventory.hogu", size: "M",
+                              quantity: qty(12), conditionGood: qty(8), conditionFair: qty(3), conditionPoor: qty(1)),
+                InventoryItem(category: .hogu, labelKey: "inventory.hogu", size: "L",
+                              quantity: qty(8), conditionGood: qty(5), conditionFair: qty(2), conditionPoor: qty(1)),
+                InventoryItem(category: .helmet, labelKey: "inventory.helmet",
+                              quantity: qty(25), conditionGood: qty(18), conditionFair: qty(5), conditionPoor: qty(2)),
+                InventoryItem(category: .shinGuard, labelKey: "inventory.shinGuard",
+                              quantity: qty(30), conditionGood: qty(22), conditionFair: qty(6), conditionPoor: qty(2)),
+                InventoryItem(category: .kickingPad, labelKey: "inventory.kickingPad",
+                              quantity: qty(20), conditionGood: qty(15), conditionFair: qty(4), conditionPoor: qty(1)),
+                InventoryItem(category: .breakingBoard, labelKey: "inventory.breakingBoard",
+                              quantity: qty(60), conditionGood: qty(60), conditionFair: 0, conditionPoor: 0),
+                InventoryItem(category: .scoreboard, labelKey: "inventory.scoreboard",
+                              quantity: 1, conditionGood: 1),
+                InventoryItem(category: .medkit, labelKey: "inventory.medkit",
+                              quantity: 2, conditionGood: 2),
+            ]
+            return BranchInventory(branchID: branch.id, items: items,
+                                   lastAuditAt: days(-21), lastAuditByUserID: userManager.id)
+        }
+        let allInventories = [
+            inventory(branch: branchAlRamtha, scale: 1.0),
+            inventory(branch: branchAlJazzat, scale: 0.7),
+            inventory(branch: branchAlKhan, scale: 0.5),
+            inventory(branch: branchShaghrafa, scale: 0.6),
+        ]
+
+        // Compliance
+        let complianceRamtha = BranchCompliance(
+            branchID: branchAlRamtha.id,
+            civilDefenceCertNumber: "CD-2024-A-1057", civilDefenceExpiry: days(220),
+            sharjahSportsCouncilRegNumber: "SSC-2024-AR-19", sharjahSportsCouncilExpiry: days(180),
+            insurancePolicyNumber: "DAMAN-PRT-77194", insuranceProvider: "Daman", insuranceExpiry: days(190),
+            lastHealthSafetyInspectionAt: days(-45), lastEmergencyPlanReviewAt: days(-30),
+            hasAED: true, aedLastServiceAt: days(-60), firstAidKitLastCheckedAt: days(-7)
+        )
+        let complianceJazzat = BranchCompliance(
+            branchID: branchAlJazzat.id,
+            civilDefenceCertNumber: "CD-2024-J-4022", civilDefenceExpiry: days(150),
+            sharjahSportsCouncilRegNumber: "SSC-2024-JZ-22", sharjahSportsCouncilExpiry: days(160),
+            insurancePolicyNumber: "ADNIC-44990", insuranceProvider: "ADNIC", insuranceExpiry: days(170),
+            lastHealthSafetyInspectionAt: days(-30), hasAED: true, aedLastServiceAt: days(-90),
+            firstAidKitLastCheckedAt: days(-14)
+        )
+        // Al Khan has a cert expiring next month → drives a TD alert.
+        let complianceKhan = BranchCompliance(
+            branchID: branchAlKhan.id,
+            civilDefenceCertNumber: "CD-2024-K-7715", civilDefenceExpiry: days(20),
+            sharjahSportsCouncilRegNumber: "SSC-2024-KH-08", sharjahSportsCouncilExpiry: days(140),
+            insurancePolicyNumber: "ORIENT-12054", insuranceProvider: "Orient", insuranceExpiry: days(120),
+            lastHealthSafetyInspectionAt: days(-90), hasAED: false,
+            firstAidKitLastCheckedAt: days(-21)
+        )
+        let complianceShaghrafa = BranchCompliance(
+            branchID: branchShaghrafa.id,
+            civilDefenceCertNumber: "CD-2024-S-3019", civilDefenceExpiry: days(280),
+            sharjahSportsCouncilRegNumber: "SSC-2024-SH-31", sharjahSportsCouncilExpiry: days(260),
+            insurancePolicyNumber: "DAMAN-PRT-88210", insuranceProvider: "Daman", insuranceExpiry: days(250),
+            lastHealthSafetyInspectionAt: days(-20), lastEmergencyPlanReviewAt: days(-20),
+            hasAED: true, aedLastServiceAt: days(-30), firstAidKitLastCheckedAt: days(-3)
+        )
+        let allCompliances = [complianceRamtha, complianceJazzat, complianceKhan, complianceShaghrafa]
+
+        // Pricing
+        func pricing(branch: Branch, base: Double, trial: Double = 50, reg: Double = 200, equip: Double = 350) -> BranchPricing {
+            BranchPricing(
+                branchID: branch.id,
+                baseMonthlyFeeAED: base, trialClassFeeAED: trial,
+                registrationFeeAED: reg, equipmentPackageFeeAED: equip,
+                siblingDiscountPct: 0.10, annualPrepayDiscountPct: 0.10,
+                promotions: [
+                    Promotion(
+                        titleEn: "Back to school", titleAr: "العودة للمدارس",
+                        descriptionEn: "Free registration for new athletes joining in September",
+                        descriptionAr: "تسجيل مجاني للملتحقين الجدد في سبتمبر",
+                        discountAED: reg, validFrom: days(-30), validUntil: days(60),
+                        promoCode: "BACK2SCHOOL"
+                    )
+                ], effectiveFrom: days(-90)
+            )
+        }
+        let allPricings = [
+            pricing(branch: branchAlRamtha, base: 450),
+            pricing(branch: branchAlJazzat, base: 400),
+            pricing(branch: branchAlKhan, base: 300, trial: 30, reg: 150, equip: 250),
+            pricing(branch: branchShaghrafa, base: 425),
+        ]
+
+        // Financials — last 6 months × 4 branches
+        func financialsSeries(branch: Branch, baseRevenue: Double, baseRent: Double) -> [BranchFinancials] {
+            (0..<6).map { offset in
+                let month = cal.date(byAdding: .month, value: -offset, to: now) ?? now
+                let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: month)) ?? month
+                let drift = Double.random(in: -0.08 ... 0.08)
+                let revenue = baseRevenue * (1 + drift)
+                return BranchFinancials(
+                    branchID: branch.id, month: monthStart,
+                    revenueAED: revenue,
+                    rentAED: baseRent,
+                    utilitiesAED: baseRent * 0.18,
+                    staffCostAED: revenue * 0.42,
+                    equipmentAED: revenue * 0.05,
+                    marketingAED: revenue * 0.04,
+                    otherExpensesAED: revenue * 0.06,
+                    outstandingFeesAED: revenue * 0.07,
+                    activePaymentPlans: Int(Double.random(in: 4...12))
+                )
+            }
+        }
+        let allFinancials =
+            financialsSeries(branch: branchAlRamtha, baseRevenue: 85_000, baseRent: 22_000)
+            + financialsSeries(branch: branchAlJazzat, baseRevenue: 50_000, baseRent: 14_000)
+            + financialsSeries(branch: branchAlKhan, baseRevenue: 32_000, baseRent: 9_000)
+            + financialsSeries(branch: branchShaghrafa, baseRevenue: 45_000, baseRent: 13_000)
+
+        // Media
+        func media(branch: Branch) -> BranchMedia {
+            BranchMedia(
+                branchID: branch.id,
+                logoURL: "https://placehold.co/200x200/png?text=\(branch.code)",
+                heroPhotoURL: "https://placehold.co/1600x900/png?text=\(branch.name.replacingOccurrences(of: " ", with: "+"))",
+                galleryURLs: (1...4).map { "https://placehold.co/1200x800/png?text=\(branch.code)-\($0)" }
+            )
+        }
+        let allMedia = branches.map(media)
+
+        // Social
+        let allSocial = [
+            BranchSocialLinks(
+                branchID: branchAlRamtha.id,
+                whatsappParentsLink: "https://chat.whatsapp.com/ramtha-parents",
+                whatsappAthletesLink: "https://chat.whatsapp.com/ramtha-athletes",
+                instagramHandle: "@ssdsc_taekwondo",
+                tiktokHandle: "@ssdsc_taekwondo",
+                websiteURL: "https://ssdsc.ae"
+            ),
+            BranchSocialLinks(
+                branchID: branchAlJazzat.id,
+                whatsappParentsLink: "https://chat.whatsapp.com/jazzat-parents",
+                instagramHandle: "@ssdsc_jazzat"
+            ),
+            BranchSocialLinks(
+                branchID: branchAlKhan.id,
+                whatsappParentsLink: "https://chat.whatsapp.com/khan-parents",
+                instagramHandle: "@ssdsc_khan"
+            ),
+            BranchSocialLinks(
+                branchID: branchShaghrafa.id,
+                whatsappParentsLink: "https://chat.whatsapp.com/shaghrafa-parents",
+                instagramHandle: "@ssdsc_shaghrafa_girls"
+            ),
+        ]
+
+        // Safeguarding
+        let allSafeguarding = [
+            BranchSafeguarding(
+                branchID: branchAlRamtha.id,
+                safeguardingOfficerCoachID: coachYassin.id,
+                lastTeamTrainingAt: days(-90),
+                staffCheckCurrentPct: 0.95,
+                openIncidentCount: 0,
+                lastIncidentAt: days(-200)
+            ),
+            BranchSafeguarding(
+                branchID: branchAlJazzat.id,
+                safeguardingOfficerCoachID: coachMohammed.id,
+                lastTeamTrainingAt: days(-150),
+                staffCheckCurrentPct: 0.80,
+                openIncidentCount: 1,
+                lastIncidentAt: days(-30)
+            ),
+            BranchSafeguarding(
+                branchID: branchAlKhan.id,
+                safeguardingOfficerCoachID: coachAshraf.id,
+                lastTeamTrainingAt: days(-200),
+                staffCheckCurrentPct: 0.66
+            ),
+            BranchSafeguarding(
+                branchID: branchShaghrafa.id,
+                safeguardingOfficerCoachID: coachLayla.id,
+                lastTeamTrainingAt: days(-60),
+                staffCheckCurrentPct: 1.0
+            ),
+        ]
+
+        // Milestones
+        let allMilestones = [
+            BranchMilestone(branchID: branchAlRamtha.id, occurredAt: branchAlRamtha.foundedAt,
+                            titleEn: "Branch founded", titleAr: "تأسيس الفرع",
+                            descriptionEn: "Al Ramtha opens as the founding SSDSC dojang.",
+                            descriptionAr: "افتتاح فرع الرمثاء كأول دوجانغ تابع لـ SSDSC.",
+                            category: .founded),
+            BranchMilestone(branchID: branchAlRamtha.id, occurredAt: monthsAgo(11),
+                            titleEn: "UAE Junior League champions",
+                            titleAr: "أبطال دوري الناشئين الإماراتي",
+                            descriptionEn: "Al Ramtha team wins the 2025 UAE Junior League.",
+                            descriptionAr: "فاز فريق الرمثاء ببطولة دوري الناشئين الإماراتي 2025.",
+                            category: .championshipWon),
+            BranchMilestone(branchID: branchAlRamtha.id, occurredAt: monthsAgo(4),
+                            titleEn: "PSS calibration", titleAr: "معايرة نظام النقاط",
+                            descriptionEn: "Daedo PSS recalibrated for the new season.",
+                            descriptionAr: "إعادة معايرة نظام Daedo للموسم الجديد.",
+                            category: .recordSet),
+            BranchMilestone(branchID: branchAlJazzat.id, occurredAt: branchAlJazzat.foundedAt,
+                            titleEn: "Branch founded", titleAr: "تأسيس الفرع",
+                            category: .founded),
+            BranchMilestone(branchID: branchAlJazzat.id, occurredAt: monthsAgo(20),
+                            titleEn: "Hall renovation", titleAr: "تجديد القاعة",
+                            descriptionEn: "Mat replacement and AC upgrade.",
+                            descriptionAr: "استبدال السجاد وتطوير التكييف.",
+                            category: .renovation),
+            BranchMilestone(branchID: branchAlKhan.id, occurredAt: branchAlKhan.foundedAt,
+                            titleEn: "Branch founded", titleAr: "تأسيس الفرع",
+                            category: .founded),
+            BranchMilestone(branchID: branchAlKhan.id, occurredAt: monthsAgo(6),
+                            titleEn: "Community partnership",
+                            titleAr: "شراكة مجتمعية",
+                            descriptionEn: "Sharjah Community Centre partnership renewed.",
+                            descriptionAr: "تجديد شراكة مركز الشارقة المجتمعي.",
+                            category: .partnership),
+            BranchMilestone(branchID: branchShaghrafa.id, occurredAt: branchShaghrafa.foundedAt,
+                            titleEn: "Girls-only branch opens", titleAr: "افتتاح الفرع النسائي",
+                            descriptionEn: "Sharjah's first dedicated women's taekwondo dojang.",
+                            descriptionAr: "أول دوجانغ تايكوندو مخصص للنساء في الشارقة.",
+                            category: .founded),
+            BranchMilestone(branchID: branchShaghrafa.id, occurredAt: monthsAgo(3),
+                            titleEn: "First female national medal",
+                            titleAr: "أول ميدالية وطنية للناشئات",
+                            descriptionEn: "First female athlete from Shaghrafa wins UAE bronze.",
+                            descriptionAr: "أول رياضية من الشغرفة تحصد برونزية الإمارات.",
+                            category: .alumniAchievement),
+        ]
+
         return SeedBundle(
             users: users,
             branches: branches,
@@ -738,6 +1229,17 @@ public enum SeedData {
             certifications: certifications,
             auditLog: auditLog,
             credentials: credentials,
+            facilities: allFacilities,
+            branchHours: allBranchHours,
+            branchPrograms: allBranchPrograms,
+            branchInventories: allInventories,
+            branchCompliances: allCompliances,
+            branchPricings: allPricings,
+            branchFinancials: allFinancials,
+            branchMedias: allMedia,
+            branchSocialLinks: allSocial,
+            branchSafeguardings: allSafeguarding,
+            branchMilestones: allMilestones,
             defaultCurrentUserID: userDev.id
         )
     }
