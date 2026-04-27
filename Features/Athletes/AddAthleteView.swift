@@ -9,7 +9,10 @@ public struct AddAthleteView: View {
     public let onCreated: (Athlete) -> Void
 
     // === Identity ===
-    @State private var memberNumber: Int = 1001
+    /// nil while the form is open and the user hasn't saved yet — only
+    /// reserved (consuming a sequence value) at the moment of save. When
+    /// editing an existing athlete this gets pre-filled from `editing`.
+    @State private var memberNumber: Int?
     @State private var fullName: String = ""
     @State private var fullNameAr: String = ""
     @State private var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -12, to: Date()) ?? Date()
@@ -104,9 +107,9 @@ public struct AddAthleteView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("action.cancel") { dismiss() }
-            }
+            // No explicit cancel button — pushed views get the back chevron
+            // for free; tapping it pops without burning a member number
+            // because we defer the nextval call to save() below.
             ToolbarItem(placement: .confirmationAction) {
                 Button {
                     Task { await save() }
@@ -127,10 +130,16 @@ public struct AddAthleteView: View {
             HStack {
                 Text("athlete.member_number")
                 Spacer()
-                Text(verbatim: "#\(memberNumber)")
-                    .font(.callout.bold().monospacedDigit())
-                    .foregroundStyle(.tint)
-                    .environment(\.layoutDirection, .leftToRight)
+                if let memberNumber {
+                    Text(verbatim: "#\(memberNumber)")
+                        .font(.callout.bold().monospacedDigit())
+                        .foregroundStyle(.tint)
+                        .environment(\.layoutDirection, .leftToRight)
+                } else {
+                    Text("athlete.member_number_pending")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
             }
             Text("athlete.member_number_help")
                 .font(.caption2).foregroundStyle(.secondary)
@@ -302,11 +311,10 @@ public struct AddAthleteView: View {
             branches = try await session.repository.branches()
             if let editing {
                 hydrate(from: editing)
-            } else {
-                if branchID == nil {
-                    branchID = initialBranchID ?? branches.first?.id
-                }
-                memberNumber = (try? await session.repository.nextMemberNumber()) ?? 1001
+            } else if branchID == nil {
+                branchID = initialBranchID ?? branches.first?.id
+                // memberNumber stays nil — only reserved at save time so
+                // an opened-then-cancelled form doesn't burn a number.
             }
             await loadCoaches()
         } catch {
@@ -317,7 +325,7 @@ public struct AddAthleteView: View {
     /// Pre-fill every @State from an existing athlete when the form is
     /// opened in edit mode (e.g. via the Complete-profile CTA).
     private func hydrate(from a: Athlete) {
-        memberNumber = a.memberNumber
+        memberNumber = a.memberNumber  // edit-mode: keep the existing number
         fullName = a.fullName
         fullNameAr = a.fullNameAr
         dateOfBirth = a.dateOfBirth
@@ -361,10 +369,29 @@ public struct AddAthleteView: View {
         guard let branchID else { return }
         saving = true
         defer { saving = false }
+
+        // Reserve the member number at the LAST possible moment so an
+        // opened-then-cancelled form never burns a sequence value.
+        // For edits we keep the existing number; for new athletes we
+        // call the repo (which advances the Postgres sequence / demo
+        // counter) only now.
+        let assignedNumber: Int
+        if let memberNumber {
+            assignedNumber = memberNumber
+        } else {
+            do {
+                assignedNumber = try await session.repository.nextMemberNumber()
+                memberNumber = assignedNumber
+            } catch {
+                self.error = error.localizedDescription
+                return
+            }
+        }
+
         let belt = Belt(color: beltColor, kind: beltKind, number: beltNumber, awardedAt: editing?.currentBelt.awardedAt ?? Date())
         let athlete = Athlete(
             id: editing?.id ?? UUID(),
-            memberNumber: memberNumber,
+            memberNumber: assignedNumber,
             fullName: fullName,
             fullNameAr: fullNameAr.isEmpty ? fullName : fullNameAr,
             dateOfBirth: dateOfBirth,

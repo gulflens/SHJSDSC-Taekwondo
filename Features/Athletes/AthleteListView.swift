@@ -83,15 +83,13 @@ public struct AthleteListView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingAdd) {
-            NavigationStack {
-                AddAthleteView(initialBranchID: scopeBranchID()) { _ in
-                    Task {
-                        switch scope {
-                        case .all: await store.loadAll()
-                        case .byBranch(let bid): await store.load(branchID: bid)
-                        case .myAthletes(let cid): await store.loadForCoach(cid)
-                        }
+        .navigationDestination(isPresented: $showingAdd) {
+            AddAthleteView(initialBranchID: scopeBranchID()) { _ in
+                Task {
+                    switch scope {
+                    case .all: await store.loadAll()
+                    case .byBranch(let bid): await store.load(branchID: bid)
+                    case .myAthletes(let cid): await store.loadForCoach(cid)
                     }
                 }
             }

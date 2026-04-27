@@ -30,11 +30,9 @@ public struct AthleteDetailView: View {
             }
             .padding()
         }
-        .sheet(isPresented: $showingEdit) {
-            NavigationStack {
-                AddAthleteView(initialBranchID: athlete.branchID, editing: athlete) { updated in
-                    athlete = updated
-                }
+        .navigationDestination(isPresented: $showingEdit) {
+            AddAthleteView(initialBranchID: athlete.branchID, editing: athlete) { updated in
+                athlete = updated
             }
         }
         .navigationTitle(Text(verbatim: athlete.fullName))
