@@ -269,9 +269,19 @@ public struct MoreView: View {
                                 let hasSet = UserDefaults.standard.object(forKey: "useDemoData") != nil
                                 return hasSet ? UserDefaults.standard.bool(forKey: "useDemoData") : true
                             },
-                            set: { UserDefaults.standard.set($0, forKey: "useDemoData") }
+                            set: { newValue in
+                                UserDefaults.standard.set(newValue, forKey: "useDemoData")
+                                Task { await wipeLocalState() }
+                            }
                         ))
                         Text("settings.use_demo_data_help").font(.caption2).foregroundStyle(.secondary)
+
+                        Button(role: .destructive) {
+                            Task { await wipeLocalState() }
+                        } label: {
+                            Label("settings.wipe_local", systemImage: "trash")
+                        }
+                        Text("settings.wipe_local_help").font(.caption2).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -315,5 +325,36 @@ public struct MoreView: View {
         } catch {
             print("MoreView.exportMyData:", error)
         }
+    }
+
+    /// Resets local-only state without touching the backend:
+    /// • Cancels every queued local notification (Sunday digest, cert
+    ///   expiries, test fires) so old data doesn't keep firing alerts.
+    /// • Forgets the remembered user id so the next launch lands on
+    ///   SignInView instead of auto-restoring the previous identity.
+    /// • Signs out of the current session.
+    /// • Wipes the documents/athletePhotos cache so demo-mode photos
+    ///   don't leak across resets.
+    /// The new repository (DemoRepository or SupabaseRepository) is
+    /// chosen at the next app launch — force-quit and reopen for the
+    /// "Use demo data" toggle to actually swap backends.
+    private func wipeLocalState() async {
+        for kind in NotificationKind.allCases {
+            await notificationScheduler.cancel(id: kind.rawValue)
+        }
+        await notificationScheduler.cancel(id: "sunday-digest")
+        await notificationScheduler.cancel(id: "sunday-digest-test")
+
+        UserDefaults.standard.removeObject(forKey: "rememberedUserID")
+        UserDefaults.standard.removeObject(forKey: "hasRequestedNotifAuth")
+
+        if let documents = try? FileManager.default.url(
+            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
+        ) {
+            let photosDir = documents.appendingPathComponent("athletePhotos", isDirectory: true)
+            try? FileManager.default.removeItem(at: photosDir)
+        }
+
+        await session.signOut()
     }
 }

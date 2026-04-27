@@ -5282,6 +5282,8 @@
         }
       }
     },
+    "settings.wipe_local" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Wipe local state" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "مسح الحالة المحلية" } } } },
+    "settings.wipe_local_help" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancels queued notifications, clears the remembered user, removes cached photos and signs out. Force-quit + reopen to swap backends." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "يلغي الإشعارات المُدرجة، يمسح المستخدم المحفوظ، يحذف الصور المخزنة، ويسجل الخروج. أغلق التطبيق ثم افتحه لتبديل الواجهة الخلفية." } } } },
     "status.active" : {
       "extractionState" : "manual",
       "localizations" : {
