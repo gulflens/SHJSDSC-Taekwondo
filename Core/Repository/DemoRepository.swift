@@ -88,7 +88,7 @@ public actor DemoStore {
 
     public func reserveNextMemberNumber() -> Int {
         let value = memberNumberCounter
-        memberNumberCounter = min(memberNumberCounter + 1, 1999)
+        memberNumberCounter += 1
         return value
     }
 

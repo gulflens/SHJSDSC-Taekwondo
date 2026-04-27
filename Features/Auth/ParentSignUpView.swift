@@ -97,7 +97,7 @@ public struct ParentSignUpView: View {
             return
         }
 
-        for num in numbers where num < 1001 || num > 1999 {
+        for num in numbers where num < 1001 {
             error = String(localized: "auth.error.member_number_range")
             return
         }
