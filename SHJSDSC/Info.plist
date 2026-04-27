@@ -15,5 +15,13 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SHJSDSC needs access to your photo library so coaches can attach athlete profile photos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>SHJSDSC uses the camera to capture athlete profile photos.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.sports</string>
 </dict>
 </plist>
