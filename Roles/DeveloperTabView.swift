@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct AdminTabView: View {
+public struct DeveloperTabView: View {
     public init() {}
 
     public var body: some View {

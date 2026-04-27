@@ -6,6 +6,9 @@ public protocol UserRepository: Sendable {
     func setCurrentUser(id: EntityID) async throws
     func user(id: EntityID) async throws -> User?
     func users(role: Role?) async throws -> [User]
+    func createAccount(email: String, password: String, fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws
+    func linkChild(userID: EntityID, athleteID: EntityID) async throws
+    func unlinkChild(userID: EntityID, athleteID: EntityID) async throws
 }
 
 public protocol BranchRepository: Sendable {
@@ -18,6 +21,8 @@ public protocol AthleteRepository: Sendable {
     func athletes(branchID: EntityID) async throws -> [Athlete]
     func athletes(coachID: EntityID) async throws -> [Athlete]
     func athlete(id: EntityID) async throws -> Athlete?
+    func athlete(memberNumber: Int) async throws -> Athlete?
+    func nextMemberNumber() async throws -> Int
     func upsert(_ athlete: Athlete) async throws
 }
 

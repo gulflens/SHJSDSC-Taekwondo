@@ -10,5 +10,5 @@ import Foundation
 /// `service_role` key here; that one bypasses RLS.
 enum SupabaseConfig {
     static let url: String = "https://khsmwnkitvutcuhypfcz.supabase.co"
-    static let anonKey: String = "sb_publishable_ug1qr-7dKQrTITNZXibEWw__OShuxOH"
+    static let anonKey: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtoc213bmtpdHZ1dGN1aHlwZmN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzUzNDcsImV4cCI6MjA5Mjg1MTM0N30.ZXzw5JmmaGqm8NLurO1pHBBDufmBlYJ8gQnWNVeESCI"
 }

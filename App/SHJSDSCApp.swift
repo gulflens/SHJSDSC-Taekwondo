@@ -8,7 +8,8 @@ struct SHJSDSCApp: App {
     @AppStorage("hasRequestedNotifAuth") private var hasRequestedNotifAuth: Bool = false
 
     init() {
-        let useDemoData = UserDefaults.standard.bool(forKey: "useDemoData")
+        let hasSetPref = UserDefaults.standard.object(forKey: "useDemoData") != nil
+        let useDemoData = hasSetPref ? UserDefaults.standard.bool(forKey: "useDemoData") : true
         let repo = SHJSDSCApp.makeRepository(useDemoData: useDemoData)
         _session = State(initialValue: AppSession(repository: repo))
     }
@@ -55,6 +56,7 @@ struct SHJSDSCApp: App {
                 .environment(\.notificationScheduler, notificationScheduler)
                 .environment(\.locale, locale)
                 .environment(\.layoutDirection, layoutDirection)
+                .id(appLanguage)
                 .task {
                     await session.bootstrap()
                     if !hasRequestedNotifAuth {

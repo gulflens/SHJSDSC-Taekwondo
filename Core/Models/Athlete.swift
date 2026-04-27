@@ -28,6 +28,7 @@ public enum AthleteStatus: String, Codable, CaseIterable, Sendable, Hashable {
 
 public struct Athlete: Codable, Identifiable, Hashable, Sendable {
     public let id: EntityID
+    public var memberNumber: Int
     public var fullName: String
     public var fullNameAr: String
     public var dateOfBirth: Date
@@ -46,6 +47,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
 
     public init(
         id: EntityID = UUID(),
+        memberNumber: Int,
         fullName: String,
         fullNameAr: String,
         dateOfBirth: Date,
@@ -63,6 +65,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         avatarURL: String? = nil
     ) {
         self.id = id
+        self.memberNumber = memberNumber
         self.fullName = fullName
         self.fullNameAr = fullNameAr
         self.dateOfBirth = dateOfBirth

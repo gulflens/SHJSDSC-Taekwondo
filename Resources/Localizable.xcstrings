@@ -90,6 +90,159 @@
         }
       }
     },
+    "admin.account_created" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم إنشاء الحساب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account created"
+          }
+        }
+      }
+    },
+    "admin.account_details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بيانات الحساب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account details"
+          }
+        }
+      }
+    },
+    "admin.accounts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحسابات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounts"
+          }
+        }
+      }
+    },
+    "admin.branch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الفرع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branch"
+          }
+        }
+      }
+    },
+    "admin.create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create"
+          }
+        }
+      }
+    },
+    "admin.create_account" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء حساب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create account"
+          }
+        }
+      }
+    },
+    "admin.no_branch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بدون فرع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No branch"
+          }
+        }
+      }
+    },
+    "admin.role" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الدور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Role"
+          }
+        }
+      }
+    },
+    "admin.role_assignment" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعيين الدور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Role assignment"
+          }
+        }
+      }
+    },
     "age.cadets" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -171,6 +324,278 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seniors"
+          }
+        }
+      }
+    },
+    "announcement.audience" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الجمهور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audience"
+          }
+        }
+      }
+    },
+    "announcement.audience.all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الجميع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone"
+          }
+        }
+      }
+    },
+    "announcement.audience.athletes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الرياضيون"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athletes"
+          }
+        }
+      }
+    },
+    "announcement.audience.branchManagers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مدراء الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branch managers"
+          }
+        }
+      }
+    },
+    "announcement.audience.coaches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المدربون"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coaches"
+          }
+        }
+      }
+    },
+    "announcement.audience.parents" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أولياء الأمور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parents"
+          }
+        }
+      }
+    },
+    "announcement.body_ar" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النص (عربي)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body (Arabic)"
+          }
+        }
+      }
+    },
+    "announcement.body_en" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النص (إنجليزي)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body (English)"
+          }
+        }
+      }
+    },
+    "announcement.compose" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compose"
+          }
+        }
+      }
+    },
+    "announcement.requires_rsvp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يتطلب تأكيد الحضور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires RSVP"
+          }
+        }
+      }
+    },
+    "announcement.rsvp_deadline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مهلة تأكيد الحضور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSVP deadline"
+          }
+        }
+      }
+    },
+    "announcement.rsvp.maybe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ربما"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maybe"
+          }
+        }
+      }
+    },
+    "announcement.rsvp.no" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        }
+      }
+    },
+    "announcement.rsvp.yes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نعم"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yes"
+          }
+        }
+      }
+    },
+    "announcement.title_ar" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العنوان (عربي)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title (Arabic)"
+          }
+        }
+      }
+    },
+    "announcement.title_en" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العنوان (إنجليزي)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title (English)"
           }
         }
       }
@@ -375,6 +800,567 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Present"
+          }
+        }
+      }
+    },
+    "audit.action" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإجراء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Action"
+          }
+        }
+      }
+    },
+    "audit.actor" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المنفذ"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actor"
+          }
+        }
+      }
+    },
+    "audit.since" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "منذ"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Since"
+          }
+        }
+      }
+    },
+    "audit.target" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الهدف"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target"
+          }
+        }
+      }
+    },
+    "audit.timestamp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الوقت"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        }
+      }
+    },
+    "audit.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سجل التدقيق"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audit log"
+          }
+        }
+      }
+    },
+    "auth.add_child" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافة طفل"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add child"
+          }
+        }
+      }
+    },
+    "auth.child_member_numbers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أرقام عضوية الأطفال"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Child member numbers"
+          }
+        }
+      }
+    },
+    "auth.child_member_numbers_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل رقم العضوية لكل طفل (1001–1999)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your child's member number (1001–1999)"
+          }
+        }
+      }
+    },
+    "auth.confirm_password" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تأكيد كلمة المرور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm password"
+          }
+        }
+      }
+    },
+    "auth.create_account" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء حساب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create account"
+          }
+        }
+      }
+    },
+    "auth.email" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "البريد الإلكتروني"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        }
+      }
+    },
+    "auth.error.invalid_member_number" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل رقم عضوية صالح"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a valid member number"
+          }
+        }
+      }
+    },
+    "auth.error.member_not_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يتم العثور على لاعب برقم العضوية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No athlete found with member number"
+          }
+        }
+      }
+    },
+    "auth.error.member_number_range" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يجب أن يكون رقم العضوية بين 1001 و 1999"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Member number must be between 1001 and 1999"
+          }
+        }
+      }
+    },
+    "auth.full_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاسم الكامل"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full name"
+          }
+        }
+      }
+    },
+    "auth.full_name_ar" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاسم الكامل بالعربية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full name (Arabic)"
+          }
+        }
+      }
+    },
+    "auth.invalid_credential" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بيانات اعتماد غير صحيحة."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid credential."
+          }
+        }
+      }
+    },
+    "auth.member_number_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مثال: 1001"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. 1001"
+          }
+        }
+      }
+    },
+    "auth.parent_info" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بيانات ولي الأمر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parent information"
+          }
+        }
+      }
+    },
+    "auth.parent_prompt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ولي أمر؟"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you a parent?"
+          }
+        }
+      }
+    },
+    "auth.parent_sign_up" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل ولي أمر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parent sign up"
+          }
+        }
+      }
+    },
+    "auth.password" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كلمة المرور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        }
+      }
+    },
+    "auth.role_claim_help" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أخبرنا من أنت. سيقوم المدير بمراجعة طلبك قبل منحك الصلاحية."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell us who you are. An admin will review and approve before granting access."
+          }
+        }
+      }
+    },
+    "auth.role_claim_intro" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تقريباً انتهى"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almost done"
+          }
+        }
+      }
+    },
+    "auth.role_claim_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحديد دورك"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claim your role"
+          }
+        }
+      }
+    },
+    "auth.sign_in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل الدخول"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in"
+          }
+        }
+      }
+    },
+    "auth.signing_in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ تسجيل الدخول…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signing in…"
+          }
+        }
+      }
+    },
+    "auth.submit_for_review" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إرسال للمراجعة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Submit for review"
+          }
+        }
+      }
+    },
+    "auth.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سجّل الدخول للوصول إلى لوحتك."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to access your dashboard."
+          }
+        }
+      }
+    },
+    "auth.use_demo_session" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم جلسة تجريبية (دون اتصال)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use demo session (offline)"
+          }
+        }
+      }
+    },
+    "auth.use_email" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم البريد الإلكتروني"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use email instead"
+          }
+        }
+      }
+    },
+    "auth.welcome" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أهلاً بك في شهجدسك"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to SHJSDSC"
           }
         }
       }
@@ -923,6 +1909,227 @@
         }
       }
     },
+    "cert.doping" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مكافحة المنشطات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anti-Doping"
+          }
+        }
+      }
+    },
+    "cert.expired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "منتهية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expired"
+          }
+        }
+      }
+    },
+    "cert.expiring" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قريبة الانتهاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expiring soon"
+          }
+        }
+      }
+    },
+    "cert.firstAid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإسعافات الأولية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First Aid"
+          }
+        }
+      }
+    },
+    "cert.new_expiry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تاريخ الانتهاء الجديد"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New expiry"
+          }
+        }
+      }
+    },
+    "cert.ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سارية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to date"
+          }
+        }
+      }
+    },
+    "cert.refereeing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التحكيم"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refereeing"
+          }
+        }
+      }
+    },
+    "cert.renew" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجديد"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renew"
+          }
+        }
+      }
+    },
+    "cert.safeguarding" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحماية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safeguarding"
+          }
+        }
+      }
+    },
+    "cert.severity.expired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "منتهية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expired"
+          }
+        }
+      }
+    },
+    "cert.severity.expiring" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قريبة الانتهاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expiring"
+          }
+        }
+      }
+    },
+    "cert.severity.ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سارية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "cert.wtCoaching" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "شهادة تدريب WT"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WT Coaching"
+          }
+        }
+      }
+    },
     "certs.expired" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1182,6 +2389,23 @@
         }
       }
     },
+    "empty.no_announcements" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا توجد إعلانات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No announcements"
+          }
+        }
+      }
+    },
     "empty.no_athletes_flagged" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1212,6 +2436,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No brackets generated"
+          }
+        }
+      }
+    },
+    "empty.no_certifications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا توجد شهادات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No certifications"
           }
         }
       }
@@ -1382,6 +2623,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No results"
+          }
+        }
+      }
+    },
+    "export.csv" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصدير CSV"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export as CSV"
+          }
+        }
+      }
+    },
+    "export.pdf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصدير PDF"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export as PDF"
+          }
+        }
+      }
+    },
+    "export.share" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مشاركة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
           }
         }
       }
@@ -2987,6 +4279,329 @@
         }
       }
     },
+    "notif.cert_expiring.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ تنتهي خلال %d يوم."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ expires in %d days."
+          }
+        }
+      }
+    },
+    "notif.cert_expiring.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "شهادة قريبة الانتهاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certification expiring"
+          }
+        }
+      }
+    },
+    "notif.history" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "السجل"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        }
+      }
+    },
+    "notif.history_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سجل الإشعارات تحفظه أداة التشغيل."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification history is recorded by the OS."
+          }
+        }
+      }
+    },
+    "notif.kind.attendanceReminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تذكير بالحضور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendance reminder"
+          }
+        }
+      }
+    },
+    "notif.kind.certExpiring" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتهاء الشهادات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certification expiry"
+          }
+        }
+      }
+    },
+    "notif.kind.gradingScheduled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترقية مجدولة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grading scheduled"
+          }
+        }
+      }
+    },
+    "notif.kind.liveMatchAlert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنبيه نزال مباشر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live match alert"
+          }
+        }
+      }
+    },
+    "notif.kind.tdSundayDigest" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "موجز الأحد"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunday digest"
+          }
+        }
+      }
+    },
+    "notif.kind.tournamentRegistration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل بطولة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tournament registration"
+          }
+        }
+      }
+    },
+    "notif.preferences" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التفضيلات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferences"
+          }
+        }
+      }
+    },
+    "notif.sunday_digest.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نتيجة النادي %.0f · %d تحت المراقبة · %d شهادات قريبة الانتهاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Club composite %.0f · %d on watch · %d certs expiring"
+          }
+        }
+      }
+    },
+    "notif.sunday_digest.body_test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجربة — هكذا سيبدو الموجز الأسبوعي."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test fire — your weekly digest will look like this."
+          }
+        }
+      }
+    },
+    "notif.sunday_digest.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "موجز شهجدسك الأسبوعي"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SHJSDSC weekly digest"
+          }
+        }
+      }
+    },
+    "permission.denied" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ليس لديك صلاحية لهذا الإجراء."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't have permission for this action."
+          }
+        }
+      }
+    },
+    "photo.idle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر صورة للرفع."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an image to upload."
+          }
+        }
+      }
+    },
+    "photo.load_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر تحميل الصورة."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not load image."
+          }
+        }
+      }
+    },
+    "photo.pick" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر صورة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a photo"
+          }
+        }
+      }
+    },
+    "photo.uploaded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم الرفع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uploaded"
+          }
+        }
+      }
+    },
     "physical.add" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3225,6 +4840,23 @@
         }
       }
     },
+    "role.developer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مطوّر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer"
+          }
+        }
+      }
+    },
     "role.analyst" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3446,6 +5078,57 @@
         }
       }
     },
+    "settings.developer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المطوّر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer"
+          }
+        }
+      }
+    },
+    "settings.export_data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصدير بياناتي"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export my data"
+          }
+        }
+      }
+    },
+    "settings.fire_test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إطلاق موجز تجريبي"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fire test digest"
+          }
+        }
+      }
+    },
     "settings.language" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3459,6 +5142,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Language"
+          }
+        }
+      }
+    },
+    "settings.manage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإدارة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage"
           }
         }
       }
@@ -3510,6 +5210,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Switch role"
+          }
+        }
+      }
+    },
+    "settings.sign_out" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل الخروج"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign out"
+          }
+        }
+      }
+    },
+    "settings.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإعدادات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "settings.use_demo_data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم البيانات التجريبية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use demo data"
+          }
+        }
+      }
+    },
+    "settings.use_demo_data_help" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أعد تشغيل التطبيق بعد التبديل. يفرض استخدام DemoRepository دون اتصال للعمل على الواجهة بدون Supabase."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart the app after toggling. Forces the offline DemoRepository so you can iterate on UI without Supabase."
           }
         }
       }
@@ -3599,6 +5367,23 @@
         }
       }
     },
+    "tab.announcements" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإعلانات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Announcements"
+          }
+        }
+      }
+    },
     "tab.athletes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3633,6 +5418,23 @@
         }
       }
     },
+    "tab.certifications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الشهادات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certifications"
+          }
+        }
+      }
+    },
     "tab.classes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3663,6 +5465,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coaches"
+          }
+        }
+      }
+    },
+    "tab.grading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التصنيف"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grading"
           }
         }
       }
@@ -4184,90 +6003,7 @@
           }
         }
       }
-    },
-    "tab.announcements" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Announcements" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإعلانات" } } } },
-    "tab.certifications" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Certifications" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الشهادات" } } } },
-    "permission.denied" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "You don't have permission for this action." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "ليس لديك صلاحية لهذا الإجراء." } } } },
-    "announcement.compose" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Compose" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "إنشاء" } } } },
-    "announcement.audience" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Audience" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الجمهور" } } } },
-    "announcement.audience.all" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Everyone" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الجميع" } } } },
-    "announcement.audience.coaches" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Coaches" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "المدربون" } } } },
-    "announcement.audience.parents" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Parents" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "أولياء الأمور" } } } },
-    "announcement.audience.athletes" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Athletes" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الرياضيون" } } } },
-    "announcement.audience.branchManagers" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Branch managers" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "مدراء الفروع" } } } },
-    "announcement.requires_rsvp" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Requires RSVP" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "يتطلب تأكيد الحضور" } } } },
-    "announcement.rsvp_deadline" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "RSVP deadline" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "مهلة تأكيد الحضور" } } } },
-    "announcement.rsvp.yes" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Yes" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "نعم" } } } },
-    "announcement.rsvp.no" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا" } } } },
-    "announcement.rsvp.maybe" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Maybe" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "ربما" } } } },
-    "announcement.title_en" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Title (English)" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "العنوان (إنجليزي)" } } } },
-    "announcement.title_ar" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Title (Arabic)" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "العنوان (عربي)" } } } },
-    "announcement.body_en" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Body (English)" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "النص (إنجليزي)" } } } },
-    "announcement.body_ar" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Body (Arabic)" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "النص (عربي)" } } } },
-    "cert.firstAid" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "First Aid" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإسعافات الأولية" } } } },
-    "cert.safeguarding" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Safeguarding" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الحماية" } } } },
-    "cert.wtCoaching" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "WT Coaching" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "شهادة تدريب WT" } } } },
-    "cert.doping" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Anti-Doping" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "مكافحة المنشطات" } } } },
-    "cert.refereeing" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Refereeing" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "التحكيم" } } } },
-    "cert.expired" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Expired" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "منتهية" } } } },
-    "cert.expiring" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Expiring soon" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "قريبة الانتهاء" } } } },
-    "cert.ok" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Up to date" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "سارية" } } } },
-    "cert.severity.expired" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Expired" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "منتهية" } } } },
-    "cert.severity.expiring" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Expiring" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "قريبة الانتهاء" } } } },
-    "cert.severity.ok" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "سارية" } } } },
-    "cert.renew" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Renew" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تجديد" } } } },
-    "cert.new_expiry" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "New expiry" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تاريخ الانتهاء الجديد" } } } },
-    "notif.kind.tdSundayDigest" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Sunday digest" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "موجز الأحد" } } } },
-    "notif.kind.certExpiring" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Certification expiry" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "انتهاء الشهادات" } } } },
-    "notif.kind.attendanceReminder" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Attendance reminder" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تذكير بالحضور" } } } },
-    "notif.kind.gradingScheduled" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Grading scheduled" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "ترقية مجدولة" } } } },
-    "notif.kind.tournamentRegistration" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Tournament registration" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تسجيل بطولة" } } } },
-    "notif.kind.liveMatchAlert" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Live match alert" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنبيه نزال مباشر" } } } },
-    "notif.preferences" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Preferences" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "التفضيلات" } } } },
-    "notif.history" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "السجل" } } } },
-    "notif.history_empty" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Notification history is recorded by the OS." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "سجل الإشعارات تحفظه أداة التشغيل." } } } },
-    "notif.sunday_digest.title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "SHJSDSC weekly digest" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "موجز شهجدسك الأسبوعي" } } } },
-    "notif.sunday_digest.body" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Club composite %.0f · %d on watch · %d certs expiring" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "نتيجة النادي %.0f · %d تحت المراقبة · %d شهادات قريبة الانتهاء" } } } },
-    "notif.sunday_digest.body_test" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Test fire — your weekly digest will look like this." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تجربة — هكذا سيبدو الموجز الأسبوعي." } } } },
-    "notif.cert_expiring.title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Certification expiring" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "شهادة قريبة الانتهاء" } } } },
-    "notif.cert_expiring.body" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ expires in %d days." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "%@ تنتهي خلال %d يوم." } } } },
-    "audit.title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Audit log" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "سجل التدقيق" } } } },
-    "audit.actor" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Actor" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "المنفذ" } } } },
-    "audit.action" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Action" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإجراء" } } } },
-    "audit.target" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Target" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الهدف" } } } },
-    "audit.timestamp" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Time" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الوقت" } } } },
-    "audit.since" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Since" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "منذ" } } } },
-    "export.csv" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Export as CSV" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تصدير CSV" } } } },
-    "export.pdf" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Export as PDF" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تصدير PDF" } } } },
-    "export.share" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Share" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "مشاركة" } } } },
-    "settings.title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإعدادات" } } } },
-    "settings.export_data" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Export my data" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تصدير بياناتي" } } } },
-    "settings.sign_out" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign out" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تسجيل الخروج" } } } },
-    "settings.fire_test" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Fire test digest" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "إطلاق موجز تجريبي" } } } },
-    "empty.no_announcements" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No announcements" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد إعلانات" } } } },
-    "empty.no_certifications" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No certifications" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد شهادات" } } } },
-    "auth.welcome" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Welcome to SHJSDSC" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "أهلاً بك في شهجدسك" } } } },
-    "auth.subtitle" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in to access your dashboard." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "سجّل الدخول للوصول إلى لوحتك." } } } },
-    "auth.use_email" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Use email instead" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "استخدم البريد الإلكتروني" } } } },
-    "auth.use_demo_session" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Use demo session (offline)" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "استخدم جلسة تجريبية (دون اتصال)" } } } },
-    "auth.email" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Email" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "البريد الإلكتروني" } } } },
-    "auth.password" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Password" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "كلمة المرور" } } } },
-    "auth.sign_in" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تسجيل الدخول" } } } },
-    "auth.signing_in" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Signing in…" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "جارٍ تسجيل الدخول…" } } } },
-    "auth.invalid_credential" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Invalid credential." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "بيانات اعتماد غير صحيحة." } } } },
-    "auth.role_claim_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Claim your role" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تحديد دورك" } } } },
-    "auth.role_claim_intro" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Almost done" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تقريباً انتهى" } } } },
-    "auth.role_claim_help" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Tell us who you are. An admin will review and approve before granting access." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "أخبرنا من أنت. سيقوم المدير بمراجعة طلبك قبل منحك الصلاحية." } } } },
-    "auth.full_name" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Full name" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الاسم الكامل" } } } },
-    "auth.full_name_ar" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Full name (Arabic)" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "الاسم الكامل بالعربية" } } } },
-    "auth.submit_for_review" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Submit for review" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "إرسال للمراجعة" } } } },
-    "photo.pick" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Pick a photo" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "اختر صورة" } } } },
-    "photo.idle" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose an image to upload." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "اختر صورة للرفع." } } } },
-    "photo.uploaded" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Uploaded" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تم الرفع" } } } },
-    "photo.load_failed" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not load image." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذر تحميل الصورة." } } } },
-    "settings.developer" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Developer" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "المطوّر" } } } },
-    "settings.use_demo_data" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Use demo data" } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "استخدم البيانات التجريبية" } } } },
-    "settings.use_demo_data_help" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Restart the app after toggling. Forces the offline DemoRepository so you can iterate on UI without Supabase." } }, "ar" : { "stringUnit" : { "state" : "translated", "value" : "أعد تشغيل التطبيق بعد التبديل. يفرض استخدام DemoRepository دون اتصال للعمل على الواجهة بدون Supabase." } } } }
+    }
   },
   "version" : "1.1"
 }

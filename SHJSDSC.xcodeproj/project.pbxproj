@@ -12,6 +12,7 @@
 
 /* Begin PBXFileReference section */
 		B05A000000000000000000A1 /* SHJSDSC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SHJSDSC.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9F580F52F9F603100CB3B38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = SHJSDSC/Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,6 +58,7 @@
 		B05A000000000000000000D1 = {
 			isa = PBXGroup;
 			children = (
+				F9F580F52F9F603100CB3B38 /* Info.plist */,
 				B05A000000000000000000B2 /* App */,
 				B05A000000000000000000B3 /* Core */,
 				B05A000000000000000000B4 /* Features */,
@@ -129,13 +131,13 @@
 			);
 			mainGroup = B05A000000000000000000D1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B05A000000000000000003A1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B05A000000000000000000D2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
-			packageReferences = (
-				B05A000000000000000003A1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-			);
 			targets = (
 				B05A000000000000000000E1 /* SHJSDSC */,
 			);
@@ -292,6 +294,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SHJSDSC/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -334,6 +337,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SHJSDSC/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

@@ -3,6 +3,7 @@ import Foundation
 public typealias EntityID = UUID
 
 public enum Role: String, Codable, CaseIterable, Sendable, Hashable {
+    case developer
     case admin
     case technicalDirector
     case branchManager
@@ -13,6 +14,7 @@ public enum Role: String, Codable, CaseIterable, Sendable, Hashable {
 
     public var label: String {
         switch self {
+        case .developer: "role.developer"
         case .admin: "role.admin"
         case .technicalDirector: "role.technicalDirector"
         case .branchManager: "role.branchManager"
@@ -31,6 +33,7 @@ public struct User: Codable, Identifiable, Hashable, Sendable {
     public var role: Role
     public var primaryBranchID: EntityID?
     public var avatarSeed: String
+    public var linkedAthleteIDs: [EntityID]
 
     public init(
         id: EntityID = UUID(),
@@ -38,7 +41,8 @@ public struct User: Codable, Identifiable, Hashable, Sendable {
         fullNameAr: String,
         role: Role,
         primaryBranchID: EntityID? = nil,
-        avatarSeed: String
+        avatarSeed: String,
+        linkedAthleteIDs: [EntityID] = []
     ) {
         self.id = id
         self.fullName = fullName
@@ -46,6 +50,7 @@ public struct User: Codable, Identifiable, Hashable, Sendable {
         self.role = role
         self.primaryBranchID = primaryBranchID
         self.avatarSeed = avatarSeed
+        self.linkedAthleteIDs = linkedAthleteIDs
     }
 }
 

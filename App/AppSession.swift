@@ -12,6 +12,8 @@ public final class AppSession {
     public private(set) var isAuthenticated = false
     public private(set) var needsRoleClaim = false
 
+    private static let rememberedUserKey = "rememberedUserID"
+
     public init(repository: any Repository) {
         self.repository = repository
     }
@@ -20,12 +22,15 @@ public final class AppSession {
         isLoading = true
         defer { isLoading = false }
         do {
-            currentUser = try await repository.currentUser()
             availableUsers = try await repository.availableUsers()
             branches = try await repository.branches()
-            // Demo repository always has a default current user, so we land
-            // straight into the authenticated state. Supabase mode returns
-            // nil here when there's no live session.
+
+            if let saved = Self.rememberedUserID {
+                try await repository.setCurrentUser(id: saved)
+                currentUser = try await repository.currentUser()
+            } else {
+                currentUser = try await repository.currentUser()
+            }
             isAuthenticated = currentUser != nil
         } catch {
             print("AppSession.bootstrap:", error)
@@ -38,6 +43,7 @@ public final class AppSession {
             try await repository.setCurrentUser(id: user.id)
             currentUser = user
             isAuthenticated = true
+            Self.rememberUser(user.id)
         } catch {
             print("AppSession.switchTo:", error)
         }
@@ -45,15 +51,28 @@ public final class AppSession {
 
     public func signOut() async {
         do {
-            // Supabase impl will sign out via auth.signOut(); demo repo no-ops.
             if let signable = repository as? AuthenticatingRepository {
                 try await signable.signOut()
             }
             currentUser = nil
             isAuthenticated = false
+            Self.forgetUser()
         } catch {
             print("AppSession.signOut:", error)
         }
+    }
+
+    private static var rememberedUserID: EntityID? {
+        guard let str = UserDefaults.standard.string(forKey: rememberedUserKey) else { return nil }
+        return UUID(uuidString: str)
+    }
+
+    private static func rememberUser(_ id: EntityID) {
+        UserDefaults.standard.set(id.uuidString, forKey: rememberedUserKey)
+    }
+
+    private static func forgetUser() {
+        UserDefaults.standard.removeObject(forKey: rememberedUserKey)
     }
 
     public func signInWithApple(credential: ASAuthorizationAppleIDCredential) async throws {
@@ -62,10 +81,9 @@ public final class AppSession {
             currentUser = try await repository.currentUser()
             isAuthenticated = currentUser != nil
             needsRoleClaim = !isAuthenticated
+            if let id = currentUser?.id { Self.rememberUser(id) }
         } else {
-            // Demo / no-Supabase fallback: synthesise a session using the
-            // first available admin user so the flow keeps moving.
-            try await signInDemoFallback()
+            await signInDemoFallback()
         }
     }
 
@@ -75,14 +93,18 @@ public final class AppSession {
             currentUser = try await repository.currentUser()
             isAuthenticated = currentUser != nil
             needsRoleClaim = !isAuthenticated
+            if let id = currentUser?.id { Self.rememberUser(id) }
+        } else if let demo = repository as? DemoRepository {
+            try await demo.signIn(email: email, password: password)
+            currentUser = try await repository.currentUser()
+            isAuthenticated = currentUser != nil
+            if let id = currentUser?.id { Self.rememberUser(id) }
         } else {
-            try await signInDemoFallback()
+            await signInDemoFallback()
         }
     }
 
     public func signInDemoFallback() async {
-        // Used by the SignInView "Use demo session" button when Supabase
-        // isn't reachable. Pulls the TD user out of available users.
         let users = (try? await repository.availableUsers()) ?? []
         if let td = users.first(where: { $0.role == .technicalDirector }) ?? users.first {
             await switchTo(td)
@@ -95,6 +117,7 @@ public final class AppSession {
             currentUser = try await repository.currentUser()
             isAuthenticated = currentUser != nil
             needsRoleClaim = false
+            if let id = currentUser?.id { Self.rememberUser(id) }
         }
     }
 
@@ -103,9 +126,6 @@ public final class AppSession {
     }
 }
 
-/// Optional protocol implemented by the Supabase repository. The demo
-/// repository doesn't conform — auth methods route through
-/// `signInDemoFallback` instead.
 public protocol AuthenticatingRepository: Sendable {
     func signInWithApple(credential: ASAuthorizationAppleIDCredential) async throws
     func signInWithEmail(email: String, password: String) async throws

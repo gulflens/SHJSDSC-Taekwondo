@@ -19,6 +19,9 @@ public enum PermissionMatrix {
 
     public static func allowed(role: Role, permission: Permission) -> Bool {
         switch role {
+        case .developer:
+            return true
+
         case .admin:
             return true
 

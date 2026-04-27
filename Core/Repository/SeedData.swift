@@ -1,5 +1,11 @@
 import Foundation
 
+public struct SeedCredential: Sendable {
+    public let email: String
+    public let passwordHash: String
+    public let userID: EntityID
+}
+
 public struct SeedBundle: Sendable {
     public let users: [User]
     public let branches: [Branch]
@@ -24,6 +30,7 @@ public struct SeedBundle: Sendable {
     public let rsvps: [AnnouncementRSVP]
     public let certifications: [Certification]
     public let auditLog: [AuditEntry]
+    public let credentials: [SeedCredential]
     public let defaultCurrentUserID: EntityID
 }
 
@@ -39,6 +46,7 @@ public enum SeedData {
         func monthsAgo(_ n: Int) -> Date { cal.date(byAdding: .month, value: -n, to: now) ?? now }
 
         // === Non-coach users ===
+        let userDev = User(fullName: "Ayman Maklad", fullNameAr: "أيمن مقلد", role: .developer, avatarSeed: "ayman")
         let userAdmin = User(fullName: "Hanadi Al Kabouri", fullNameAr: "هنادي الكعبوري", role: .admin, avatarSeed: "hanadi")
         let userTD = User(fullName: "Dr Ali Alawi", fullNameAr: "د. علي العلوي", role: .technicalDirector, avatarSeed: "ali")
         let userManager = User(fullName: "Osama Al-Radini", fullNameAr: "أسامة الرديني", role: .branchManager, avatarSeed: "osama")
@@ -102,6 +110,7 @@ public enum SeedData {
 
         // === Athletes ===
         let a1 = Athlete(
+            memberNumber: 1001,
             fullName: "Ahmed Al Mazrouei", fullNameAr: "أحمد المزروعي",
             dateOfBirth: dob(age: 14), gender: .male,
             branchID: branchAlRamtha.id, primaryCoachID: coachYassin.id,
@@ -115,6 +124,7 @@ public enum SeedData {
             weightKg: 48, status: .active, avatarSeed: "ahmed"
         )
         let a2 = Athlete(
+            memberNumber: 1002,
             fullName: "Khalid bin Saif", fullNameAr: "خالد بن سيف",
             dateOfBirth: dob(age: 13), gender: .male,
             branchID: branchAlJazzat.id, primaryCoachID: coachMohammed.id,
@@ -127,6 +137,7 @@ public enum SeedData {
             weightKg: 44, status: .active, avatarSeed: "khalid"
         )
         let a3 = Athlete(
+            memberNumber: 1003,
             fullName: "Saif Al Hammadi", fullNameAr: "سيف الحمادي",
             dateOfBirth: dob(age: 12), gender: .male,
             branchID: branchAlKhan.id, primaryCoachID: coachAshraf.id,
@@ -138,6 +149,7 @@ public enum SeedData {
             weightKg: 40, status: .readyToGrade, avatarSeed: "saif"
         )
         let a4 = Athlete(
+            memberNumber: 1004,
             fullName: "Hamad Al Suwaidi", fullNameAr: "حمد السويدي",
             dateOfBirth: dob(age: 15), gender: .male,
             branchID: branchAlRamtha.id, primaryCoachID: coachYassin.id,
@@ -152,6 +164,7 @@ public enum SeedData {
             weightKg: 56, status: .competitionTeam, avatarSeed: "hamad"
         )
         let a5 = Athlete(
+            memberNumber: 1005,
             fullName: "Salem Al Marzouqi", fullNameAr: "سالم المرزوقي",
             dateOfBirth: dob(age: 11), gender: .male,
             branchID: branchAlJazzat.id, primaryCoachID: coachMohammed.id,
@@ -164,6 +177,7 @@ public enum SeedData {
             weightKg: 36, status: .watch, avatarSeed: "salem"
         )
         let a6 = Athlete(
+            memberNumber: 1006,
             fullName: "Rashid Al Falahi", fullNameAr: "راشد الفلاسي",
             dateOfBirth: dob(age: 16), gender: .male,
             branchID: branchAlKhan.id, primaryCoachID: coachAshraf.id,
@@ -175,6 +189,7 @@ public enum SeedData {
             weightKg: 62, status: .competitionTeam, avatarSeed: "rashid"
         )
         let a7 = Athlete(
+            memberNumber: 1007,
             fullName: "Mansour Al Ketbi", fullNameAr: "منصور الكتبي",
             dateOfBirth: dob(age: 10), gender: .male,
             branchID: branchAlRamtha.id, primaryCoachID: coachElias.id,
@@ -182,6 +197,7 @@ public enum SeedData {
             weightKg: 30, status: .active, avatarSeed: "mansour"
         )
         let a8 = Athlete(
+            memberNumber: 1008,
             fullName: "Tariq Al Nuaimi", fullNameAr: "طارق النعيمي",
             dateOfBirth: dob(age: 13), gender: .male,
             branchID: branchAlJazzat.id, primaryCoachID: coachMohammed.id,
@@ -195,6 +211,7 @@ public enum SeedData {
             weightKg: 46, status: .readyToGrade, avatarSeed: "tariq"
         )
         let a9 = Athlete(
+            memberNumber: 1009,
             fullName: "Omar Al Shamsi", fullNameAr: "عمر الشامسي",
             dateOfBirth: dob(age: 14), gender: .male,
             branchID: branchAlKhan.id, primaryCoachID: coachAshraf.id,
@@ -209,6 +226,7 @@ public enum SeedData {
             weightKg: 50, status: .competitionTeam, avatarSeed: "omar"
         )
         let a10 = Athlete(
+            memberNumber: 1010,
             fullName: "Yousef Al Tunaiji", fullNameAr: "يوسف التنيجي",
             dateOfBirth: dob(age: 12), gender: .male,
             branchID: branchAlRamtha.id, primaryCoachID: coachElias.id,
@@ -221,6 +239,7 @@ public enum SeedData {
             weightKg: 38, status: .active, avatarSeed: "yousef"
         )
         let a11 = Athlete(
+            memberNumber: 1011,
             fullName: "Faisal Al Awani", fullNameAr: "فيصل العواني",
             dateOfBirth: dob(age: 9), gender: .male,
             branchID: branchAlJazzat.id, primaryCoachID: coachMohammed.id,
@@ -228,6 +247,7 @@ public enum SeedData {
             weightKg: 26, status: .active, avatarSeed: "faisal"
         )
         let a12 = Athlete(
+            memberNumber: 1012,
             fullName: "Abdullah Al Mehairi", fullNameAr: "عبدالله المهيري",
             dateOfBirth: dob(age: 15), gender: .male,
             branchID: branchAlKhan.id, primaryCoachID: coachAshraf.id,
@@ -240,6 +260,7 @@ public enum SeedData {
         )
 
         let g1 = Athlete(
+            memberNumber: 1013,
             fullName: "Maryam Al Suwaidi", fullNameAr: "مريم السويدي",
             dateOfBirth: dob(age: 13), gender: .female,
             branchID: branchShaghrafa.id, primaryCoachID: coachLayla.id,
@@ -253,6 +274,7 @@ public enum SeedData {
             weightKg: 44, status: .active, avatarSeed: "maryam"
         )
         let g2 = Athlete(
+            memberNumber: 1014,
             fullName: "Fatima Al Zaabi", fullNameAr: "فاطمة الزعابي",
             dateOfBirth: dob(age: 14), gender: .female,
             branchID: branchShaghrafa.id, primaryCoachID: coachLayla.id,
@@ -267,6 +289,7 @@ public enum SeedData {
             weightKg: 48, status: .competitionTeam, avatarSeed: "fatima"
         )
         let g3 = Athlete(
+            memberNumber: 1015,
             fullName: "Aisha Al Dhaheri", fullNameAr: "عائشة الظاهري",
             dateOfBirth: dob(age: 11), gender: .female,
             branchID: branchShaghrafa.id, primaryCoachID: coachLayla.id,
@@ -278,6 +301,7 @@ public enum SeedData {
             weightKg: 34, status: .active, avatarSeed: "aisha"
         )
         let g4 = Athlete(
+            memberNumber: 1016,
             fullName: "Noura Al Mansoori", fullNameAr: "نورا المنصوري",
             dateOfBirth: dob(age: 12), gender: .female,
             branchID: branchShaghrafa.id, primaryCoachID: coachLayla.id,
@@ -290,6 +314,7 @@ public enum SeedData {
             weightKg: 38, status: .readyToGrade, avatarSeed: "noura"
         )
         let g5 = Athlete(
+            memberNumber: 1017,
             fullName: "Hessa Al Rumaithi", fullNameAr: "حصة الرميثي",
             dateOfBirth: dob(age: 15), gender: .female,
             branchID: branchShaghrafa.id, primaryCoachID: coachLayla.id,
@@ -301,6 +326,7 @@ public enum SeedData {
             weightKg: 52, status: .competitionTeam, avatarSeed: "hessa"
         )
         let g6 = Athlete(
+            memberNumber: 1018,
             fullName: "Shamma Al Falasi", fullNameAr: "شما الفلاسي",
             dateOfBirth: dob(age: 10), gender: .female,
             branchID: branchShaghrafa.id, primaryCoachID: coachLayla.id,
@@ -315,7 +341,16 @@ public enum SeedData {
             role: .athlete, primaryBranchID: a1.branchID, avatarSeed: a1.avatarSeed
         )
 
-        let users = [userAdmin, userTD, userManager, userCoach, userAthlete, userParent]
+        // Re-create parent with linked children now that athlete IDs are available
+        let userParentLinked = User(
+            id: userParent.id,
+            fullName: userParent.fullName, fullNameAr: userParent.fullNameAr,
+            role: userParent.role, primaryBranchID: userParent.primaryBranchID,
+            avatarSeed: userParent.avatarSeed,
+            linkedAthleteIDs: [a5.id, a7.id]
+        )
+
+        let users = [userDev, userAdmin, userTD, userManager, userCoach, userAthlete, userParentLinked]
 
         // === Sessions: 3 per branch per day for today + 1 + 2 ===
         func session(branch: Branch, coach: Coach, dayOffset: Int, hour: Int, durationMin: Int, discipline: ClassDiscipline, ageGroup: AgeGroup, athletes enrolled: [Athlete]) -> ClassSession {
@@ -671,6 +706,13 @@ public enum SeedData {
             ))
         }
 
+        let credentials = [
+            SeedCredential(email: "gulflens.studio@gmail.com", passwordHash: "d19f3c3cde74772f7d534e92d9cc63955694fe9083f63ca10f8aaad00802140c", userID: userDev.id),
+            SeedCredential(email: "admin@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userAdmin.id),
+            SeedCredential(email: "td@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userTD.id),
+            SeedCredential(email: "coach@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userCoach.id),
+        ]
+
         return SeedBundle(
             users: users,
             branches: branches,
@@ -695,7 +737,8 @@ public enum SeedData {
             rsvps: [],
             certifications: certifications,
             auditLog: auditLog,
-            defaultCurrentUserID: userTD.id
+            credentials: credentials,
+            defaultCurrentUserID: userDev.id
         )
     }
 }

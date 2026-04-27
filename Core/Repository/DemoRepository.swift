@@ -1,4 +1,23 @@
 import Foundation
+import CryptoKit
+
+public enum DemoAuthError: Error, LocalizedError {
+    case invalidCredentials
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidCredentials: String(localized: "auth.invalid_credential")
+        }
+    }
+}
+
+enum PasswordHasher {
+    static func sha256(_ input: String) -> String {
+        let data = Data(input.utf8)
+        let digest = SHA256.hash(data: data)
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+}
 
 public actor DemoStore {
     public var users: [User]
@@ -26,6 +45,8 @@ public actor DemoStore {
     public var certifications: [Certification]
     public var auditLog: [AuditEntry]
     public var currentUserID: EntityID
+    private var emailPasswordHashes: [String: String] = [:]
+    private var emailUserIDs: [String: EntityID] = [:]
 
     public init(seed: SeedBundle) {
         self.users = seed.users
@@ -53,6 +74,24 @@ public actor DemoStore {
         self.certifications = seed.certifications
         self.auditLog = seed.auditLog
         self.currentUserID = seed.defaultCurrentUserID
+        for cred in seed.credentials {
+            emailPasswordHashes[cred.email] = cred.passwordHash
+            emailUserIDs[cred.email] = cred.userID
+        }
+    }
+
+    public func validateSignIn(email: String, password: String) throws {
+        let inputHash = PasswordHasher.sha256(password)
+        guard let storedHash = emailPasswordHashes[email], storedHash == inputHash,
+              let userID = emailUserIDs[email] else {
+            throw DemoAuthError.invalidCredentials
+        }
+        currentUserID = userID
+    }
+
+    public func registerCredential(email: String, password: String, userID: EntityID) {
+        emailPasswordHashes[email] = PasswordHasher.sha256(password)
+        emailUserIDs[email] = userID
     }
 
     public func upsertAthlete(_ a: Athlete) {
@@ -143,6 +182,10 @@ public actor DemoStore {
         appendAudit(entry)
     }
 
+    public func upsertUser(_ u: User) {
+        if let i = users.firstIndex(where: { $0.id == u.id }) { users[i] = u } else { users.append(u) }
+    }
+
     public func appendEventToActive(_ e: ScoreEvent) {
         guard var m = activeMatch, e.matchID == m.id else { return }
         m.events.append(e)
@@ -169,6 +212,10 @@ public struct DemoRepository: Repository {
         self.store = DemoStore(seed: SeedData.build())
     }
 
+    public func signIn(email: String, password: String) async throws {
+        try await store.validateSignIn(email: email, password: password)
+    }
+
     // MARK: User
 
     public func currentUser() async throws -> User? {
@@ -182,6 +229,26 @@ public struct DemoRepository: Repository {
         let all = await store.users
         guard let role else { return all }
         return all.filter { $0.role == role }
+    }
+    public func createAccount(email: String, password: String, fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws {
+        let user = User(fullName: fullName, fullNameAr: fullNameAr, role: role, primaryBranchID: branchID, avatarSeed: fullName.lowercased().replacingOccurrences(of: " ", with: ""))
+        await store.upsertUser(user)
+        await store.registerCredential(email: email, password: password, userID: user.id)
+        await store.logAudit(action: "createAccount", target: "User", targetID: user.id)
+    }
+    public func linkChild(userID: EntityID, athleteID: EntityID) async throws {
+        guard var user = await store.users.first(where: { $0.id == userID }) else { return }
+        if !user.linkedAthleteIDs.contains(athleteID) {
+            user.linkedAthleteIDs.append(athleteID)
+            await store.upsertUser(user)
+            await store.logAudit(action: "linkChild", target: "User", targetID: userID, changes: ["athleteID": athleteID.uuidString])
+        }
+    }
+    public func unlinkChild(userID: EntityID, athleteID: EntityID) async throws {
+        guard var user = await store.users.first(where: { $0.id == userID }) else { return }
+        user.linkedAthleteIDs.removeAll { $0 == athleteID }
+        await store.upsertUser(user)
+        await store.logAudit(action: "unlinkChild", target: "User", targetID: userID, changes: ["athleteID": athleteID.uuidString])
     }
 
     // MARK: Branch
@@ -200,6 +267,13 @@ public struct DemoRepository: Repository {
     }
     public func athlete(id: EntityID) async throws -> Athlete? {
         await store.athletes.first { $0.id == id }
+    }
+    public func athlete(memberNumber: Int) async throws -> Athlete? {
+        await store.athletes.first { $0.memberNumber == memberNumber }
+    }
+    public func nextMemberNumber() async throws -> Int {
+        let maxNumber = await store.athletes.map(\.memberNumber).max() ?? 1000
+        return max(maxNumber + 1, 1001)
     }
     public func upsert(_ athlete: Athlete) async throws {
         await store.upsertAthlete(athlete)

@@ -13,6 +13,7 @@ public struct RoleRouter: View {
                 RoleClaimView()
             } else {
                 switch session.currentUser?.role {
+                case .developer: DeveloperTabView()
                 case .admin: AdminTabView()
                 case .technicalDirector: TechnicalDirectorTabView()
                 case .branchManager: BranchManagerTabView()

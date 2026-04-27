@@ -202,6 +202,24 @@ public struct MoreView: View {
                     }
                 }
                 if let role = session.currentUser?.role {
+                    if role == .developer || role == .admin || role == .technicalDirector {
+                        Section(header: Text("admin.accounts")) {
+                            NavigationLink(destination: AdminCreateAccountView()) {
+                                Label("admin.create_account", systemImage: "person.badge.plus")
+                            }
+                        }
+                        Section(header: Text("settings.manage")) {
+                            NavigationLink(destination: AnnouncementsView()) {
+                                Label("tab.announcements", systemImage: "megaphone")
+                            }
+                            NavigationLink(destination: CoachListView()) {
+                                Label("tab.coaches", systemImage: "person.crop.rectangle.stack.fill")
+                            }
+                            NavigationLink(destination: GradingDashboardView()) {
+                                Label("tab.grading", systemImage: "medal")
+                            }
+                        }
+                    }
                     if PermissionMatrix.allowed(role: role, permission: .viewAuditLog) {
                         Section {
                             NavigationLink(destination: AuditLogView()) {
@@ -244,15 +262,18 @@ public struct MoreView: View {
                         Label("settings.sign_out", systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 }
-                #if DEBUG
-                Section(header: Text("settings.developer")) {
-                    Toggle("settings.use_demo_data", isOn: Binding(
-                        get: { UserDefaults.standard.bool(forKey: "useDemoData") },
-                        set: { UserDefaults.standard.set($0, forKey: "useDemoData") }
-                    ))
-                    Text("settings.use_demo_data_help").font(.caption2).foregroundStyle(.secondary)
+                if session.currentUser?.role == .developer {
+                    Section(header: Text("settings.developer")) {
+                        Toggle("settings.use_demo_data", isOn: Binding(
+                            get: {
+                                let hasSet = UserDefaults.standard.object(forKey: "useDemoData") != nil
+                                return hasSet ? UserDefaults.standard.bool(forKey: "useDemoData") : true
+                            },
+                            set: { UserDefaults.standard.set($0, forKey: "useDemoData") }
+                        ))
+                        Text("settings.use_demo_data_help").font(.caption2).foregroundStyle(.secondary)
+                    }
                 }
-                #endif
             }
             .navigationTitle(Text("settings.title"))
         }

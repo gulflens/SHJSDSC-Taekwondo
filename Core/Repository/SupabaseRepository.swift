@@ -80,6 +80,50 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         return try await query.execute().value
     }
 
+    public func createAccount(email: String, password: String, fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws {
+        let result = try await client.auth.signUp(email: email, password: password)
+        let newUserID = result.user.id
+        struct ProfileInsert: Encodable {
+            let id: UUID
+            let fullName: String
+            let fullNameAr: String
+            let role: String
+            let primaryBranchId: UUID?
+            let avatarSeed: String
+            let linkedAthleteIds: [UUID]
+        }
+        let row = ProfileInsert(
+            id: newUserID,
+            fullName: fullName,
+            fullNameAr: fullNameAr,
+            role: role.rawValue,
+            primaryBranchId: branchID,
+            avatarSeed: String(fullName.prefix(2)).lowercased(),
+            linkedAthleteIds: []
+        )
+        try await client.from("user_profiles").upsert(row).execute()
+    }
+
+    public func linkChild(userID: EntityID, athleteID: EntityID) async throws {
+        guard var user: User = try await user(id: userID) else { return }
+        if !user.linkedAthleteIDs.contains(athleteID) {
+            user.linkedAthleteIDs.append(athleteID)
+        }
+        try await client.from("user_profiles")
+            .update(["linked_athlete_ids": user.linkedAthleteIDs.map { $0.uuidString }])
+            .eq("id", value: userID.uuidString)
+            .execute()
+    }
+
+    public func unlinkChild(userID: EntityID, athleteID: EntityID) async throws {
+        guard var user: User = try await user(id: userID) else { return }
+        user.linkedAthleteIDs.removeAll { $0 == athleteID }
+        try await client.from("user_profiles")
+            .update(["linked_athlete_ids": user.linkedAthleteIDs.map { $0.uuidString }])
+            .eq("id", value: userID.uuidString)
+            .execute()
+    }
+
     // MARK: Branch
 
     public func branches() async throws -> [Branch] {
@@ -118,6 +162,18 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
 
     public func upsert(_ athlete: Athlete) async throws {
         try await client.from("athletes").upsert(athlete).execute()
+    }
+
+    public func athlete(memberNumber: Int) async throws -> Athlete? {
+        let rows: [Athlete] = try await client.from("athletes").select()
+            .eq("member_number", value: memberNumber).limit(1).execute().value
+        return rows.first
+    }
+
+    public func nextMemberNumber() async throws -> Int {
+        let rows: [Athlete] = try await client.from("athletes").select()
+            .order("member_number", ascending: false).limit(1).execute().value
+        return max(1001, (rows.first?.memberNumber ?? 1000) + 1)
     }
 
     // MARK: Coach

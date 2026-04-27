@@ -1,117 +1,130 @@
 import SwiftUI
-import AuthenticationServices
 
 public struct SignInView: View {
     @Environment(AppSession.self) private var session
 
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var useEmail: Bool = false
+    @State private var showParentSignUp = false
     @State private var error: String?
     @State private var signing: Bool = false
 
     public init() {}
 
     public var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "shield.lefthalf.filled")
-                .font(.system(size: 56))
-                .foregroundStyle(.tint)
-            Text("auth.welcome").font(.title.bold())
-            Text("auth.subtitle").font(.body).foregroundStyle(.secondary).multilineTextAlignment(.center).padding(.horizontal, 24)
+        GeometryReader { geo in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer(minLength: geo.size.height * 0.08)
 
-            if useEmail {
-                emailForm
-            } else {
-                appleButton
-                Button {
-                    useEmail = true
-                } label: {
-                    Text("auth.use_email")
-                        .font(.callout)
-                        .foregroundStyle(.tint)
-                }
-            }
+                    VStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(.tint.opacity(0.12))
+                                .frame(width: 96, height: 96)
+                            Image(systemName: "figure.taekwondo")
+                                .font(.system(size: 44, weight: .medium))
+                                .foregroundStyle(.tint)
+                        }
 
-            if let error {
-                Text(verbatim: error).font(.caption).foregroundStyle(.red).padding(.horizontal)
-            }
+                        Text("auth.welcome")
+                            .font(.title.bold())
 
-            Spacer()
-
-            Button {
-                Task { await session.signInDemoFallback() }
-            } label: {
-                Text("auth.use_demo_session")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.bottom, 12)
-        }
-        .padding()
-    }
-
-    private var appleButton: some View {
-        SignInWithAppleButton { request in
-            request.requestedScopes = [.fullName, .email]
-        } onCompletion: { result in
-            switch result {
-            case .success(let authResults):
-                Task { await handleAppleResult(authResults) }
-            case .failure(let err):
-                error = err.localizedDescription
-            }
-        }
-        .signInWithAppleButtonStyle(.black)
-        .frame(height: 48)
-        .padding(.horizontal, 32)
-    }
-
-    private var emailForm: some View {
-        VStack(spacing: 12) {
-            TextField("auth.email", text: $email)
-                .textFieldStyle(.roundedBorder)
-                #if os(iOS)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.emailAddress)
-                #endif
-            SecureField("auth.password", text: $password)
-                .textFieldStyle(.roundedBorder)
-            HStack {
-                Button {
-                    Task { await handleEmailSignIn() }
-                } label: {
-                    if signing {
-                        HStack { ProgressView(); Text("auth.signing_in") }
-                    } else {
-                        Text("auth.sign_in")
+                        Text("auth.subtitle")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
                     }
+                    .padding(.bottom, 32)
+
+                    VStack(spacing: 16) {
+                        VStack(spacing: 12) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "envelope")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20)
+                                TextField("auth.email", text: $email)
+                                    #if os(iOS)
+                                    .textInputAutocapitalization(.never)
+                                    .keyboardType(.emailAddress)
+                                    #endif
+                            }
+                            .padding(12)
+                            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+
+                            HStack(spacing: 10) {
+                                Image(systemName: "lock")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20)
+                                SecureField("auth.password", text: $password)
+                            }
+                            .padding(12)
+                            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+                        }
+
+                        Button {
+                            Task { await handleEmailSignIn() }
+                        } label: {
+                            Group {
+                                if signing {
+                                    HStack(spacing: 8) {
+                                        ProgressView()
+                                            .tint(.white)
+                                        Text("auth.signing_in")
+                                    }
+                                } else {
+                                    Text("auth.sign_in")
+                                }
+                            }
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.roundedRectangle(radius: 12))
+                        .disabled(signing || email.isEmpty || password.isEmpty)
+
+                        if let error {
+                            Text(verbatim: error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+
+                    Spacer(minLength: 40)
+
+                    VStack(spacing: 16) {
+                        VStack(spacing: 4) {
+                            Text("auth.parent_prompt")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Button {
+                                showParentSignUp = true
+                            } label: {
+                                Text("auth.parent_sign_up")
+                                    .font(.callout.weight(.medium))
+                            }
+                        }
+
+                        Button {
+                            Task { await session.signInDemoFallback() }
+                        } label: {
+                            Text("auth.use_demo_session")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.bottom, 24)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(signing || email.isEmpty || password.isEmpty)
-                Spacer()
-                Button {
-                    useEmail = false
-                } label: {
-                    Text("action.cancel")
-                }
+                .frame(maxWidth: 380)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .frame(minHeight: geo.size.height)
             }
         }
-        .padding(.horizontal, 32)
-    }
-
-    private func handleAppleResult(_ result: ASAuthorization) async {
-        guard let credential = result.credential as? ASAuthorizationAppleIDCredential else {
-            error = "auth.invalid_credential"
-            return
-        }
-        signing = true
-        defer { signing = false }
-        do {
-            try await session.signInWithApple(credential: credential)
-        } catch {
-            self.error = error.localizedDescription
+        .sheet(isPresented: $showParentSignUp) {
+            ParentSignUpView()
         }
     }
 
