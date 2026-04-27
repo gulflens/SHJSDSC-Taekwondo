@@ -15,16 +15,26 @@ struct SHJSDSCApp: App {
 
     /// Repository selection:
     ///   • useDemoData true → DemoRepository (Stages 1-4 behaviour)
-    ///   • useDemoData false + Supabase package added + xcconfig wired →
+    ///   • useDemoData false + Supabase package added + non-empty config →
     ///     real SupabaseRepository
     ///   • Anything missing → silent fallback to DemoRepository with a log
+    ///
+    /// Config priority: `SupabaseConfig` (committed Swift constants) → Info.plist
+    /// (xcconfig-driven for deployments that prefer build-settings wiring).
     private static func makeRepository(useDemoData: Bool) -> any Repository {
         if useDemoData { return DemoRepository() }
 
-        let urlString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String
-        let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String
-        guard let urlString, let url = URL(string: urlString),
-              let key, !key.isEmpty,
+        let urlString: String = {
+            if !SupabaseConfig.url.isEmpty { return SupabaseConfig.url }
+            return (Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String) ?? ""
+        }()
+        let key: String = {
+            if !SupabaseConfig.anonKey.isEmpty { return SupabaseConfig.anonKey }
+            return (Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String) ?? ""
+        }()
+
+        guard let url = URL(string: urlString),
+              !urlString.isEmpty, !key.isEmpty,
               !urlString.contains("your-project-ref") else {
             print("Supabase config missing or unedited — using demo data.")
             return DemoRepository()
