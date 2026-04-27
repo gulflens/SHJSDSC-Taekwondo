@@ -45,6 +45,36 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
     public var avatarSeed: String
     public var avatarURL: String?
 
+    // === Identity ===
+    public var passportNumber: String?
+    public var bloodType: BloodType?
+    public var federationLicenceNumber: String?
+
+    // === Family / consent ===
+    public var parentUserIDs: [EntityID]
+    public var emergencyContacts: [EmergencyContact]
+    public var school: String?
+    public var imageRightsConsent: Bool
+    public var imageRightsConsentDate: Date?
+    public var travelPermission: Bool
+    public var travelPermissionDate: Date?
+
+    // === Medical ===
+    public var heightCm: Double?
+    public var weightHistory: [WeightEntry]
+    public var allergies: [String]
+    public var medicalConditions: [String]
+    public var medications: [String]
+    public var fitToTrain: Bool
+    public var injuries: [InjuryEntry]
+
+    // === Technical ===
+    public var weightClass: WeightCategory?
+    public var dominantStance: Stance?
+    public var poomsaeSyllabus: String?
+    public var kyorugiTier: KyorugiTier?
+    public var trainingGroupID: EntityID?
+
     public init(
         id: EntityID = UUID(),
         memberNumber: Int,
@@ -62,7 +92,29 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         weightKg: Double,
         status: AthleteStatus,
         avatarSeed: String,
-        avatarURL: String? = nil
+        avatarURL: String? = nil,
+        passportNumber: String? = nil,
+        bloodType: BloodType? = nil,
+        federationLicenceNumber: String? = nil,
+        parentUserIDs: [EntityID] = [],
+        emergencyContacts: [EmergencyContact] = [],
+        school: String? = nil,
+        imageRightsConsent: Bool = false,
+        imageRightsConsentDate: Date? = nil,
+        travelPermission: Bool = false,
+        travelPermissionDate: Date? = nil,
+        heightCm: Double? = nil,
+        weightHistory: [WeightEntry] = [],
+        allergies: [String] = [],
+        medicalConditions: [String] = [],
+        medications: [String] = [],
+        fitToTrain: Bool = true,
+        injuries: [InjuryEntry] = [],
+        weightClass: WeightCategory? = nil,
+        dominantStance: Stance? = nil,
+        poomsaeSyllabus: String? = nil,
+        kyorugiTier: KyorugiTier? = nil,
+        trainingGroupID: EntityID? = nil
     ) {
         self.id = id
         self.memberNumber = memberNumber
@@ -81,6 +133,28 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         self.status = status
         self.avatarSeed = avatarSeed
         self.avatarURL = avatarURL
+        self.passportNumber = passportNumber
+        self.bloodType = bloodType
+        self.federationLicenceNumber = federationLicenceNumber
+        self.parentUserIDs = parentUserIDs
+        self.emergencyContacts = emergencyContacts
+        self.school = school
+        self.imageRightsConsent = imageRightsConsent
+        self.imageRightsConsentDate = imageRightsConsentDate
+        self.travelPermission = travelPermission
+        self.travelPermissionDate = travelPermissionDate
+        self.heightCm = heightCm
+        self.weightHistory = weightHistory
+        self.allergies = allergies
+        self.medicalConditions = medicalConditions
+        self.medications = medications
+        self.fitToTrain = fitToTrain
+        self.injuries = injuries
+        self.weightClass = weightClass
+        self.dominantStance = dominantStance
+        self.poomsaeSyllabus = poomsaeSyllabus
+        self.kyorugiTier = kyorugiTier
+        self.trainingGroupID = trainingGroupID
     }
 
     public var age: Int {
