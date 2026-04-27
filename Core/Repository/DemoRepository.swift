@@ -47,6 +47,11 @@ public actor DemoStore {
     public var currentUserID: EntityID
     private var emailPasswordHashes: [String: String] = [:]
     private var emailUserIDs: [String: EntityID] = [:]
+    /// Monotonic counter — starts above the highest seeded member number,
+    /// only ever advances. Mirrors Postgres sequence semantics so demo
+    /// behaviour matches the live backend (deleting an athlete does not
+    /// recycle their number).
+    private var memberNumberCounter: Int = 1001
 
     public init(seed: SeedBundle) {
         self.users = seed.users
@@ -78,6 +83,13 @@ public actor DemoStore {
             emailPasswordHashes[cred.email] = cred.passwordHash
             emailUserIDs[cred.email] = cred.userID
         }
+        self.memberNumberCounter = max(1001, (seed.athletes.map(\.memberNumber).max() ?? 1000) + 1)
+    }
+
+    public func reserveNextMemberNumber() -> Int {
+        let value = memberNumberCounter
+        memberNumberCounter = min(memberNumberCounter + 1, 1999)
+        return value
     }
 
     public func validateSignIn(email: String, password: String) throws {
@@ -272,8 +284,7 @@ public struct DemoRepository: Repository {
         await store.athletes.first { $0.memberNumber == memberNumber }
     }
     public func nextMemberNumber() async throws -> Int {
-        let maxNumber = await store.athletes.map(\.memberNumber).max() ?? 1000
-        return max(maxNumber + 1, 1001)
+        await store.reserveNextMemberNumber()
     }
     public func upsert(_ athlete: Athlete) async throws {
         await store.upsertAthlete(athlete)

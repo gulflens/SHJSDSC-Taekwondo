@@ -220,9 +220,11 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     }
 
     public func nextMemberNumber() async throws -> Int {
-        let rows: [Athlete] = try await client.from("athletes").select()
-            .order("member_number", ascending: false).limit(1).execute().value
-        return max(1001, (rows.first?.memberNumber ?? 1000) + 1)
+        // Postgres sequence guarantees monotonic, never-reused values even
+        // after an athlete is deleted (migration 0005). Each call advances
+        // the sequence — gaps from cancelled-form-fills are acceptable
+        // because reuse is the bigger sin.
+        try await client.rpc("next_member_number").execute().value
     }
 
     // MARK: Coach

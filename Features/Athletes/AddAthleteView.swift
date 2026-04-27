@@ -121,13 +121,17 @@ public struct AddAthleteView: View {
 
     @ViewBuilder
     private var identitySection: some View {
-        Stepper(value: $memberNumber, in: 1001...1999) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("athlete.member_number")
                 Spacer()
-                Text(verbatim: "#\(memberNumber)").foregroundStyle(.secondary)
+                Text(verbatim: "#\(memberNumber)")
+                    .font(.callout.bold().monospacedDigit())
+                    .foregroundStyle(.tint)
                     .environment(\.layoutDirection, .leftToRight)
             }
+            Text("athlete.member_number_help")
+                .font(.caption2).foregroundStyle(.secondary)
         }
         TextField("auth.full_name", text: $fullName)
         TextField("auth.full_name_ar", text: $fullNameAr)
