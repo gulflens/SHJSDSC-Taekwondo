@@ -1,306 +1,426 @@
 import SwiftUI
 
-/// Apple News-style announcements feed. Hero card for the newest item +
-/// grouped feed of premium cards for the rest. Reuses the federation-grade
-/// design primitives (`SectionCard`, `CategoryBadge`, `EmptyStateCard`) so
-/// announcements feel part of the same ecosystem as athlete / coach / branch.
+// MARK: - Announcements dashboard
+//
+// Stage 1.9 — premium remodel. Header + summary stat tiles + status filter
+// pills + an adaptive two-panel workspace (announcement list + detail panel
+// on iPad, list with a pushed detail screen on iPhone).
+
 public struct AnnouncementsView: View {
     @Environment(AppSession.self) private var session
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.horizontalSizeClass) private var hSize
+
     @State private var store: OperationsStore?
+    @State private var searchText = ""
+    @State private var statusFilter: AnnouncementStatus?
+    @State private var selectedID: EntityID?
+    @State private var page = 0
     @State private var showCompose = false
-    @State private var audienceFilter: AnnouncementAudience?
+
+    private let rowsPerPage = 8
 
     public init() {}
 
+    private var isWide: Bool { hSize == .regular }
+
     public var body: some View {
-        Group {
+        VStack(spacing: 0) {
+            header
             if let store {
-                content(store: store)
+                if store.announcements.isEmpty {
+                    emptyState
+                } else {
+                    content(store)
+                }
             } else {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Spacer(); ProgressView(); Spacer()
             }
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .toolbar {
-            if let role = session.currentUser?.role,
-               PermissionMatrix.allowed(role: role, permission: .publishAnnouncement) {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showCompose = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                    }
-                    .accessibilityLabel(Text("announcement.compose"))
-                    .bareToolbarButton()
-                }
-            }
-        }
-        .sheet(isPresented: $showCompose) {
-            NavigationStack {
-                ComposeAnnouncementView { _ in
-                    Task { await store?.load() }
-                }
-            }
-        }
         .task {
             if store == nil { store = OperationsStore(repository: session.repository) }
             await store?.load()
+            if selectedID == nil, isWide { selectedID = sortedAll.first?.id }
+        }
+        .onChange(of: searchText) { _, _ in page = 0 }
+        .onChange(of: statusFilter) { _, _ in page = 0 }
+        .sheet(isPresented: $showCompose) {
+            NavigationStack {
+                ComposeAnnouncementView { _ in Task { await reload() } }
+            }
         }
     }
 
-    private var isWide: Bool { sizeClass == .regular }
+    // MARK: Header
 
-    @ViewBuilder
-    private func content(store: OperationsStore) -> some View {
-        if store.announcements.isEmpty {
-            SectionCard {
-                EmptyStateCard(
-                    icon: "megaphone",
-                    titleKey: "announcement.empty.title",
-                    messageKey: "announcement.empty.message"
-                )
-            }
-            .padding(.horizontal, isWide ? 20 : 14)
-            .padding(.top, 12)
-        } else {
-            ScrollView {
-                VStack(spacing: 14) {
-                    filterStrip
-                    if let hero = filtered(store).first {
-                        heroCard(hero, store: store)
-                    }
-                    feedSection(store: store)
+    private var header: some View {
+        Group {
+            if isWide {
+                HStack(alignment: .center, spacing: 16) {
+                    titleBlock
+                    Spacer(minLength: 8)
+                    AnnouncementSearchField(text: $searchText).frame(maxWidth: 260)
+                    if canManage { newButton }
                 }
-                .padding(.horizontal, isWide ? 20 : 14)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        titleBlock
+                        Spacer(minLength: 8)
+                        if canManage { newButton }
+                    }
+                    AnnouncementSearchField(text: $searchText)
+                }
             }
+        }
+        .padding(.horizontal, isWide ? 20 : 14)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("announcement.dashboard.title").scaledFont(.title2, weight: .bold)
+            Text("announcement.dashboard.subtitle")
+                .scaledFont(.caption).foregroundStyle(.secondary)
         }
     }
 
-    private func filtered(_ store: OperationsStore) -> [Announcement] {
-        let sorted = store.announcements.sorted { $0.publishedAt > $1.publishedAt }
-        guard let audienceFilter else { return sorted }
-        return sorted.filter { $0.audience == audienceFilter }
+    private var newButton: some View {
+        Button { showCompose = true } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "plus").scaledFont(.footnote, weight: .semibold)
+                Text("announcement.new").scaledFont(.subheadline, weight: .semibold)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 14).padding(.vertical, 9)
+            .background(
+                Capsule().fill(LinearGradient(
+                    colors: [Color.accentColor, Color.accentColor.opacity(0.82)],
+                    startPoint: .top, endPoint: .bottom)))
+            .shadow(color: Color.accentColor.opacity(0.32), radius: 8, y: 4)
+        }
+        .buttonStyle(.plain)
     }
 
-    private var filterStrip: some View {
+    // MARK: Content
+
+    private func content(_ store: OperationsStore) -> some View {
+        VStack(spacing: 14) {
+            statTiles(store)
+            filterPills
+            if isWide {
+                HStack(alignment: .top, spacing: 16) {
+                    listPanel(store).frame(maxWidth: .infinity)
+                    detailColumn.frame(width: 440)
+                }
+            } else {
+                listPanel(store)
+            }
+        }
+        .padding(.horizontal, isWide ? 20 : 14)
+        .padding(.top, 4)
+        .padding(.bottom, 14)
+    }
+
+    private var emptyState: some View {
+        VStack {
+            Spacer()
+            EmptyStateCard(icon: "megaphone",
+                           titleKey: "announcement.empty.title",
+                           messageKey: "announcement.empty.message")
+                .padding(.horizontal, 20)
+            Spacer()
+        }
+    }
+
+    // MARK: Stat tiles
+
+    private func statTiles(_ store: OperationsStore) -> some View {
+        let all = store.announcements
+        let cols = isWide
+            ? Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
+            : [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+        return LazyVGrid(columns: cols, spacing: 12) {
+            AnnouncementStatTile(titleKey: "announcement.stat.total",
+                                 systemIcon: "megaphone.fill", tint: .accentColor,
+                                 value: all.count)
+            AnnouncementStatTile(titleKey: "announcement.stat.published",
+                                 systemIcon: "checkmark.circle.fill", tint: .secondaryAccent,
+                                 value: all.filter { $0.status == .published }.count)
+            AnnouncementStatTile(titleKey: "announcement.stat.scheduled",
+                                 systemIcon: "calendar.badge.clock", tint: .orange,
+                                 value: all.filter { $0.status == .scheduled }.count)
+            AnnouncementStatTile(titleKey: "announcement.stat.drafts",
+                                 systemIcon: "pencil.line", tint: .red,
+                                 value: all.filter { $0.status == .draft }.count)
+            AnnouncementStatTile(titleKey: "announcement.stat.recipients",
+                                 systemIcon: "person.3.fill", tint: .indigo,
+                                 value: all.compactMap { $0.engagement?.recipients }.reduce(0, +))
+        }
+    }
+
+    // MARK: Filter pills
+
+    private var filterPills: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                filterChip(nil, labelKey: "announcement.filter.all", icon: "tray.full")
-                ForEach(AnnouncementAudience.allCases, id: \.rawValue) { audience in
-                    filterChip(audience, labelKey: LocalizedStringKey(audience.labelKey), icon: audienceIcon(audience))
+            HStack(spacing: 7) {
+                pill(nil, "announcement.filter.all")
+                ForEach(AnnouncementStatus.allCases, id: \.self) { s in
+                    pill(s, s.labelKey)
                 }
             }
             .padding(.horizontal, 2)
         }
     }
 
-    private func filterChip(_ audience: AnnouncementAudience?, labelKey: LocalizedStringKey, icon: String) -> some View {
-        let isSelected = audienceFilter == audience
+    private func pill(_ status: AnnouncementStatus?, _ titleKey: String) -> some View {
+        let on = statusFilter == status
         return Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                audienceFilter = audience
-            }
+            withAnimation(.easeInOut(duration: 0.16)) { statusFilter = status }
         } label: {
-            HStack(spacing: 5) {
-                Image(systemName: icon).scaledFont(.caption2)
-                Text(labelKey).scaledFont(.caption, weight: .medium)
-            }
-            .padding(.horizontal, 11)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.12), in: Capsule())
-            .foregroundStyle(isSelected ? Color.white : Color.primary)
+            Text(localizedKey: titleKey)
+                .scaledFont(.caption, weight: .semibold)
+                .padding(.horizontal, 13).padding(.vertical, 7)
+                .foregroundStyle(on ? Color.white : Color.primary)
+                .background(Capsule().fill(on ? Color.accentColor : Color.secondary.opacity(0.10)))
+                .shadow(color: on ? Color.accentColor.opacity(0.3) : .clear, radius: 6, y: 3)
         }
         .buttonStyle(.plain)
     }
 
-    private func audienceIcon(_ audience: AnnouncementAudience) -> String {
-        switch audience.rawValue {
-        case "athletes": "person.3.fill"
-        case "coaches": "graduationcap.fill"
-        case "parents": "person.2.wave.2.fill"
-        case "all", "everyone": "person.crop.circle.fill"
-        default: "person.fill"
-        }
-    }
+    // MARK: List panel
 
-    // MARK: - Hero
-
-    private func heroCard(_ announcement: Announcement, store: OperationsStore) -> some View {
-        let myResponse = store.myResponse(announcementID: announcement.id, userID: session.currentUser?.id ?? UUID())
-        let rsvpCount = store.rsvpsByAnnouncement[announcement.id]?.count ?? 0
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                CategoryBadge(
-                    value: NSLocalizedString(announcement.audience.labelKey, comment: ""),
-                    tone: .elite,
-                    icon: audienceIcon(announcement.audience)
-                )
-                if isUrgent(announcement) {
-                    CategoryBadge(
-                        value: NSLocalizedString("announcement.priority.urgent", comment: ""),
-                        tone: .warning,
-                        icon: "exclamationmark.bubble.fill"
-                    )
-                }
-                if announcement.requiresRSVP {
-                    CategoryBadge(
-                        value: NSLocalizedString("announcement.requires_rsvp", comment: ""),
-                        tone: .neutral,
-                        icon: "checkmark.circle"
-                    )
-                }
+    private func listPanel(_ store: OperationsStore) -> some View {
+        VStack(spacing: 0) {
+            if filtered.isEmpty {
+                EmptyStateCard(icon: "magnifyingglass",
+                               titleKey: "announcement.empty.filtered.title",
+                               messageKey: "announcement.empty.filtered.message")
+                    .padding(16)
                 Spacer(minLength: 0)
-                Text(announcement.publishedAt, format: .relative(presentation: .named))
-                    .scaledFont(.caption2)
-                    .foregroundStyle(.white.opacity(0.85))
-            }
-            VStack(alignment: .leading, spacing: 6) {
-                Text(verbatim: announcement.title)
-                    .scaledFont(.title2, weight: .bold)
-                    .foregroundStyle(.white)
-                    .lineLimit(3)
-                Text(verbatim: announcement.titleAr)
-                    .scaledFont(.subheadline)
-                    .foregroundStyle(.white.opacity(0.8))
-                    .environment(\.layoutDirection, .rightToLeft)
-            }
-            Text(verbatim: announcement.body)
-                .scaledFont(.body)
-                .foregroundStyle(.white.opacity(0.92))
-                .lineLimit(4)
-            if announcement.requiresRSVP {
-                rsvpRow(announcement, myResponse: myResponse, rsvpCount: rsvpCount, isHero: true) { response in
-                    guard let userID = session.currentUser?.id else { return }
-                    Task { await store.rsvp(announcementID: announcement.id, userID: userID, response: response) }
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(pageSlice) { row($0) }
+                    }
+                    .padding(12)
                 }
+                Divider().opacity(0.5)
+                footer
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.accentColor,
-                    Color.accentColor.opacity(0.78)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.secondary.opacity(0.10), lineWidth: 1)
         )
-        .shadow(color: Color.accentColor.opacity(0.25), radius: 14, y: 8)
+        .shadow(color: .black.opacity(0.05), radius: 14, y: 6)
     }
-
-    private func isUrgent(_ announcement: Announcement) -> Bool {
-        announcement.requiresRSVP
-            && (announcement.rsvpDeadline.map { $0.timeIntervalSince(Date()) < 86400 * 2 } ?? false)
-    }
-
-    // MARK: - Feed
 
     @ViewBuilder
-    private func feedSection(store: OperationsStore) -> some View {
-        let rest = Array(filtered(store).dropFirst())
-        let groups = Dictionary(grouping: rest) { Calendar.current.startOfDay(for: $0.publishedAt) }
-        let sortedDates = groups.keys.sorted(by: >)
-        ForEach(sortedDates, id: \.self) { date in
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Text(date, format: .dateTime.weekday(.wide).day().month(.abbreviated))
-                        .scaledFont(.subheadline, weight: .semibold)
-                        .foregroundStyle(.primary)
-                        .environment(\.layoutDirection, .leftToRight)
-                    Spacer(minLength: 0)
-                }
-                VStack(spacing: 10) {
-                    ForEach(groups[date] ?? []) { announcement in
-                        feedCard(announcement, store: store)
-                    }
-                }
+    private func row(_ announcement: Announcement) -> some View {
+        if isWide {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { selectedID = announcement.id }
+            } label: {
+                AnnouncementRow(announcement: announcement,
+                                selected: selectedID == announcement.id,
+                                canManage: canManage,
+                                onEdit: { showCompose = true },
+                                onArchive: { Task { await archive(announcement) } })
             }
+            .buttonStyle(.plain)
+        } else {
+            NavigationLink {
+                AnnouncementDetailScreen(announcement: announcement,
+                                         authorName: announcement.authorName ?? "—",
+                                         canManage: canManage,
+                                         onEdit: { showCompose = true },
+                                         onDuplicate: { Task { await duplicate(announcement) } },
+                                         onArchive: { Task { await archive(announcement) } })
+            } label: {
+                AnnouncementRow(announcement: announcement,
+                                selected: false,
+                                canManage: canManage,
+                                onEdit: { showCompose = true },
+                                onArchive: { Task { await archive(announcement) } })
+            }
+            .buttonStyle(.plain)
         }
     }
 
-    private func feedCard(_ announcement: Announcement, store: OperationsStore) -> some View {
-        let myResponse = store.myResponse(announcementID: announcement.id, userID: session.currentUser?.id ?? UUID())
-        let rsvpCount = store.rsvpsByAnnouncement[announcement.id]?.count ?? 0
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                CategoryBadge(
-                    value: NSLocalizedString(announcement.audience.labelKey, comment: ""),
-                    tone: .neutral,
-                    icon: audienceIcon(announcement.audience)
-                )
-                if announcement.requiresRSVP {
-                    CategoryBadge(
-                        value: "\(rsvpCount)",
-                        tone: .success,
-                        icon: "checkmark.circle.fill"
-                    )
-                }
-                Spacer(minLength: 0)
-                Text(announcement.publishedAt, format: .dateTime.hour().minute())
-                    .scaledFont(.caption2)
-                    .foregroundStyle(.secondary)
+    private var footer: some View {
+        let total = filtered.count
+        let lower = total == 0 ? 0 : page * rowsPerPage + 1
+        let upper = min(total, (page + 1) * rowsPerPage)
+        return HStack(spacing: 10) {
+            Text(verbatim: String(format: NSLocalizedString("announcement.showing.fmt", comment: ""),
+                                   lower, upper, total))
+                .scaledFont(.caption2).foregroundStyle(.secondary)
+                .environment(\.layoutDirection, .leftToRight)
+            Spacer(minLength: 8)
+            HStack(spacing: 6) {
+                pagerButton("chevron.left", enabled: page > 0) { page -= 1 }
+                Text(verbatim: "\(page + 1) / \(pageCount)")
+                    .scaledFont(.caption, weight: .semibold, monospacedDigit: true)
                     .environment(\.layoutDirection, .leftToRight)
-            }
-            Text(verbatim: announcement.title)
-                .scaledFont(.headline)
-                .lineLimit(2)
-            Text(verbatim: announcement.body)
-                .scaledFont(.subheadline)
-                .foregroundStyle(.primary.opacity(0.85))
-                .lineLimit(3)
-            if announcement.requiresRSVP {
-                rsvpRow(announcement, myResponse: myResponse, rsvpCount: rsvpCount, isHero: false) { response in
-                    guard let userID = session.currentUser?.id else { return }
-                    Task { await store.rsvp(announcementID: announcement.id, userID: userID, response: response) }
-                }
+                pagerButton("chevron.right", enabled: page + 1 < pageCount) { page += 1 }
             }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 12, y: 5)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
     }
 
-    private func rsvpRow(_ announcement: Announcement, myResponse: RSVPResponse?, rsvpCount: Int, isHero: Bool, onRSVP: @escaping (RSVPResponse) -> Void) -> some View {
-        HStack(spacing: 8) {
-            rsvpButton(.yes, color: .green, isSelected: myResponse == .yes, isHero: isHero, onTap: { onRSVP(.yes) })
-            rsvpButton(.maybe, color: .orange, isSelected: myResponse == .maybe, isHero: isHero, onTap: { onRSVP(.maybe) })
-            rsvpButton(.no, color: .red, isSelected: myResponse == .no, isHero: isHero, onTap: { onRSVP(.no) })
-            Spacer(minLength: 0)
-            if let deadline = announcement.rsvpDeadline {
-                HStack(spacing: 4) {
-                    Image(systemName: "clock.fill").scaledFont(.caption2)
-                    Text(deadline, format: .dateTime.day().month(.abbreviated))
-                        .scaledFont(.caption2, monospacedDigit: true)
-                        .environment(\.layoutDirection, .leftToRight)
-                }
-                .foregroundStyle(isHero ? .white.opacity(0.85) : .secondary)
-            }
-        }
-        .padding(.top, 4)
-    }
-
-    private func rsvpButton(_ response: RSVPResponse, color: Color, isSelected: Bool, isHero: Bool, onTap: @escaping () -> Void) -> some View {
-        Button(action: onTap) {
-            Text(localizedKey: response.labelKey)
+    private func pagerButton(_ icon: String, enabled: Bool,
+                             action: @escaping () -> Void) -> some View {
+        Button { withAnimation(.easeInOut(duration: 0.15), action) } label: {
+            Image(systemName: icon)
                 .scaledFont(.caption, weight: .semibold)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    isSelected
-                        ? color
-                        : (isHero ? Color.white.opacity(0.2) : color.opacity(0.15)),
-                    in: Capsule()
-                )
-                .foregroundStyle(isSelected ? .white : (isHero ? .white : color))
+                .frame(width: 30, height: 30)
+                .background(Color.secondary.opacity(0.10),
+                            in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+    }
+
+    // MARK: Detail column
+
+    @ViewBuilder
+    private var detailColumn: some View {
+        if let announcement = selected {
+            AnnouncementDetailPanel(
+                announcement: announcement,
+                authorName: announcement.authorName ?? "—",
+                canManage: canManage,
+                onEdit: { showCompose = true },
+                onDuplicate: { Task { await duplicate(announcement) } },
+                onArchive: { Task { await archive(announcement) } }
+            )
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "megaphone")
+                    .font(.system(size: 38)).foregroundStyle(.tertiary)
+                Text("announcement.detail.empty")
+                    .scaledFont(.subheadline).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, minHeight: 320)
+            .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.secondary.opacity(0.10), lineWidth: 1)
+            )
+        }
+    }
+
+    // MARK: Data
+
+    private var sortedAll: [Announcement] {
+        (store?.announcements ?? []).sorted { $0.displayDate > $1.displayDate }
+    }
+
+    private var filtered: [Announcement] {
+        var out = sortedAll
+        if let statusFilter { out = out.filter { $0.status == statusFilter } }
+        let q = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+        if !q.isEmpty {
+            out = out.filter {
+                $0.title.lowercased().contains(q)
+                    || $0.body.lowercased().contains(q)
+                    || ($0.authorName?.lowercased().contains(q) ?? false)
+            }
+        }
+        return out
+    }
+
+    private var pageCount: Int {
+        max(1, Int(ceil(Double(filtered.count) / Double(rowsPerPage))))
+    }
+
+    private var pageSlice: [Announcement] {
+        let all = filtered
+        guard !all.isEmpty else { return [] }
+        let safe = min(page, pageCount - 1)
+        let start = safe * rowsPerPage
+        return Array(all[start..<min(start + rowsPerPage, all.count)])
+    }
+
+    private var selected: Announcement? {
+        guard let id = selectedID else { return nil }
+        return store?.announcements.first { $0.id == id }
+    }
+
+    private var canManage: Bool {
+        guard let role = session.currentUser?.role else { return false }
+        return PermissionMatrix.allowed(role: role, permission: .publishAnnouncement)
+    }
+
+    private func reload() async {
+        await store?.load()
+    }
+
+    private func archive(_ announcement: Announcement) async {
+        var copy = announcement
+        copy.status = .archived
+        await store?.publish(copy)
+    }
+
+    private func duplicate(_ announcement: Announcement) async {
+        let copy = Announcement(
+            branchID: announcement.branchID,
+            title: announcement.title + " " + NSLocalizedString("announcement.copy_suffix", comment: ""),
+            titleAr: announcement.titleAr,
+            body: announcement.body,
+            bodyAr: announcement.bodyAr,
+            audience: announcement.audience,
+            publishedAt: Date(),
+            publishedByUserID: announcement.publishedByUserID,
+            requiresRSVP: announcement.requiresRSVP,
+            rsvpDeadline: announcement.rsvpDeadline,
+            status: .draft,
+            category: announcement.category,
+            imageAssetName: announcement.imageAssetName,
+            audiences: announcement.audiences,
+            location: announcement.location,
+            eventStart: announcement.eventStart,
+            eventEnd: announcement.eventEnd,
+            registrationDeadline: announcement.registrationDeadline,
+            attachments: announcement.attachments,
+            authorName: announcement.authorName
+        )
+        await store?.publish(copy)
+    }
+}
+
+// MARK: - iPhone detail screen
+
+struct AnnouncementDetailScreen: View {
+    let announcement: Announcement
+    let authorName: String
+    let canManage: Bool
+    let onEdit: () -> Void
+    let onDuplicate: () -> Void
+    let onArchive: () -> Void
+
+    var body: some View {
+        ScrollView {
+            AnnouncementDetailPanel(
+                announcement: announcement,
+                authorName: authorName,
+                canManage: canManage,
+                onEdit: onEdit,
+                onDuplicate: onDuplicate,
+                onArchive: onArchive
+            )
+            .padding(14)
+        }
+        .background(Color.appBackground.ignoresSafeArea())
+        .navigationTitle(Text(verbatim: announcement.title))
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }

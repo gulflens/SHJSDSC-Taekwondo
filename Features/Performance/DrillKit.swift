@@ -282,3 +282,95 @@ public struct DrillModeSwitcher: View {
         .buttonStyle(.plain)
     }
 }
+
+// MARK: - Drill list row
+
+/// Premium drill row for the library list panel — thumbnail + title + level
+/// badge + tag chips + duration, with a contextual menu. The caller wraps it
+/// in the row's tap target; `selected` paints the active blue-border state.
+public struct DrillListRow: View {
+    private let drill: DrillLibraryEntry
+    private let selected: Bool
+    private let canEdit: Bool
+    private let onEdit: () -> Void
+    private let onDelete: () -> Void
+
+    public init(
+        drill: DrillLibraryEntry,
+        selected: Bool,
+        canEdit: Bool,
+        onEdit: @escaping () -> Void,
+        onDelete: @escaping () -> Void
+    ) {
+        self.drill = drill
+        self.selected = selected
+        self.canEdit = canEdit
+        self.onEdit = onEdit
+        self.onDelete = onDelete
+    }
+
+    public var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            DrillThumbnail(drill, size: 54)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 7) {
+                    Text(verbatim: drill.name)
+                        .scaledFont(.subheadline, weight: .bold)
+                        .lineLimit(1)
+                    if let diff = drill.difficulty {
+                        DrillLevelBadge(diff)
+                    }
+                }
+                if !drill.tags.isEmpty {
+                    HStack(spacing: 5) {
+                        ForEach(drill.tags.prefix(3), id: \.self) { DrillTagChip($0) }
+                    }
+                } else {
+                    Text(verbatim: drill.summary)
+                        .scaledFont(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 8)
+            if let mins = drill.durationMinutes {
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .scaledFont(.caption2, weight: .medium)
+                    Text(verbatim: "\(mins) min")
+                        .scaledFont(.caption, weight: .medium)
+                        .environment(\.layoutDirection, .leftToRight)
+                }
+                .foregroundStyle(.secondary)
+            }
+            if canEdit {
+                Menu {
+                    Button { onEdit() } label: { Label("action.edit", systemImage: "pencil") }
+                    Button(role: .destructive) { onDelete() } label: {
+                        Label("action.delete", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(selected ? Color.accentColor.opacity(0.07) : Color.secondary.opacity(0.04))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(selected ? Color.accentColor : Color.secondary.opacity(0.08),
+                        lineWidth: selected ? 1.5 : 1)
+        )
+        .shadow(color: selected ? Color.accentColor.opacity(0.18) : .clear, radius: 8, y: 3)
+        .contentShape(Rectangle())
+    }
+}

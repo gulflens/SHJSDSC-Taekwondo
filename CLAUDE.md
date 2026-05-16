@@ -205,6 +205,25 @@ Drill module — file map (`Features/Performance/`):
   `MuscleFocusChip`, `IntensityDots`, `DrillThumbnail`, `PrimaryActionButton`,
   `DrillModeSwitcher`)
 
+Drill Timer — file map (the from-scratch Timer mode, Stage 1.8):
+- `DrillTimerView` (setup screen — tap-to-run presets + custom interval
+  builder with athlete-group rotation; presents the run view full-screen)
+- `DrillTimerRunView` (full-screen operational timer — phase-tinted canvas,
+  giant countdown ring, round / group / drill context, transport controls)
+- `DrillTimerKit` (`DrillTimerPhase.tint`, `CountdownRing`,
+  `TimerControlButton`, `TimerPresetCard`, `TimerStepperRow`,
+  `formatTimerClock`)
+- `DrillTimerAudio` (`Features/Performance/` — system-sound + haptic cues;
+  optional `timer_*` bundle assets override)
+- `DrillTimerEngine` (`Core/Stores/`, `@Observable @MainActor` — flattens a
+  `DrillTimerSession` into a `[Step]` timeline and walks it with a ticker)
+- `DrillTimer` (`Core/Models/Training/` — `DrillTimerSession`,
+  `DrillTimerInterval`, `DrillTimerPhase` + Tabata/Rounds/EMOM presets)
+
+The Drill Timer is independent of the old `Pomodoro*` system, which stays —
+`LiveClassView` still depends on it. Timer sessions are built fresh from a
+preset or the builder each run (not persisted in Stage 1.8).
+
 `DrillLibraryEntry` gained a **drill dossier** (Stage 1.8): `tags`,
 `intensity` (1–5), `instructions`, `coachingTip`, `equipment`
 (`DrillEquipmentItem`), `muscleFocus`, `metrics` (`DrillMetrics`),
@@ -218,9 +237,41 @@ Drill thumbnails / video previews load asset-catalogue images named
 `DrillThumbnail` checks the bundle and falls back to a category-tinted
 gradient when an asset is absent, so the UI is never empty.
 
-**Still deferred:** the from-scratch Timer rebuild (group mode, athlete
-grouping, drill sequencing — `DrillTimerModeView` currently wraps the existing
-`PomodoroLibraryView`) and the sidebar user-footer card. Follow-up pass.
+**Still deferred:** the sidebar user-footer card (avatar + name + role +
+online dot in `AdaptiveNavigationShell`). Follow-up pass.
+
+## Stage 1.9 — Announcements dashboard remodel
+
+Premium rebuild of the Announcements module — an operations-console layout
+(not the old Apple-News feed). Header + 5 summary stat tiles + status filter
+pills + an adaptive two-panel workspace (announcement list + detail panel on
+iPad, list with a pushed detail screen on iPhone). Reuses Stage 1.6 card
+tokens — no new design tokens.
+
+Announcements module — file map (`Features/Operations/`):
+- `AnnouncementsView` (full screen — header + stat tiles + filter pills +
+  list panel + detail column; pager footer + `AnnouncementDetailScreen`
+  iPhone push)
+- `AnnouncementDetailPanel` (`AnnouncementRow` + the detail panel: header,
+  hero image, body, event meta, Audience + Delivery cards, Engagement grid,
+  Attachments)
+- `AnnouncementsKit` (`AnnouncementStatus.tint` / `AnnouncementCategory.tint`
+  / `DeliveryState.tint`, `AnnouncementStatusPill`, `AnnouncementCategoryIcon`,
+  `AnnouncementStatTile`, `AnnouncementHeroImage`, `EngagementStatCard`,
+  `DeliveryChannelRow`, `AttachmentRow`, `AnnouncementSearchField`)
+
+`Announcement` gained a dossier (Stage 1.9): `status` (`AnnouncementStatus`),
+`category` (`AnnouncementCategory` — drives the row icon), `imageAssetName`,
+`scheduledAt`, `audiences`, `location`, `eventStart`/`eventEnd`,
+`registrationDeadline`, `delivery` (`AnnouncementDelivery`), `engagement`
+(`AnnouncementEngagement`), `attachments` (`AnnouncementAttachment`),
+`authorName` — same embedded-Codable + backward-compatible-decoder pattern.
+Supporting types live in `Core/Models/AnnouncementDossier.swift`. Hero images
+load `announcement_<slug>` asset images, falling back to a category gradient.
+
+**Still deferred:** `ComposeAnnouncementView` is still create-only and only
+covers pre-1.9 fields — the detail/row "Edit" action opens it as a fresh
+compose. A true editor covering the dossier fields is a follow-up.
 
 ## Embedded model dossiers
 Heavy per-athlete records (`coachNotes`, `documents`, `ranking`, plus existing

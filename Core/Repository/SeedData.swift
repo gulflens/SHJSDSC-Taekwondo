@@ -677,37 +677,316 @@ public enum SeedData {
             ))
         }
 
-        // === Announcements (1 club-wide, 1 branch-specific, 1 with RSVP) ===
+        // === Announcements — 14-item federation-grade feed.
+        // NOTE: the first three appends are referenced by index in the audit
+        // log below — keep publishers in the order userAdmin, userManager,
+        // userTD so announcements[0/1/2] stay valid. ===
         var announcements: [Announcement] = []
+
+        // [0] — publisher: userAdmin
         announcements.append(Announcement(
-            title: "Q2 schedule update",
-            titleAr: "تحديث جدول الربع الثاني",
-            body: "Updated training times for all branches starting next week. See your branch coach for the new slots.",
-            bodyAr: "تم تحديث أوقات التدريب لجميع الفروع بدءاً من الأسبوع القادم. راجع مدرب فرعك للحصول على المواعيد الجديدة.",
+            title: "Q2 Training Schedule Update",
+            titleAr: "تحديث جدول تدريبات الربع الثاني",
+            body: "Updated training times take effect across all four branches starting next week. Junior and cadet groups move 30 minutes earlier on weekdays to ease evening congestion; competition-team sessions are unchanged. Speak to your branch coach for your new slot and confirm with the front desk if a clash arises.",
+            bodyAr: "تدخل أوقات التدريب المحدّثة حيّز التنفيذ في الفروع الأربعة بدءاً من الأسبوع القادم. تنتقل مجموعات الناشئين والأشبال 30 دقيقة أبكر في أيام الأسبوع لتخفيف الازدحام المسائي؛ وتبقى حصص فريق المنافسة دون تغيير. راجع مدرب فرعك لمعرفة موعدك الجديد وأبلغ الاستقبال عند أي تعارض.",
             audience: .all,
             publishedAt: days(-2),
-            publishedByUserID: userAdmin.id
+            publishedByUserID: userAdmin.id,
+            status: .published,
+            category: .general,
+            imageAssetName: "announcement_q2_schedule",
+            audiences: [.all],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 612, opened: 458, read: 401, clicks: 96),
+            authorName: "Hanadi Al Kabouri"
         ))
+
+        // [1] — publisher: userManager
         announcements.append(Announcement(
             branchID: branchAlNouf.id,
-            title: "Mat cleaning Saturday",
-            titleAr: "تنظيف البساط يوم السبت",
-            body: "Al Rahmania mats will be deep-cleaned this Saturday. No classes after 12:00.",
-            bodyAr: "سيتم تنظيف بساط الرحمانية يوم السبت. لا توجد حصص بعد الساعة 12:00.",
+            title: "Al Nouf Mat Maintenance — Saturday",
+            titleAr: "صيانة بساط النوف — يوم السبت",
+            body: "The Al Nouf training hall mats will be deep-cleaned and re-taped this Saturday. All classes after 12:00 are cancelled for that day only. Affected groups will be offered a make-up session at Al Rahmania the following Tuesday — coaches will share the timing directly.",
+            bodyAr: "سيتم تنظيف بساط قاعة تدريب النوف بعمق وإعادة تثبيت الأشرطة يوم السبت. تُلغى جميع الحصص بعد الساعة 12:00 لذلك اليوم فقط. ستُتاح للمجموعات المتأثرة حصة تعويضية في الرحمانية يوم الثلاثاء التالي — سيشارك المدربون التوقيت مباشرة.",
             audience: .coaches,
             publishedAt: days(-5),
-            publishedByUserID: userManager.id
+            publishedByUserID: userManager.id,
+            status: .published,
+            category: .general,
+            imageAssetName: "announcement_mat_maintenance",
+            audiences: [.coaches, .branchManagers],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .sms, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 38, opened: 35, read: 33, clicks: 11),
+            authorName: "Osama Al-Radini"
         ))
+
+        // [2] — publisher: userTD — FEATURED summer camp item
         announcements.append(Announcement(
-            title: "Parent meeting — Q2 Open",
-            titleAr: "اجتماع أولياء الأمور — بطولة الربع الثاني",
-            body: "Mandatory briefing for all parents of competition-team athletes registering for the UAE Junior Open Q2. Please RSVP.",
-            bodyAr: "اجتماع إلزامي لجميع أولياء أمور رياضيي فريق المنافسة المسجلين في بطولة الإمارات للربع الثاني. الرجاء تأكيد الحضور.",
-            audience: .parents,
+            title: "Summer Training Camp 2026",
+            titleAr: "معسكر التدريب الصيفي 2026",
+            body: "Registration is now open for our annual Summer Training Camp — eight intensive days of poomsae refinement, kyorugi sparring blocks, strength and conditioning, and recovery education led by the full coaching staff. Open to all athletes from green belt and above, plus assistant coaches seeking professional development. Places are limited and allocated on a first-confirmed basis. Review the attached schedule and packing list, then complete your registration before the deadline.",
+            bodyAr: "التسجيل مفتوح الآن لمعسكرنا التدريبي الصيفي السنوي — ثمانية أيام مكثفة من صقل البومساي ووحدات قتال الكيوروغي والقوة واللياقة وتثقيف الاستشفاء بقيادة طاقم التدريب بالكامل. مفتوح لجميع الرياضيين من الحزام الأخضر فما فوق، إضافة إلى المدربين المساعدين الراغبين في التطوير المهني. الأماكن محدودة وتُخصّص على أساس أسبقية التأكيد. راجع الجدول وقائمة التجهيزات المرفقين ثم أكمل تسجيلك قبل الموعد النهائي.",
+            audience: .athletes,
+            publishedAt: days(-3),
+            publishedByUserID: userTD.id,
+            status: .published,
+            category: .event,
+            imageAssetName: "announcement_summer_camp",
+            audiences: [.athletes, .coaches, .branchManagers],
+            location: "Fujairah Training Center",
+            eventStart: days(35),
+            eventEnd: days(42),
+            registrationDeadline: days(25),
+            delivery: [
+                AnnouncementDelivery(channel: .email, state: .sent),
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .sms, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 624, opened: 482, read: 412, clicks: 128),
+            attachments: [
+                AnnouncementAttachment(name: "Camp_Schedule_2026.pdf", detail: "PDF · 1.2 MB"),
+                AnnouncementAttachment(name: "Packing_List.pdf", detail: "PDF · 856 KB")
+            ],
+            authorName: "Dr Ali Alawi"
+        ))
+
+        // [3] — Kyorugi championship registration (scheduled)
+        announcements.append(Announcement(
+            title: "Kyorugi Championship Registration",
+            titleAr: "تسجيل بطولة الكيوروغي",
+            body: "Registration for the Emirates Kyorugi Championship will open next week. Eligible athletes are those on the competition team with a current medical clearance and a verified weight category. Coaches will confirm divisions before submission — do not register independently. A briefing on rule changes for the new season will follow.",
+            bodyAr: "سيُفتح التسجيل لبطولة الإمارات للكيوروغي الأسبوع القادم. الرياضيون المؤهلون هم أعضاء فريق المنافسة الحاصلون على تصريح طبي ساري وفئة وزن موثّقة. سيؤكد المدربون الفئات قبل التقديم — لا تسجّل بشكل مستقل. سيتبع ذلك إيجاز حول تغييرات القواعد للموسم الجديد.",
+            audience: .athletes,
             publishedAt: days(-1),
             publishedByUserID: userTD.id,
+            status: .scheduled,
+            category: .registration,
+            imageAssetName: "announcement_kyorugi_registration",
+            scheduledAt: days(7),
+            audiences: [.athletes],
+            registrationDeadline: days(28),
+            authorName: "Dr Ali Alawi"
+        ))
+
+        // [4] — New grading system update (published, coaches)
+        announcements.append(Announcement(
+            title: "New Grading System Update",
+            titleAr: "تحديث نظام الترقيات",
+            body: "The promotion criteria have been revised for the 2026 season. Poomsae now carries a dedicated technical-precision band, kyorugi assessment moves to a three-round format, and a minimum attendance threshold applies to every belt level. All coaches must review the updated rubric in the Grading module before conducting their next test.",
+            bodyAr: "تمت مراجعة معايير الترقية لموسم 2026. أصبح للبومساي نطاق دقّة تقنية مخصّص، وانتقل تقييم الكيوروغي إلى صيغة من ثلاث جولات، ويُطبَّق حد أدنى للحضور على كل مستوى حزام. على جميع المدربين مراجعة الدليل المحدّث في وحدة الترقيات قبل إجراء الاختبار القادم.",
+            audience: .coaches,
+            publishedAt: days(-6),
+            publishedByUserID: userTD.id,
+            status: .published,
+            category: .grading,
+            imageAssetName: "announcement_grading_update",
+            audiences: [.coaches],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 42, opened: 40, read: 38, clicks: 22),
+            attachments: [
+                AnnouncementAttachment(name: "Grading_Rubric_2026.pdf", detail: "PDF · 640 KB")
+            ],
+            authorName: "Dr Ali Alawi"
+        ))
+
+        // [5] — SSDC in-house tournament (draft)
+        announcements.append(Announcement(
+            title: "SSDC In-House Tournament",
+            titleAr: "بطولة النادي الداخلية",
+            body: "Planning is underway for an inter-branch in-house tournament to give every athlete competitive mat time in a friendly setting. The format will mix poomsae and light-contact kyorugi divisions by age and belt. Details, venue, and the registration window will be confirmed once the calendar is finalised.",
+            bodyAr: "يجري التخطيط لبطولة داخلية بين الفروع لمنح كل رياضي وقتاً تنافسياً على البساط في أجواء ودّية. ستجمع الصيغة بين فئات البومساي والكيوروغي خفيف التلامس حسب العمر والحزام. ستُؤكَّد التفاصيل والمكان ونافذة التسجيل عند اعتماد الجدول.",
+            audience: .all,
+            publishedAt: days(-1),
+            publishedByUserID: userTD.id,
+            status: .draft,
+            category: .tournament,
+            imageAssetName: "announcement_inhouse_tournament",
+            audiences: [.all],
+            authorName: "Dr Ali Alawi"
+        ))
+
+        // [6] — Dojo rules & code of conduct (published)
+        announcements.append(Announcement(
+            title: "Dojo Rules & Code of Conduct",
+            titleAr: "قواعد الدوجو ومدونة السلوك",
+            body: "Our updated code of conduct is now in effect at every branch. It covers punctuality and uniform standards, respect for instructors and training partners, hygiene requirements, and the safeguarding policy. Athletes and parents are asked to read it together and acknowledge it at the front desk before the next training block.",
+            bodyAr: "مدونة السلوك المحدّثة الخاصة بنا سارية الآن في كل فرع. تغطي الالتزام بالمواعيد ومعايير الزي، واحترام المدربين وزملاء التدريب، ومتطلبات النظافة، وسياسة حماية النشء. يُرجى من الرياضيين وأولياء الأمور قراءتها معاً والإقرار بها في الاستقبال قبل الفترة التدريبية القادمة.",
+            audience: .all,
+            publishedAt: days(-12),
+            publishedByUserID: userAdmin.id,
+            status: .published,
+            category: .policy,
+            imageAssetName: "announcement_code_of_conduct",
+            audiences: [.all],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 598, opened: 503, read: 461, clicks: 174),
+            attachments: [
+                AnnouncementAttachment(name: "Code_of_Conduct.pdf", detail: "PDF · 410 KB")
+            ],
+            authorName: "Hanadi Al Kabouri"
+        ))
+
+        // [7] — Outstanding athlete recognition (published)
+        announcements.append(Announcement(
+            title: "Outstanding Athlete Recognition",
+            titleAr: "تكريم الرياضي المتميز",
+            body: "Congratulations to the athletes named in this quarter's Outstanding Recognition list for their results at the UAE Junior Open and their consistency in training. Their dedication sets the standard for the whole club. Certificates will be presented at the next family open evening — full names appear on the branch noticeboards.",
+            bodyAr: "تهانينا للرياضيين المدرجين في قائمة التكريم المتميز لهذا الربع على نتائجهم في بطولة الإمارات للناشئين وثباتهم في التدريب. يضع تفانيهم المعيار للنادي بأكمله. ستُسلَّم الشهادات في الأمسية العائلية المفتوحة القادمة — تظهر الأسماء الكاملة على لوحات الإعلانات في الفروع.",
+            audience: .all,
+            publishedAt: days(-8),
+            publishedByUserID: userAdmin.id,
+            status: .published,
+            category: .recognition,
+            imageAssetName: "announcement_athlete_recognition",
+            audiences: [.all],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 605, opened: 521, read: 478, clicks: 209),
+            authorName: "Hanadi Al Kabouri"
+        ))
+
+        // [8] — Belt grading results (published)
+        announcements.append(Announcement(
+            title: "May Belt Grading Results",
+            titleAr: "نتائج اختبار الأحزمة لشهر مايو",
+            body: "Results from the May belt grading are now published. Athletes who passed will receive their new belts at their next session; those advised to re-test should arrange a follow-up with their coach. Individual feedback notes have been added to each athlete's profile in the app.",
+            bodyAr: "نتائج اختبار الأحزمة لشهر مايو منشورة الآن. سيستلم الرياضيون الناجحون أحزمتهم الجديدة في حصتهم القادمة؛ وعلى من نُصحوا بإعادة الاختبار ترتيب جلسة متابعة مع مدربهم. أُضيفت ملاحظات تقييم فردية إلى ملف كل رياضي في التطبيق.",
+            audience: .parents,
+            publishedAt: days(-4),
+            publishedByUserID: userTD.id,
+            status: .published,
+            category: .grading,
+            imageAssetName: "announcement_grading_results",
+            audiences: [.parents, .athletes],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent),
+                AnnouncementDelivery(channel: .sms, state: .delivered)
+            ],
+            engagement: AnnouncementEngagement(recipients: 286, opened: 252, read: 231, clicks: 88),
+            authorName: "Dr Ali Alawi"
+        ))
+
+        // [9] — Industrial 18 branch maintenance closure (scheduled)
+        announcements.append(Announcement(
+            branchID: branchIndustrial18.id,
+            title: "Industrial 18 — Air-Conditioning Upgrade",
+            titleAr: "الصناعية 18 — ترقية نظام التكييف",
+            body: "The Industrial 18 branch will close for two days while the air-conditioning system is upgraded ahead of the summer season. Classes during the closure move to Al Nasserya at the same times. Normal operations resume immediately afterwards.",
+            bodyAr: "سيُغلق فرع الصناعية 18 لمدة يومين أثناء ترقية نظام التكييف استعداداً لموسم الصيف. تُنقل الحصص خلال فترة الإغلاق إلى الناصرية في نفس الأوقات. تستأنف العمليات الاعتيادية مباشرة بعد ذلك.",
+            audience: .all,
+            publishedAt: days(-1),
+            publishedByUserID: userManager.id,
+            status: .scheduled,
+            category: .general,
+            imageAssetName: "announcement_branch_maintenance",
+            scheduledAt: days(5),
+            audiences: [.all],
+            authorName: "Osama Al-Radini"
+        ))
+
+        // [10] — Parent meeting (published, RSVP)
+        announcements.append(Announcement(
+            title: "Parent Information Evening",
+            titleAr: "أمسية إعلامية لأولياء الأمور",
+            body: "All parents are invited to a Parent Information Evening covering the new grading system, the competition calendar, and the summer camp programme. There will be time for questions with the technical director and branch managers. Light refreshments will be served — please RSVP so we can plan seating.",
+            bodyAr: "جميع أولياء الأمور مدعوون إلى أمسية إعلامية تتناول نظام الترقيات الجديد وجدول المنافسات وبرنامج المعسكر الصيفي. سيتوفر وقت للأسئلة مع المدير الفني ومديري الفروع. ستُقدَّم مرطبات خفيفة — يُرجى تأكيد الحضور لنتمكن من ترتيب المقاعد.",
+            audience: .parents,
+            publishedAt: days(-3),
+            publishedByUserID: userManager.id,
             requiresRSVP: true,
-            rsvpDeadline: days(7)
+            rsvpDeadline: days(6),
+            status: .published,
+            category: .event,
+            imageAssetName: "announcement_parent_meeting",
+            location: "Al Rahmania Main Hall",
+            eventStart: days(9),
+            eventEnd: days(9),
+            audiences: [.parents],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent),
+                AnnouncementDelivery(channel: .sms, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 286, opened: 241, read: 218, clicks: 134),
+            authorName: "Osama Al-Radini"
+        ))
+
+        // [11] — Referee & coaching clinic (published, coaches)
+        announcements.append(Announcement(
+            title: "Referee & Officiating Clinic",
+            titleAr: "ورشة التحكيم وإدارة المباريات",
+            body: "A one-day referee and officiating clinic will be hosted at Al Rahmania for coaches and senior assistant coaches. The clinic covers the updated electronic scoring protocol, video-review procedure, and mat management. Attendance counts toward annual professional-development hours — confirm your place with your branch manager.",
+            bodyAr: "ستُقام ورشة تحكيم وإدارة مباريات لمدة يوم واحد في الرحمانية للمدربين والمدربين المساعدين الكبار. تغطي الورشة بروتوكول التسجيل الإلكتروني المحدّث وإجراء المراجعة بالفيديو وإدارة البساط. يُحتسب الحضور ضمن ساعات التطوير المهني السنوية — أكّد مكانك مع مدير فرعك.",
+            audience: .coaches,
+            publishedAt: days(-7),
+            publishedByUserID: userTD.id,
+            status: .published,
+            category: .event,
+            imageAssetName: "announcement_referee_clinic",
+            location: "Al Rahmania Main Hall",
+            eventStart: days(14),
+            eventEnd: days(14),
+            registrationDeadline: days(11),
+            audiences: [.coaches, .branchManagers],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 42, opened: 39, read: 36, clicks: 24),
+            authorName: "Dr Ali Alawi"
+        ))
+
+        // [12] — Eid holiday closure (scheduled)
+        announcements.append(Announcement(
+            title: "Eid Al Adha Holiday Closure",
+            titleAr: "إغلاق عطلة عيد الأضحى",
+            body: "All branches will be closed for the Eid Al Adha holiday. No classes or grading sessions will run during the closure period. Training resumes on the regular schedule the morning after the holiday — competition-team athletes will receive an individual conditioning plan to follow at home.",
+            bodyAr: "ستُغلق جميع الفروع بمناسبة عطلة عيد الأضحى. لن تُقام أي حصص أو اختبارات ترقية خلال فترة الإغلاق. يستأنف التدريب وفق الجدول المعتاد صباح اليوم التالي للعطلة — سيتلقى رياضيو فريق المنافسة خطة لياقة فردية لاتباعها في المنزل.",
+            audience: .all,
+            publishedAt: days(-2),
+            publishedByUserID: userAdmin.id,
+            status: .scheduled,
+            category: .policy,
+            imageAssetName: "announcement_eid_closure",
+            scheduledAt: days(20),
+            audiences: [.all],
+            authorName: "Hanadi Al Kabouri"
+        ))
+
+        // [13] — New uniform supplier (archived)
+        announcements.append(Announcement(
+            title: "New Approved Uniform Supplier",
+            titleAr: "مورّد الزي المعتمد الجديد",
+            body: "The club has appointed a new approved supplier for doboks, belts, and protective gear at improved member pricing. Orders placed through the front desk are delivered to your branch within one week. This notice has been archived now that the transition is complete and stock is fully available.",
+            bodyAr: "عيّن النادي مورّداً معتمداً جديداً للزي والأحزمة وأدوات الحماية بأسعار محسّنة للأعضاء. تُسلَّم الطلبات المقدّمة عبر الاستقبال إلى فرعك خلال أسبوع واحد. تمت أرشفة هذا الإشعار بعد اكتمال الانتقال وتوفر المخزون بالكامل.",
+            audience: .parents,
+            publishedAt: days(-45),
+            publishedByUserID: userManager.id,
+            status: .archived,
+            category: .general,
+            imageAssetName: "announcement_uniform_supplier",
+            audiences: [.parents, .athletes],
+            delivery: [
+                AnnouncementDelivery(channel: .inApp, state: .delivered),
+                AnnouncementDelivery(channel: .email, state: .sent)
+            ],
+            engagement: AnnouncementEngagement(recipients: 564, opened: 388, read: 312, clicks: 141),
+            authorName: "Osama Al-Radini"
         ))
 
         // === Certifications: mirror existing coach cert dates + add a few extras ===
