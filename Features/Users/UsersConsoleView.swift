@@ -34,11 +34,13 @@ public struct UsersConsoleView: View {
         }
         .background(Color.appBackground.ignoresSafeArea())
         .task { await load() }
-        .sheet(isPresented: $showCreate) {
-            NavigationStack {
-                AdminCreateAccountView(initialRole: createRole)
-            }
-            .onDisappear { Task { await load() } }
+        // Create-account opens as a full pushed view (not a sheet) — it takes
+        // over the content area with a back button to return to the list.
+        .navigationDestination(isPresented: $showCreate) {
+            AdminCreateAccountView(initialRole: createRole)
+        }
+        .onChange(of: showCreate) { _, showing in
+            if !showing { Task { await load() } }
         }
         .onChange(of: search) { _, _ in page = 0 }
         .onChange(of: groupFilter) { _, _ in page = 0 }
