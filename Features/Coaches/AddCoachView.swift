@@ -75,7 +75,7 @@ public struct AddCoachView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.appBackground)
         .navigationTitle(Text(editing == nil ? "coach.add" : "coach.edit"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -88,6 +88,7 @@ public struct AddCoachView: View {
                     if saving { ProgressView() } else { Text("action.save") }
                 }
                 .disabled(saving || !isValid)
+                .bareToolbarButton()
             }
         }
         .alert("coach.save_error", isPresented: $showErrorAlert) {
@@ -101,7 +102,7 @@ public struct AddCoachView: View {
     // MARK: - Identity
 
     private var identityCard: some View {
-        SectionCard(icon: "person.text.rectangle.fill", title: "coach.section.identity") {
+        FormSectionCard(icon: "person.text.rectangle.fill", title: "coach.section.identity") {
             FieldRow {
                 InlineField(label: "auth.full_name") {
                     compactTextField($fullName, placeholder: "auth.full_name")
@@ -115,7 +116,7 @@ public struct AddCoachView: View {
                 InlineField(label: "coach.contract_type") {
                     Menu {
                         ForEach(ContractType.allCases, id: \.self) { t in
-                            Button { contractType = t } label: { Text(LocalizedStringKey(t.labelKey)) }
+                            Button { contractType = t } label: { Text(localizedKey: t.labelKey) }
                         }
                     } label: {
                         compactMenuLabel(text: NSLocalizedString(contractType.labelKey, comment: ""))
@@ -125,18 +126,8 @@ public struct AddCoachView: View {
                     DropdownDatePicker(date: $hiredAt, minYear: 1990, maxYear: currentYear)
                 }
                 InlineField(label: "coach.dan_rank") {
-                    Stepper(value: $danRank, in: 1...10) {
-                        Text(verbatim: "\(danRank) Dan")
-                            .font(.callout.monospacedDigit())
-                            .environment(\.layoutDirection, .leftToRight)
-                    }
-                    .labelsHidden()
-                    .overlay(alignment: .leading) {
-                        Text(verbatim: "\(danRank) Dan")
-                            .font(.callout.monospacedDigit())
-                            .padding(.leading, 4)
-                            .environment(\.layoutDirection, .leftToRight)
-                    }
+                    CompactStepper(value: $danRank, range: 1...10, suffix: " Dan")
+                        .help(Text("tooltip.dan"))
                 }
             }
 
@@ -152,7 +143,7 @@ public struct AddCoachView: View {
     // MARK: - Assignment
 
     private var assignmentCard: some View {
-        SectionCard(icon: "building.2.fill", title: "coach.section.assignment") {
+        FormSectionCard(icon: "building.2.fill", title: "coach.section.assignment") {
             FieldRow {
                 InlineField(label: "coach.primary_branch") {
                     Menu {
@@ -169,17 +160,10 @@ public struct AddCoachView: View {
                 }
                 InlineField(label: "coach.weekly_hours") {
                     HStack(spacing: 6) {
-                        Stepper(value: $weeklyHoursTarget, in: 0...80) {
-                            EmptyView()
-                        }
-                        .labelsHidden()
-                        .onChange(of: weeklyHoursTarget) { _, v in
-                            if v > 0 { weeklyHoursSet = true }
-                        }
-                        Text(verbatim: weeklyHoursSet || weeklyHoursTarget > 0 ? "\(weeklyHoursTarget) h" : "—")
-                            .font(.callout.monospacedDigit())
-                            .environment(\.layoutDirection, .leftToRight)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        CompactStepper(value: $weeklyHoursTarget, range: 0...80, suffix: " h")
+                            .onChange(of: weeklyHoursTarget) { _, v in
+                                if v > 0 { weeklyHoursSet = true }
+                            }
                         if weeklyHoursSet {
                             Button {
                                 weeklyHoursSet = false
@@ -194,7 +178,6 @@ public struct AddCoachView: View {
                 InlineField(label: "coach.on_call") {
                     Toggle("", isOn: $onCall)
                         .labelsHidden()
-                        .tint(.green)
                 }
             }
 
@@ -244,7 +227,7 @@ public struct AddCoachView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption2)
+                    .scaledFont(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
@@ -253,7 +236,7 @@ public struct AddCoachView: View {
     // MARK: - Credentials
 
     private var credentialsCard: some View {
-        SectionCard(icon: "checkmark.seal.fill", title: "coach.section.credentials") {
+        FormSectionCard(icon: "checkmark.seal.fill", title: "coach.section.credentials") {
             FieldRow {
                 InlineField(label: "coach.kukkiwon_cert") {
                     compactTextField($kukkiwonCertNumber, placeholder: "coach.kukkiwon_cert")
@@ -265,18 +248,7 @@ public struct AddCoachView: View {
 
             FieldRow {
                 InlineField(label: "coach.wt_coach_licence_level") {
-                    Stepper(value: $wtCoachLicenceLevel, in: 1...4) {
-                        Text(verbatim: "L\(wtCoachLicenceLevel)")
-                            .font(.callout.monospacedDigit())
-                            .environment(\.layoutDirection, .leftToRight)
-                    }
-                    .overlay(alignment: .leading) {
-                        Text(verbatim: "L\(wtCoachLicenceLevel)")
-                            .font(.callout.monospacedDigit())
-                            .padding(.leading, 4)
-                            .environment(\.layoutDirection, .leftToRight)
-                    }
-                    .labelsHidden()
+                    CompactStepper(value: $wtCoachLicenceLevel, range: 1...4, prefix: "L")
                 }
                 InlineField(label: "coach.wt_coach_licence_expiry") {
                     optionalDateField(date: $wtLicenceExpiry, isSet: $wtLicenceExpirySet)
@@ -334,14 +306,15 @@ public struct AddCoachView: View {
     // MARK: - Performance
 
     private var performanceCard: some View {
-        SectionCard(icon: "chart.bar.fill", title: "coach.section.performance") {
+        FormSectionCard(icon: "chart.bar.fill", title: "coach.section.performance") {
             InlineField(label: "coach.cpd_hours", footer: "coach.cpd_hours_hint") {
                 HStack {
                     Slider(value: $cpdHoursThisYear, in: 0...100, step: 1)
                     Text(verbatim: "\(Int(cpdHoursThisYear)) h")
-                        .font(.callout.monospacedDigit())
+                        .scaledFont(.callout, monospacedDigit: true)
                         .frame(minWidth: 56, alignment: .trailing)
                         .environment(\.layoutDirection, .leftToRight)
+                        .tappableDouble($cpdHoursThisYear, in: 0...100)
                 }
             }
 
@@ -361,9 +334,10 @@ public struct AddCoachView: View {
             if isSet.wrappedValue {
                 Slider(value: value, in: 0...5, step: 0.1)
                 Text(verbatim: String(format: "%.1f", value.wrappedValue))
-                    .font(.callout.monospacedDigit())
+                    .scaledFont(.callout, monospacedDigit: true)
                     .frame(minWidth: 36, alignment: .trailing)
                     .environment(\.layoutDirection, .leftToRight)
+                    .tappableDouble(value, in: 0...5, decimals: 1)
                 Button { isSet.wrappedValue = false } label: {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                 }
@@ -373,7 +347,7 @@ public struct AddCoachView: View {
                     isSet.wrappedValue = true
                 } label: {
                     Label("coach.set_rating", systemImage: "plus.circle")
-                        .font(.callout)
+                        .scaledFont(.callout)
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -388,14 +362,14 @@ public struct AddCoachView: View {
     private func compactTextField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
         TextField(placeholder, text: binding)
             .textFieldStyle(.plain)
-            .font(.callout)
+            .scaledFont(.callout)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func arabicTextField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
         TextField(placeholder, text: binding)
             .textFieldStyle(.plain)
-            .font(.callout)
+            .scaledFont(.callout)
             .multilineTextAlignment(.trailing)
             .environment(\.layoutDirection, .rightToLeft)
             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -404,7 +378,7 @@ public struct AddCoachView: View {
     private func bioField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
         TextField(placeholder, text: binding, axis: .vertical)
             .textFieldStyle(.plain)
-            .font(.callout)
+            .scaledFont(.callout)
             .lineLimit(2...4)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -412,12 +386,12 @@ public struct AddCoachView: View {
     private func compactMenuLabel(text: String) -> some View {
         HStack(spacing: 6) {
             Text(verbatim: text)
-                .font(.callout)
+                .scaledFont(.callout)
                 .foregroundStyle(.primary)
                 .lineLimit(1)
             Spacer()
             Image(systemName: "chevron.up.chevron.down")
-                .font(.caption2)
+                .scaledFont(.caption2)
                 .foregroundStyle(.secondary)
         }
     }
@@ -439,7 +413,7 @@ public struct AddCoachView: View {
                 Button {
                     isSet.wrappedValue = true
                 } label: {
-                    Label("coach.set_date", systemImage: "calendar.badge.plus").font(.callout)
+                    Label("coach.set_date", systemImage: "calendar.badge.plus").scaledFont(.callout)
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -545,7 +519,33 @@ public struct AddCoachView: View {
             bioAr: bioAr.isEmpty ? nil : bioAr,
             cpdHoursThisYear: cpdHoursThisYear,
             parentSatisfactionAvg: parentSatisfactionSet ? parentSatisfactionAvg : nil,
-            peerReviewAvg: peerReviewSet ? peerReviewAvg : nil
+            peerReviewAvg: peerReviewSet ? peerReviewAvg : nil,
+            // Stage 1.6 dossier — preserve any data set elsewhere (the
+            // detail-view edits federation IDs / role / status / notes via
+            // a future expanded form). Defaults preserve `editing` state so
+            // a save here doesn't wipe the new identity/role fields.
+            dateOfBirth: editing?.dateOfBirth,
+            gender: editing?.gender,
+            nationality: editing?.nationality ?? "AE",
+            mobileNumber: editing?.mobileNumber,
+            email: editing?.email,
+            emiratesID: editing?.emiratesID,
+            passportNumber: editing?.passportNumber,
+            bloodType: editing?.bloodType,
+            federationCoachID: editing?.federationCoachID,
+            worldTaekwondoCoachID: editing?.worldTaekwondoCoachID,
+            coachLevel: editing?.coachLevel,
+            licenseLevel: editing?.licenseLevel,
+            specialisation: editing?.specialisation,
+            employmentStatus: editing?.employmentStatus ?? .active,
+            nationalTeamStatus: editing?.nationalTeamStatus ?? .none,
+            olympicProgramStatus: editing?.olympicProgramStatus ?? .none,
+            technicalLevel: editing?.technicalLevel,
+            sparringLevel: editing?.sparringLevel,
+            poomsaeLevel: editing?.poomsaeLevel,
+            fitnessLevel: editing?.fitnessLevel,
+            coachNotes: editing?.coachNotes ?? [],
+            ranking: editing?.ranking
         )
 
         do {
@@ -562,7 +562,7 @@ public struct AddCoachView: View {
 
 // MARK: - Layout primitives
 
-private struct SectionCard<Content: View>: View {
+private struct FormSectionCard<Content: View>: View {
     let icon: String
     let title: LocalizedStringKey
     @ViewBuilder let content: Content
@@ -571,12 +571,12 @@ private struct SectionCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.caption.bold())
+                    .scaledFont(.caption, weight: .bold)
                     .foregroundStyle(.white)
                     .frame(width: 20, height: 20)
                     .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 5))
                 Text(title)
-                    .font(.subheadline.bold())
+                    .scaledFont(.subheadline, weight: .bold)
                     .foregroundStyle(.primary)
                 Spacer()
             }
@@ -586,7 +586,7 @@ private struct SectionCard<Content: View>: View {
             }
         }
         .padding(12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 10))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
@@ -608,19 +608,19 @@ private struct InlineField<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption2.weight(.semibold))
+                .scaledFont(.caption2, weight: .semibold)
                 .foregroundStyle(.primary.opacity(0.55))
             content
             if let footer {
                 Text(footer)
-                    .font(.caption2)
+                    .scaledFont(.caption2)
                     .foregroundStyle(.tertiary)
             }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 6))
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 6))
         .overlay(
             RoundedRectangle(cornerRadius: 6)
                 .stroke(Color.primary.opacity(0.18), lineWidth: 1)

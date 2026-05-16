@@ -40,7 +40,7 @@ public struct ComposeAnnouncementView: View {
             Section {
                 Picker(selection: $audience) {
                     ForEach(AnnouncementAudience.allCases, id: \.self) { aud in
-                        Text(LocalizedStringKey(aud.labelKey)).tag(aud)
+                        Text(localizedKey: aud.labelKey).tag(aud)
                     }
                 } label: {
                     Text("announcement.audience")
@@ -80,6 +80,7 @@ public struct ComposeAnnouncementView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.cancel") { dismiss() }
+                .bareToolbarButton()
             }
         }
         .task { branches = (try? await session.repository.branches()) ?? [] }

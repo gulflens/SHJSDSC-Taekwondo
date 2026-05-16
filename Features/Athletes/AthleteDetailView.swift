@@ -1,13 +1,76 @@
 import SwiftUI
 
+/// Federation-grade athlete profile. Header + 8-tab module, adapts to
+/// iPhone (single-column, sticky header) and iPad landscape (multi-column,
+/// higher data density).
+///
+/// State strategy: this container owns the data loads (matches, scores,
+/// physical metrics, attendance, training load, registrations, tournaments,
+/// branches, coach, parent users) and passes pre-shaped slices down to each
+/// tab. Tabs are pure presentation; mutations go through this view's
+/// `repository.upsert(_:)` path so the model stays the single source of truth.
 public struct AthleteDetailView: View {
     @Environment(AppSession.self) private var session
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     @State private var athlete: Athlete
-    @State private var matches: [Match] = []
+    @State private var selectedTab: ProfileTab = .overview
+
+    // Loaded by `load()`
+    @State private var branches: [Branch] = []
+    @State private var coachName: String?
+    @State private var parentUsers: [User] = []
     @State private var score: PerformanceScore?
+    @State private var scoreHistory: [PerformanceScore] = []
+    @State private var physicalMetrics: [PhysicalMetric] = []
+    @State private var attendance: [AttendanceRecord] = []
+    @State private var trainingLoad: [TrainingLoadEntry] = []
+    @State private var matches: [Match] = []
     @State private var registrations: [TournamentRegistration] = []
     @State private var tournamentLookup: [EntityID: Tournament] = [:]
+
     @State private var showingEdit = false
+    @State private var sparringTarget: SparringTarget?
+    @State private var coachNoteTarget: CoachNoteTarget?
+    @State private var documentTarget: DocumentTarget?
+
+    private struct SparringTarget: Identifiable {
+        let editing: Match?
+        var id: String { editing?.id.uuidString ?? "new" }
+    }
+
+    private struct CoachNoteTarget: Identifiable {
+        let editing: CoachNote?
+        var id: String { editing?.id.uuidString ?? "new-coach-note" }
+    }
+
+    private struct DocumentTarget: Identifiable {
+        let editing: AthleteDocument?
+        var id: String { editing?.id.uuidString ?? "new-document" }
+    }
+
+    public enum ProfileTab: String, CaseIterable, Identifiable, Hashable {
+        case overview, performance, attendance, competitions, medical, documents, coachNotes, more
+
+        public var id: String { rawValue }
+        /// Pre-resolved human title. NSLocalizedString returns the value from
+        /// the xcstrings catalogue for keys built from interpolation.
+        public var title: String {
+            NSLocalizedString("athlete.tab.\(rawValue)", comment: "")
+        }
+        public var systemIcon: String {
+            switch self {
+            case .overview: "rectangle.grid.2x2.fill"
+            case .performance: "chart.line.uptrend.xyaxis"
+            case .attendance: "calendar.badge.checkmark"
+            case .competitions: "trophy.fill"
+            case .medical: "cross.case.fill"
+            case .documents: "doc.text.fill"
+            case .coachNotes: "text.bubble.fill"
+            case .more: "ellipsis.circle.fill"
+            }
+        }
+    }
 
     public init(athlete: Athlete) {
         _athlete = State(initialValue: athlete)
@@ -15,26 +78,78 @@ public struct AthleteDetailView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                hero
+            VStack(spacing: 14) {
+                AthleteProfileHeader(
+                    athlete: athlete,
+                    branchName: currentBranchName,
+                    isWide: isWide,
+                    onEditPhoto: { showingEdit = true }
+                )
                 if !athlete.missingProfileFields.isEmpty {
-                    profileWarningBanner
+                    profileCompletenessBanner
                 }
-                BeltStrip(belt: athlete.currentBelt, history: athlete.beltHistory)
-                statsGrid
-                entryActions
-                PerformanceTrendView(athlete: athlete)
-                tournamentsSection
-                beltJourney
-                recentMatches
+                tabBar
+                Group {
+                    switch selectedTab {
+                    case .overview:
+                        AthleteOverviewTab(
+                            athlete: athlete,
+                            branchName: currentBranchName,
+                            coachName: coachName,
+                            score: score,
+                            scoreHistory: scoreHistory,
+                            physicalMetrics: physicalMetrics,
+                            attendance: attendance,
+                            trainingLoad: trainingLoad,
+                            matches: matches,
+                            registrations: registrations,
+                            tournaments: tournamentLookup,
+                            isWide: isWide
+                        )
+                    case .performance:
+                        AthletePerformanceTab(athlete: $athlete, isWide: isWide)
+                    case .attendance:
+                        AthleteAttendanceTab(
+                            athlete: athlete,
+                            attendance: attendance,
+                            trainingLoad: trainingLoad,
+                            matches: matches,
+                            isWide: isWide
+                        )
+                    case .competitions:
+                        AthleteCompetitionsTab(
+                            athlete: athlete,
+                            matches: matches,
+                            registrations: registrations,
+                            tournaments: tournamentLookup,
+                            isWide: isWide,
+                            onOpenSparring: { match in
+                                guard canEditAthlete else { return }
+                                sparringTarget = SparringTarget(editing: match)
+                            }
+                        )
+                    case .medical:
+                        AthleteMedicalTab(athlete: $athlete, isWide: isWide)
+                    case .documents:
+                        AthleteDocumentsTab(athlete: athlete, canEdit: canEditAthlete) {
+                            documentTarget = DocumentTarget(editing: nil)
+                        }
+                    case .coachNotes:
+                        AthleteCoachNotesTab(athlete: athlete, canEdit: canEditAthlete) {
+                            coachNoteTarget = CoachNoteTarget(editing: nil)
+                        }
+                    case .more:
+                        AthleteMoreTab(athlete: $athlete, parentUsers: parentUsers, isWide: isWide)
+                    }
+                }
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.18), value: selectedTab)
             }
-            .padding()
+            .padding(.horizontal, isWide ? 20 : 14)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
-        .navigationDestination(isPresented: $showingEdit) {
-            AddAthleteView(initialBranchID: athlete.branchID, editing: athlete) { updated in
-                athlete = updated
-            }
-        }
+        .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(Text(verbatim: athlete.fullName))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -51,199 +166,168 @@ public struct AthleteDetailView: View {
                     )
                 }
             }
+            if canEditAthlete {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingEdit = true
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                    .accessibilityLabel(Text("athlete.edit"))
+                    .bareToolbarButton()
+                }
+            }
+        }
+        .navigationDestination(isPresented: $showingEdit) {
+            AddAthleteView(initialBranchID: athlete.branchID, editing: athlete) { updated in
+                athlete = updated
+            }
+        }
+        .sheet(item: $sparringTarget) { target in
+            NavigationStack {
+                SparringLogEditorView(athlete: athlete, editing: target.editing) { _ in
+                    Task { await load() }
+                }
+            }
+        }
+        .sheet(item: $coachNoteTarget) { target in
+            CoachNoteEditor(editing: target.editing) { note in
+                Task { await saveCoachNote(note) }
+            }
+        }
+        .sheet(item: $documentTarget) { target in
+            DocumentEditor(editing: target.editing) { doc in
+                Task { await saveDocument(doc) }
+            }
         }
         .task { await load() }
     }
 
-    private var profileWarningBanner: some View {
+    private func saveCoachNote(_ note: CoachNote) async {
+        var updated = athlete
+        if let idx = updated.coachNotes.firstIndex(where: { $0.id == note.id }) {
+            updated.coachNotes[idx] = note
+        } else {
+            updated.coachNotes.append(note)
+        }
+        athlete = updated
+        do {
+            try await session.repository.upsert(updated)
+        } catch {
+            print("AthleteDetailView.saveCoachNote:", error)
+        }
+    }
+
+    private func saveDocument(_ doc: AthleteDocument) async {
+        var updated = athlete
+        if let idx = updated.documents.firstIndex(where: { $0.id == doc.id }) {
+            updated.documents[idx] = doc
+        } else {
+            updated.documents.append(doc)
+        }
+        athlete = updated
+        do {
+            try await session.repository.upsert(updated)
+        } catch {
+            print("AthleteDetailView.saveDocument:", error)
+        }
+    }
+
+    // MARK: - Tab bar
+
+    private var tabBar: some View {
+        SegmentedTabBar(
+            selection: $selectedTab,
+            tabs: ProfileTab.allCases,
+            title: { $0.title },
+            icon: { $0.systemIcon }
+        )
+        .padding(.vertical, 4)
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .shadow(color: .black.opacity(0.03), radius: 8, y: 3)
+    }
+
+    // MARK: - Completeness banner (compact pill, sits above tab bar)
+
+    private var profileCompletenessBanner: some View {
         let missing = athlete.missingProfileFields
         let pct = Int((athlete.profileCompleteness * 100).rounded())
-        let canEdit = (session.currentUser?.role).map {
-            PermissionMatrix.allowed(role: $0, permission: .editAthlete)
-        } ?? false
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("athlete.profile_incomplete").font(.subheadline.bold())
-                    Text(verbatim: String(format: NSLocalizedString("athlete.profile_completeness", comment: ""), pct, missing.count))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
+        return HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("athlete.profile_incomplete")
+                    .scaledFont(.footnote, weight: .semibold)
+                Text(verbatim: String(format: NSLocalizedString("athlete.profile_completeness", comment: ""), pct, missing.count))
+                    .scaledFont(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            ProgressView(value: athlete.profileCompleteness)
-                .tint(.orange)
-            VStack(alignment: .leading, spacing: 3) {
-                ForEach(missing, id: \.self) { key in
-                    HStack(spacing: 6) {
-                        Image(systemName: "circle").font(.caption2).foregroundStyle(.secondary)
-                        Text(LocalizedStringKey(key)).font(.caption)
-                    }
-                }
-            }
-            if canEdit {
+            Spacer(minLength: 0)
+            if canEditAthlete {
                 Button {
                     showingEdit = true
                 } label: {
-                    Label("athlete.complete_profile", systemImage: "pencil")
-                        .font(.subheadline.bold())
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                    Text("athlete.complete_profile")
+                        .scaledFont(.caption, weight: .semibold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.orange.opacity(0.15), in: Capsule())
+                        .foregroundStyle(.orange)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .buttonStyle(.plain)
             }
         }
         .padding(12)
-        .background(Color.orange.opacity(0.10))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.orange.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.orange.opacity(0.18), lineWidth: 1)
+        )
     }
 
-    private var hero: some View {
-        HStack(spacing: 16) {
-            Avatar(seed: athlete.avatarSeed, label: athlete.initials, size: 64)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(verbatim: athlete.fullName).font(.title2.bold())
-                Text(verbatim: athlete.fullNameAr).font(.body).foregroundStyle(.secondary)
-                HStack(spacing: 8) {
-                    StatusPill(status: athlete.status)
-                    Text(LocalizedStringKey(athlete.ageGroup.labelKey)).font(.caption).foregroundStyle(.secondary)
-                }
-            }
-            Spacer()
-        }
+    // MARK: - Helpers
+
+    private var isWide: Bool { sizeClass == .regular }
+
+    private var currentBranchName: String? {
+        branches.first { $0.id == athlete.branchID }?.name
     }
 
-    private var statsGrid: some View {
-        let weights: ScoreWeights = athlete.status == .competitionTeam
-            ? .competitionTeam
-            : (athlete.ageGroup == .cubs ? .cubs : .standard)
-        let composite = score.map { ScoreEngine.composite($0, weights: weights) } ?? 0
-        let medals = matches.filter { $0.medal != .none }.count
-        let wins = matches.filter { $0.won }.count
-        let winRate = matches.isEmpty ? 0 : Double(wins) / Double(matches.count)
-        return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            KPITile(title: "kpi.composite", value: String(format: "%.0f", composite), icon: "star.fill")
-            KPITile(title: "kpi.medals", value: "\(medals)", icon: "medal.fill")
-            KPITile(title: "kpi.win_rate", value: String(format: "%.0f%%", winRate * 100), icon: "chart.bar.fill")
-            KPITile(title: "kpi.weight", value: String(format: "%.0fkg", athlete.weightKg), icon: "scalemass.fill")
-        }
+    private var canEditAthlete: Bool {
+        guard let role = session.currentUser?.role else { return false }
+        return PermissionMatrix.allowed(role: role, permission: .editAthlete)
     }
 
-    private var entryActions: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("heading.entries").font(.headline)
-            HStack(spacing: 8) {
-                NavigationLink(destination: PhysicalTestEntryView(athlete: athlete)) {
-                    Label("physical.add", systemImage: "figure.strengthtraining.traditional")
-                }
-                .buttonStyle(.bordered)
-                NavigationLink(destination: TechnicalAssessmentEntryView(athlete: athlete)) {
-                    Label("assessment.add", systemImage: "figure.taichi")
-                }
-                .buttonStyle(.bordered)
-                NavigationLink(destination: WellnessCheckInView(athlete: athlete)) {
-                    Label("wellness.add", systemImage: "heart.text.square.fill")
-                }
-                .buttonStyle(.bordered)
-            }
-        }
-    }
-
-    private var beltJourney: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("heading.belt_journey").font(.headline)
-            ForEach(athlete.beltHistory.indices, id: \.self) { i in
-                let b = athlete.beltHistory[i]
-                HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(b.color.swiftUIColor)
-                        .frame(width: 24, height: 14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-                        )
-                    Text(LocalizedStringKey(b.label))
-                    Spacer()
-                    Text(b.awardedAt, style: .date)
-                        .foregroundStyle(.secondary)
-                        .font(.caption)
-                }
-            }
-        }
-    }
-
-    private var tournamentsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("tab.tournaments").font(.headline)
-            if registrations.isEmpty {
-                Text("empty.no_tournaments").foregroundStyle(.secondary)
-            } else {
-                ForEach(registrations) { r in
-                    let t = tournamentLookup[r.tournamentID]
-                    HStack(spacing: 8) {
-                        Image(systemName: "rosette").foregroundStyle(.tint)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(verbatim: t?.name ?? "—").font(.subheadline)
-                            HStack(spacing: 4) {
-                                Text(verbatim: r.weightCategory.shortLabel).font(.caption2)
-                                Text(verbatim: "·").font(.caption2)
-                                Text(LocalizedStringKey(r.status.labelKey)).font(.caption2)
-                            }
-                            .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if let date = t?.startsAt {
-                            Text(date, style: .date).font(.caption2).foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private var recentMatches: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("heading.recent_matches").font(.headline)
-            if matches.isEmpty {
-                Text("empty.no_matches_yet").foregroundStyle(.secondary)
-            } else {
-                ForEach(Array(matches.prefix(5))) { m in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(verbatim: m.tournamentName).font(.subheadline)
-                            Text(m.date, style: .date).font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Text(verbatim: "\(m.ourScore) - \(m.opponentScore)")
-                            .font(.callout.monospacedDigit())
-                            .environment(\.layoutDirection, .leftToRight)
-                        if m.medal != .none {
-                            Image(systemName: "medal.fill").foregroundStyle(medalColor(m.medal))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func medalColor(_ medal: MedalType) -> Color {
-        switch medal {
-        case .gold: .yellow
-        case .silver: .gray
-        case .bronze: .orange
-        case .none: .gray
-        }
-    }
+    // MARK: - Data load
 
     private func load() async {
         do {
-            matches = try await session.repository.matches(athleteID: athlete.id)
-            score = try await session.repository.score(athleteID: athlete.id)
-            registrations = try await session.repository.registrations(athleteID: athlete.id)
+            async let branchesTask = session.repository.branches()
+            async let matchesTask = session.repository.matches(athleteID: athlete.id)
+            async let scoreTask = session.repository.score(athleteID: athlete.id)
+            async let scoreHistoryTask = session.repository.scoreHistory(athleteID: athlete.id)
+            async let physicalTask = session.repository.physicalMetrics(athleteID: athlete.id)
+            async let registrationsTask = session.repository.registrations(athleteID: athlete.id)
+            let monthsBack = Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
+            async let attendanceTask = session.repository.attendance(athleteID: athlete.id, since: monthsBack)
+            async let trainingLoadTask = session.repository.trainingLoad(athleteID: athlete.id, since: monthsBack)
+
+            branches = try await branchesTask
+            matches = try await matchesTask
+            score = try await scoreTask
+            scoreHistory = try await scoreHistoryTask
+            physicalMetrics = try await physicalTask
+            registrations = try await registrationsTask
+            attendance = try await attendanceTask
+            trainingLoad = try await trainingLoadTask
+
+            if let coachID = athlete.primaryCoachID,
+               let coach = try await session.repository.coach(id: coachID) {
+                coachName = coach.fullName
+            } else {
+                coachName = nil
+            }
+
             var lookup: [EntityID: Tournament] = [:]
             for r in registrations {
                 if lookup[r.tournamentID] == nil,
@@ -252,6 +336,14 @@ public struct AthleteDetailView: View {
                 }
             }
             tournamentLookup = lookup
+
+            var loaded: [User] = []
+            for parentID in athlete.parentUserIDs {
+                if let u = try await session.repository.user(id: parentID) {
+                    loaded.append(u)
+                }
+            }
+            parentUsers = loaded
         } catch {
             print("AthleteDetailView.load:", error)
         }

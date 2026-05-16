@@ -79,6 +79,7 @@ public struct RegisterAthleteView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.cancel") { dismiss() }
+                .bareToolbarButton()
             }
         }
         .task { await load() }

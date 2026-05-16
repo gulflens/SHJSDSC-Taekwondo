@@ -41,7 +41,7 @@ public enum MatchSide: String, Codable, CaseIterable, Sendable, Hashable {
     case chung, hong
 }
 
-public enum ScoreAction: String, Codable, CaseIterable, Sendable, Hashable {
+public nonisolated enum ScoreAction: String, Codable, CaseIterable, Sendable, Hashable {
     case headKick
     case bodyKick
     case turnBodyKick
@@ -94,7 +94,34 @@ public enum MedalType: String, Codable, CaseIterable, Sendable, Hashable {
     public var labelKey: String { "medal.\(rawValue)" }
 }
 
+// MARK: - Sparring (Pillar 3) enums
+
+public enum SparringContext: String, Codable, CaseIterable, Sendable, Hashable {
+    case training, friendly, competition
+
+    public var labelKey: String { "sparring.context.\(rawValue)" }
+}
+
+public enum MatchType: String, Codable, CaseIterable, Sendable, Hashable {
+    case bestOf3, bestOf5, goldenPoint, single
+
+    public var labelKey: String { "match_type.\(rawValue)" }
+}
+
+public enum WinMethod: String, Codable, CaseIterable, Sendable, Hashable {
+    case points, knockout, refereeStop, disqualification, withdrawal
+
+    public var labelKey: String { "win_method.\(rawValue)" }
+}
+
+public enum MatchOutcome: String, Codable, CaseIterable, Sendable, Hashable {
+    case win, loss, draw
+
+    public var labelKey: String { "match_outcome.\(rawValue)" }
+}
+
 public struct Match: Codable, Identifiable, Hashable, Sendable {
+    // === Identity ===
     public let id: EntityID
     public var tournamentName: String
     public var tournamentID: EntityID?
@@ -110,6 +137,63 @@ public struct Match: Codable, Identifiable, Hashable, Sendable {
     public var medal: MedalType
     public var events: [ScoreEvent]
 
+    // === Sparring metadata (Pillar 3) ===
+    public var context: SparringContext
+    public var matchType: MatchType?
+    public var winMethod: WinMethod?
+    /// Explicit outcome — distinguishes draw from loss (`won` only encodes win/not-win).
+    /// Falls back to win/loss derived from `won` when nil.
+    public var outcome: MatchOutcome?
+    public var roundsWon: Int?
+    public var roundsLost: Int?
+
+    // === Aggregate counts ===
+    public var kicksAttempted: Int?
+    public var kicksLanded: Int?
+    public var punchesAttempted: Int?
+    public var punchesLanded: Int?
+
+    // === Points scored, by technique value (1pt punches → 5pt spinning head kicks) ===
+    public var ourPunchPoints: Int?
+    public var ourBodyKickPoints: Int?
+    public var ourHeadKickPoints: Int?
+    public var ourSpinningBodyPoints: Int?
+    public var ourSpinningHeadPoints: Int?
+
+    // === Points conceded, same breakdown ===
+    public var oppPunchPoints: Int?
+    public var oppBodyKickPoints: Int?
+    public var oppHeadKickPoints: Int?
+    public var oppSpinningBodyPoints: Int?
+    public var oppSpinningHeadPoints: Int?
+
+    // === Discipline ===
+    public var penaltiesGiven: Int?       // gam-jeoms against opponent (points to us)
+    public var penaltiesReceived: Int?    // gam-jeoms against us (points to opponent)
+    public var knockdownsScored: Int?
+    public var knockdownsReceived: Int?
+
+    // === Tactical ===
+    public var leadLegKicks: Int?
+    public var backLegKicks: Int?
+    public var openingAttacks: Int?
+    public var counterAttacks: Int?
+    /// Free-form labels of the top three techniques used, ranked by frequency.
+    public var topTechniques: [String]?
+    public var combinations: String?
+    public var offenceSeconds: Int?
+    public var defenceSeconds: Int?
+    public var ringControlRating: Int?       // 1...5
+    public var composureRating: Int?         // 1...5 — overall composure (Pillar 5 reuses this)
+    public var scoreManagementRating: Int?   // 1...5
+    public var coachNotes: String?
+
+    // === Pillar 5: post-competition mental review (each 1...5, optional) ===
+    public var preMatchNerves: Int?
+    public var interRoundRecovery: Int?
+    public var responseToLosingPoint: Int?
+    public var responseToWinningPoint: Int?
+
     public init(
         id: EntityID = UUID(),
         tournamentName: String,
@@ -124,7 +208,47 @@ public struct Match: Codable, Identifiable, Hashable, Sendable {
         opponentScore: Int,
         won: Bool,
         medal: MedalType,
-        events: [ScoreEvent] = []
+        events: [ScoreEvent] = [],
+        context: SparringContext = .competition,
+        matchType: MatchType? = nil,
+        winMethod: WinMethod? = nil,
+        outcome: MatchOutcome? = nil,
+        roundsWon: Int? = nil,
+        roundsLost: Int? = nil,
+        kicksAttempted: Int? = nil,
+        kicksLanded: Int? = nil,
+        punchesAttempted: Int? = nil,
+        punchesLanded: Int? = nil,
+        ourPunchPoints: Int? = nil,
+        ourBodyKickPoints: Int? = nil,
+        ourHeadKickPoints: Int? = nil,
+        ourSpinningBodyPoints: Int? = nil,
+        ourSpinningHeadPoints: Int? = nil,
+        oppPunchPoints: Int? = nil,
+        oppBodyKickPoints: Int? = nil,
+        oppHeadKickPoints: Int? = nil,
+        oppSpinningBodyPoints: Int? = nil,
+        oppSpinningHeadPoints: Int? = nil,
+        penaltiesGiven: Int? = nil,
+        penaltiesReceived: Int? = nil,
+        knockdownsScored: Int? = nil,
+        knockdownsReceived: Int? = nil,
+        leadLegKicks: Int? = nil,
+        backLegKicks: Int? = nil,
+        openingAttacks: Int? = nil,
+        counterAttacks: Int? = nil,
+        topTechniques: [String]? = nil,
+        combinations: String? = nil,
+        offenceSeconds: Int? = nil,
+        defenceSeconds: Int? = nil,
+        ringControlRating: Int? = nil,
+        composureRating: Int? = nil,
+        scoreManagementRating: Int? = nil,
+        coachNotes: String? = nil,
+        preMatchNerves: Int? = nil,
+        interRoundRecovery: Int? = nil,
+        responseToLosingPoint: Int? = nil,
+        responseToWinningPoint: Int? = nil
     ) {
         self.id = id
         self.tournamentName = tournamentName
@@ -140,5 +264,73 @@ public struct Match: Codable, Identifiable, Hashable, Sendable {
         self.won = won
         self.medal = medal
         self.events = events
+        self.context = context
+        self.matchType = matchType
+        self.winMethod = winMethod
+        self.outcome = outcome
+        self.roundsWon = roundsWon
+        self.roundsLost = roundsLost
+        self.kicksAttempted = kicksAttempted
+        self.kicksLanded = kicksLanded
+        self.punchesAttempted = punchesAttempted
+        self.punchesLanded = punchesLanded
+        self.ourPunchPoints = ourPunchPoints
+        self.ourBodyKickPoints = ourBodyKickPoints
+        self.ourHeadKickPoints = ourHeadKickPoints
+        self.ourSpinningBodyPoints = ourSpinningBodyPoints
+        self.ourSpinningHeadPoints = ourSpinningHeadPoints
+        self.oppPunchPoints = oppPunchPoints
+        self.oppBodyKickPoints = oppBodyKickPoints
+        self.oppHeadKickPoints = oppHeadKickPoints
+        self.oppSpinningBodyPoints = oppSpinningBodyPoints
+        self.oppSpinningHeadPoints = oppSpinningHeadPoints
+        self.penaltiesGiven = penaltiesGiven
+        self.penaltiesReceived = penaltiesReceived
+        self.knockdownsScored = knockdownsScored
+        self.knockdownsReceived = knockdownsReceived
+        self.leadLegKicks = leadLegKicks
+        self.backLegKicks = backLegKicks
+        self.openingAttacks = openingAttacks
+        self.counterAttacks = counterAttacks
+        self.topTechniques = topTechniques
+        self.combinations = combinations
+        self.offenceSeconds = offenceSeconds
+        self.defenceSeconds = defenceSeconds
+        self.ringControlRating = ringControlRating
+        self.composureRating = composureRating
+        self.scoreManagementRating = scoreManagementRating
+        self.coachNotes = coachNotes
+        self.preMatchNerves = preMatchNerves
+        self.interRoundRecovery = interRoundRecovery
+        self.responseToLosingPoint = responseToLosingPoint
+        self.responseToWinningPoint = responseToWinningPoint
+    }
+
+    // MARK: - Derived helpers
+
+    public var effectiveOutcome: MatchOutcome {
+        outcome ?? (won ? .win : .loss)
+    }
+
+    /// 0...100, nil if attempted is missing or zero.
+    public var kickAccuracy: Double? {
+        guard let attempted = kicksAttempted, attempted > 0,
+              let landed = kicksLanded else { return nil }
+        return Double(landed) / Double(attempted) * 100
+    }
+
+    public var punchAccuracy: Double? {
+        guard let attempted = punchesAttempted, attempted > 0,
+              let landed = punchesLanded else { return nil }
+        return Double(landed) / Double(attempted) * 100
+    }
+
+    /// True when any sparring metric beyond the basic scoreboard has been logged.
+    public var hasDetailedSparringData: Bool {
+        kicksAttempted != nil || punchesAttempted != nil
+            || ourPunchPoints != nil || ourBodyKickPoints != nil || ourHeadKickPoints != nil
+            || ourSpinningBodyPoints != nil || ourSpinningHeadPoints != nil
+            || ringControlRating != nil || composureRating != nil || scoreManagementRating != nil
+            || (topTechniques?.isEmpty == false)
     }
 }

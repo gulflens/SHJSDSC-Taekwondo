@@ -16,23 +16,22 @@ public struct AttendanceListView: View {
                     ForEach(sessions) { s in
                         NavigationLink(destination: AttendanceMarkView(session: s)) {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(verbatim: s.title).font(.headline)
+                                Text(verbatim: s.title).scaledFont(.headline)
                                 HStack(spacing: 6) {
                                     Text(s.startsAt, style: .time)
                                     Text(verbatim: "→")
                                     Text(s.endsAt, style: .time)
                                 }
-                                .font(.caption)
+                                .scaledFont(.caption)
                                 .foregroundStyle(.secondary)
                                 if let b = branches[s.branchID] {
-                                    Text(verbatim: b.name).font(.caption2).foregroundStyle(.secondary)
+                                    Text(verbatim: b.name).scaledFont(.caption2).foregroundStyle(.secondary)
                                 }
                             }
                         }
                     }
                 }
             }
-            .navigationTitle(Text("tab.classes"))
         }
         .task { await load() }
     }
@@ -64,13 +63,13 @@ public struct AttendanceMarkView: View {
             List {
                 Section {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(verbatim: session.title).font(.headline)
+                        Text(verbatim: session.title).scaledFont(.headline)
                         HStack(spacing: 6) {
                             Text(session.startsAt, style: .time)
                             Text(verbatim: "→")
                             Text(session.endsAt, style: .time)
                             Spacer()
-                            Text(LocalizedStringKey(session.discipline.labelKey)).font(.caption.bold())
+                            Text(localizedKey: session.discipline.labelKey).scaledFont(.caption, weight: .bold)
                         }
                         .foregroundStyle(.secondary)
                     }
@@ -86,7 +85,7 @@ public struct AttendanceMarkView: View {
                                 Spacer()
                                 Picker(selection: binding(for: a.id)) {
                                     ForEach(AttendanceState.allCases, id: \.self) { st in
-                                        Text(LocalizedStringKey(st.labelKey)).tag(Optional(st))
+                                        Text(localizedKey: st.labelKey).tag(Optional(st))
                                     }
                                 } label: { EmptyView() }
                                 .labelsHidden()

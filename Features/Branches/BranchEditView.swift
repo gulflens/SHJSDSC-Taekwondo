@@ -65,9 +65,11 @@ public struct BranchEditView: View {
                     }
                 }
                 .padding(16)
+                .frame(maxWidth: 640, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.appBackground)
         .navigationTitle(Text(verbatim: store?.branch?.name ?? ""))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -93,9 +95,9 @@ public struct BranchEditView: View {
                         selectedTab = tab
                     } label: {
                         Label(tab.labelKey, systemImage: tab.icon)
-                            .font(.caption.bold())
+                            .scaledFont(.caption, weight: .bold)
                             .padding(.horizontal, 10).padding(.vertical, 6)
-                            .background(selectedTab == tab ? Color.accentColor : Color(.tertiarySystemGroupedBackground),
+                            .background(selectedTab == tab ? Color.accentColor : Color.cardBackground,
                                         in: Capsule())
                             .foregroundStyle(selectedTab == tab ? .white : .primary)
                     }
@@ -104,7 +106,7 @@ public struct BranchEditView: View {
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
         }
-        .background(Color(.systemBackground))
+        .background(Color.appBackground)
     }
 
     @ViewBuilder
@@ -143,12 +145,7 @@ public struct BranchEditView: View {
     // MARK: - Save handlers (each refreshes the relevant slice)
 
     private func saveBranch(_ b: Branch) async {
-        // Branch identity is part of the core branches table — there's no
-        // dedicated upsert in the protocol yet. Stage 5 wires this up; for
-        // demo we mutate the in-memory copy via the existing branch list
-        // by writing back through the matching profile sub-records is wrong,
-        // so we punt with a print until that hook lands.
-        print("Stage 1.5 limitation: Branch core identity save not wired (waiting on upsert(_ branch:)).")
+        try? await session.repository.upsert(b)
         await store?.load(branchID: branchID)
     }
 
@@ -211,6 +208,8 @@ private struct IdentityEditor: View {
     @State private var focus: String
     @State private var streetAddress: String
     @State private var streetAddressAr: String
+    @State private var latitude: Double
+    @State private var longitude: Double
     @State private var phone: String
     @State private var email: String
     @State private var taglineEn: String
@@ -227,6 +226,8 @@ private struct IdentityEditor: View {
         _focus = State(initialValue: branch.focus)
         _streetAddress = State(initialValue: branch.streetAddress)
         _streetAddressAr = State(initialValue: branch.streetAddressAr)
+        _latitude = State(initialValue: branch.latitude)
+        _longitude = State(initialValue: branch.longitude)
         _phone = State(initialValue: branch.phone)
         _email = State(initialValue: branch.email)
         _taglineEn = State(initialValue: branch.taglineEn ?? "")
@@ -247,6 +248,7 @@ private struct IdentityEditor: View {
                 labeled("branch.capacity") {
                     Stepper(value: $capacity, in: 0...500) {
                         Text(verbatim: "\(capacity)")
+                            .tappableInt($capacity, in: 0...500)
                     }
                 }
             }
@@ -259,6 +261,9 @@ private struct IdentityEditor: View {
                 TextField("branch.address_ar", text: $streetAddressAr, axis: .vertical)
                     .lineLimit(2...3).textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.trailing)
+            }
+            labeled("branch.location") {
+                BranchLocationField(latitude: $latitude, longitude: $longitude)
             }
             HStack {
                 labeled("branch.phone") { TextField("branch.phone", text: $phone).textFieldStyle(.roundedBorder) }
@@ -284,6 +289,8 @@ private struct IdentityEditor: View {
                 b.focus = focus
                 b.streetAddress = streetAddress
                 b.streetAddressAr = streetAddressAr
+                b.latitude = latitude
+                b.longitude = longitude
                 b.phone = phone
                 b.email = email
                 b.taglineEn = taglineEn.isEmpty ? nil : taglineEn
@@ -340,19 +347,23 @@ private struct FacilityEditor: View {
                 labeled("facility.floor_area") {
                     Stepper(value: $floorAreaSqm, in: 0...10_000, step: 50) {
                         Text(verbatim: "\(Int(floorAreaSqm)) m²")
+                            .tappableDouble($floorAreaSqm, in: 0...10_000)
                     }
                 }
                 labeled("facility.halls") {
                     Stepper(value: $hallCount, in: 1...10) {
                         Text(verbatim: "\(hallCount)")
+                            .tappableInt($hallCount, in: 1...10)
                     }
                 }
             }
             Toggle("facility.mirror_walls", isOn: $hasMirrorWalls)
             Toggle("facility.sound_system", isOn: $hasSoundSystem)
             Toggle("facility.ac", isOn: $hasAC)
+                .help(Text("tooltip.ac"))
             Toggle("facility.scoreboard", isOn: $hasInstalledScoreboard)
             Toggle("facility.pss", isOn: $hasPSS)
+                .help(Text("tooltip.pss"))
             if hasPSS {
                 labeled("facility.pss_brand") {
                     TextField("Daedo / KP&P", text: $pssBrand).textFieldStyle(.roundedBorder)
@@ -362,11 +373,13 @@ private struct FacilityEditor: View {
                 labeled("facility.spectator_seats") {
                     Stepper(value: $spectatorSeats, in: 0...500) {
                         Text(verbatim: "\(spectatorSeats)")
+                            .tappableInt($spectatorSeats, in: 0...500)
                     }
                 }
                 labeled("facility.parking") {
                     Stepper(value: $parkingSpots, in: 0...500) {
                         Text(verbatim: "\(parkingSpots)")
+                            .tappableInt($parkingSpots, in: 0...500)
                     }
                 }
             }
@@ -416,8 +429,8 @@ private struct HoursEditor: View {
             sectionTitle("branch.tab.hours")
             ForEach(rows.indices, id: \.self) { i in
                 HStack(spacing: 8) {
-                    Text(LocalizedStringKey(rows[i].day.labelKey))
-                        .font(.caption.bold())
+                    Text(localizedKey: rows[i].day.labelKey)
+                        .scaledFont(.caption, weight: .bold)
                         .frame(width: 56, alignment: .leading)
                     Toggle("", isOn: Binding(
                         get: { rows[i].isOpen },
@@ -498,10 +511,12 @@ private struct ProgramRow: View {
                 Stepper(value: $program.capacity, in: 0...100) {
                     Text(verbatim: "Cap \(program.capacity)")
                         .environment(\.layoutDirection, .leftToRight)
+                        .tappableInt($program.capacity, in: 0...100)
                 }
                 Stepper(value: $program.monthlyFeeAED, in: 0...5000, step: 25) {
                     Text(verbatim: "AED \(Int(program.monthlyFeeAED))")
                         .environment(\.layoutDirection, .leftToRight)
+                        .tappableDouble($program.monthlyFeeAED, in: 0...5000)
                 }
             }
             HStack {
@@ -515,7 +530,7 @@ private struct ProgramRow: View {
             }
         }
         .padding(8)
-        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -553,16 +568,18 @@ private struct PricingEditor: View {
             stepperAED("program.registration_fee", value: $registration, step: 10)
             stepperAED("program.equipment_package", value: $equipment, step: 10)
             HStack {
-                Text("program.sibling_discount").font(.caption)
+                Text("program.sibling_discount").scaledFont(.caption)
                 Slider(value: $siblingPct, in: 0...0.5)
-                Text(verbatim: "\(Int(siblingPct * 100))%").frame(width: 44).font(.caption.monospacedDigit())
+                Text(verbatim: "\(Int(siblingPct * 100))%").frame(width: 44).scaledFont(.caption, monospacedDigit: true)
                     .environment(\.layoutDirection, .leftToRight)
+                    .tappableInt(percentBinding($siblingPct), in: 0...50)
             }
             HStack {
-                Text("program.annual_prepay").font(.caption)
+                Text("program.annual_prepay").scaledFont(.caption)
                 Slider(value: $prepayPct, in: 0...0.3)
-                Text(verbatim: "\(Int(prepayPct * 100))%").frame(width: 44).font(.caption.monospacedDigit())
+                Text(verbatim: "\(Int(prepayPct * 100))%").frame(width: 44).scaledFont(.caption, monospacedDigit: true)
                     .environment(\.layoutDirection, .leftToRight)
+                    .tappableInt(percentBinding($prepayPct), in: 0...30)
             }
             saveBar {
                 var p = pricing ?? BranchPricing(
@@ -583,14 +600,23 @@ private struct PricingEditor: View {
 
     private func stepperAED(_ label: LocalizedStringKey, value: Binding<Double>, step: Double) -> some View {
         HStack {
-            Text(label).font(.caption)
+            Text(label).scaledFont(.caption)
             Spacer()
             Stepper(value: value, in: 0...10_000, step: step) {
                 Text(verbatim: "AED \(Int(value.wrappedValue))")
                     .environment(\.layoutDirection, .leftToRight)
+                    .help(Text("tooltip.aed_currency"))
+                    .tappableDouble(value, in: 0...10_000)
             }
         }
     }
+}
+
+private func percentBinding(_ source: Binding<Double>) -> Binding<Int> {
+    Binding(
+        get: { Int((source.wrappedValue * 100).rounded()) },
+        set: { source.wrappedValue = Double($0) / 100 }
+    )
 }
 
 // MARK: - Inventory tab
@@ -615,26 +641,27 @@ private struct InventoryEditor: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle("branch.tab.inventory")
             if let last = inventory?.lastAuditAt {
-                Text("inventory.last_audit").font(.caption2).foregroundStyle(.secondary)
-                Text(last, style: .date).font(.caption2).foregroundStyle(.secondary)
+                Text("inventory.last_audit").scaledFont(.caption2).foregroundStyle(.secondary)
+                Text(last, style: .date).scaledFont(.caption2).foregroundStyle(.secondary)
                     .environment(\.layoutDirection, .leftToRight)
             }
             ForEach(items.indices, id: \.self) { i in
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(LocalizedStringKey(items[i].labelKey)).font(.caption.bold())
+                        Text(localizedKey: items[i].labelKey).scaledFont(.caption, weight: .bold)
                         if let s = items[i].size {
-                            Text(verbatim: s).font(.caption2).foregroundStyle(.secondary)
+                            Text(verbatim: s).scaledFont(.caption2).foregroundStyle(.secondary)
                         }
                     }
                     Spacer()
                     Stepper(value: $items[i].quantity, in: 0...500) {
                         Text(verbatim: "\(items[i].quantity)")
                             .environment(\.layoutDirection, .leftToRight)
+                            .tappableInt($items[i].quantity, in: 0...500)
                     }
                 }
                 .padding(8)
-                .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+                .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 8))
             }
             Button {
                 items.append(InventoryItem(category: .other, labelKey: "inventory.other", quantity: 0))
@@ -689,12 +716,13 @@ private struct ComplianceEditor: View {
             certBlock("compliance.civil_defence", number: $civilNum, expiry: $civilDate)
             certBlock("compliance.sports_council", number: $sportsNum, expiry: $sportsDate)
             VStack(alignment: .leading, spacing: 4) {
-                Text("compliance.insurance").font(.caption.bold())
+                Text("compliance.insurance").scaledFont(.caption, weight: .bold)
                 TextField("policy", text: $insuranceNum).textFieldStyle(.roundedBorder)
                 TextField("provider", text: $insuranceProvider).textFieldStyle(.roundedBorder)
                 DatePicker("compliance.expires_on", selection: $insuranceDate, displayedComponents: .date)
             }
             Toggle("compliance.aed", isOn: $hasAED)
+                .help(Text("tooltip.aed_device"))
             saveBar {
                 var c = compliance ?? BranchCompliance(branchID: branchID)
                 c.civilDefenceCertNumber = civilNum.isEmpty ? nil : civilNum
@@ -712,7 +740,7 @@ private struct ComplianceEditor: View {
 
     private func certBlock(_ label: LocalizedStringKey, number: Binding<String>, expiry: Binding<Date>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label).font(.caption.bold())
+            Text(label).scaledFont(.caption, weight: .bold)
             TextField("certificate number", text: number).textFieldStyle(.roundedBorder)
             DatePicker("compliance.expires_on", selection: expiry, displayedComponents: .date)
         }
@@ -744,7 +772,7 @@ private struct MediaEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle("branch.tab.media")
-            Text("manager.media_url_hint").font(.caption2).foregroundStyle(.secondary)
+            Text("manager.media_url_hint").scaledFont(.caption2).foregroundStyle(.secondary)
             labeled("manager.logo_url") { TextField("https://", text: $logoURL).textFieldStyle(.roundedBorder)
                 .environment(\.layoutDirection, .leftToRight) }
             labeled("manager.hero_url") { TextField("https://", text: $heroURL).textFieldStyle(.roundedBorder)
@@ -865,9 +893,9 @@ private struct SafeguardingEditor: View {
                     HStack {
                         Text(verbatim: coaches.first(where: { $0.id == officerID })?.fullName ?? "—")
                         Spacer()
-                        Image(systemName: "chevron.up.chevron.down").font(.caption2)
+                        Image(systemName: "chevron.up.chevron.down").scaledFont(.caption2)
                     }
-                    .padding(6).background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 6))
+                    .padding(6).background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 6))
                 }
             }
             DatePicker("safeguarding.last_training", selection: $lastTraining, displayedComponents: .date)
@@ -952,18 +980,18 @@ private struct FinancialsEditor: View {
             ForEach(financials) { f in
                 HStack {
                     Text(f.month, format: .dateTime.month(.abbreviated).year())
-                        .font(.caption.monospacedDigit())
+                        .scaledFont(.caption, monospacedDigit: true)
                         .frame(width: 80, alignment: .leading)
                         .environment(\.layoutDirection, .leftToRight)
                     Text(verbatim: "+\(Int(f.revenueAED))").foregroundStyle(.green)
-                        .font(.caption.monospacedDigit())
+                        .scaledFont(.caption, monospacedDigit: true)
                         .environment(\.layoutDirection, .leftToRight)
                     Text(verbatim: "−\(Int(f.totalExpensesAED))").foregroundStyle(.red)
-                        .font(.caption.monospacedDigit())
+                        .scaledFont(.caption, monospacedDigit: true)
                         .environment(\.layoutDirection, .leftToRight)
                     Spacer()
                     Text(verbatim: "\(Int(f.netContributionAED))")
-                        .font(.caption.bold().monospacedDigit())
+                        .scaledFont(.caption, weight: .bold, monospacedDigit: true)
                         .foregroundStyle(f.netContributionAED >= 0 ? .green : .red)
                         .environment(\.layoutDirection, .leftToRight)
                 }
@@ -973,11 +1001,13 @@ private struct FinancialsEditor: View {
 
     private func stepperAED(_ label: LocalizedStringKey, value: Binding<Double>) -> some View {
         HStack {
-            Text(label).font(.caption)
+            Text(label).scaledFont(.caption)
             Spacer()
             Stepper(value: value, in: 0...1_000_000, step: 500) {
                 Text(verbatim: "AED \(Int(value.wrappedValue))")
                     .environment(\.layoutDirection, .leftToRight)
+                    .help(Text("tooltip.aed_currency"))
+                    .tappableDouble(value, in: 0...1_000_000)
             }
         }
     }
@@ -1000,18 +1030,18 @@ private struct MilestonesEditor: View {
             sectionTitle("branch.tab.milestones")
             ForEach(milestones) { m in
                 HStack {
-                    Image(systemName: "circle.fill").font(.caption2).foregroundStyle(.tint)
+                    Image(systemName: "circle.fill").scaledFont(.caption2).foregroundStyle(.tint)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(verbatim: m.titleEn).font(.caption.bold())
-                        Text(m.occurredAt, style: .date).font(.caption2).foregroundStyle(.secondary)
+                        Text(verbatim: m.titleEn).scaledFont(.caption, weight: .bold)
+                        Text(m.occurredAt, style: .date).scaledFont(.caption2).foregroundStyle(.secondary)
                             .environment(\.layoutDirection, .leftToRight)
                     }
                     Spacer()
-                    Text(LocalizedStringKey(m.category.labelKey))
-                        .font(.caption2).foregroundStyle(.secondary)
+                    Text(localizedKey: m.category.labelKey)
+                        .scaledFont(.caption2).foregroundStyle(.secondary)
                 }
                 .padding(8)
-                .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+                .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 8))
             }
             Divider()
             sectionTitle("manager.add_milestone")
@@ -1021,7 +1051,7 @@ private struct MilestonesEditor: View {
             DatePicker("financials.month", selection: $occurredAt, displayedComponents: .date)
             Picker("category", selection: $category) {
                 ForEach(MilestoneCategory.allCases, id: \.self) { c in
-                    Text(LocalizedStringKey(c.labelKey)).tag(c)
+                    Text(localizedKey: c.labelKey).tag(c)
                 }
             }
             saveBar {
@@ -1042,12 +1072,12 @@ private struct MilestonesEditor: View {
 // MARK: - Helpers
 
 private func sectionTitle(_ key: LocalizedStringKey) -> some View {
-    Text(key).font(.headline)
+    Text(key).scaledFont(.headline)
 }
 
 private func labeled<Content: View>(_ label: LocalizedStringKey, @ViewBuilder _ content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 4) {
-        Text(label).font(.caption.bold()).foregroundStyle(.secondary)
+        Text(label).scaledFont(.caption, weight: .bold).foregroundStyle(.secondary)
         content()
     }
 }
@@ -1059,7 +1089,7 @@ private func saveBar(_ action: @escaping () -> Void) -> some View {
             action()
         } label: {
             Label("action.save", systemImage: "checkmark.circle.fill")
-                .font(.callout.bold())
+                .scaledFont(.callout, weight: .bold)
         }
         .buttonStyle(.borderedProminent)
     }

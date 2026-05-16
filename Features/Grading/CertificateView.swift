@@ -25,6 +25,11 @@ public struct CertificateView: View {
             ToolbarItem(placement: .primaryAction) {
                 ShareLink(item: shareSummary) {
                     Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color(red: 0.30, green: 0.30, blue: 0.31), in: Capsule())
+                        .contentShape(Capsule())
                 }
             }
         }
@@ -37,39 +42,40 @@ public struct CertificateView: View {
             // Header
             HStack {
                 Image(systemName: "shield.lefthalf.filled")
-                    .font(.system(size: 32))
+                    .scaledFont(size: 32)
                     .foregroundStyle(.tint)
                 Spacer()
                 Text(verbatim: "SSDSC")
-                    .font(.system(size: 16, weight: .bold, design: .serif))
+                    .scaledFont(size: 16, weight: .bold, design: .serif)
                     .foregroundStyle(.secondary)
+                    .help(Text("tooltip.ssdsc"))
                 Spacer()
                 Image(systemName: "shield.lefthalf.filled")
-                    .font(.system(size: 32))
+                    .scaledFont(size: 32)
                     .foregroundStyle(.tint)
                     .scaleEffect(x: -1, y: 1)
             }
             Divider()
 
             Text("grading.certificate")
-                .font(.system(size: 28, weight: .bold, design: .serif))
+                .scaledFont(size: 28, weight: .bold, design: .serif)
 
             // Names — both languages
             VStack(spacing: 6) {
                 Text("grading.awarded_to")
-                    .font(.caption)
+                    .scaledFont(.caption)
                     .foregroundStyle(.secondary)
                 Text(verbatim: athlete.fullName)
-                    .font(.system(size: 24, weight: .semibold, design: .serif))
+                    .scaledFont(size: 24, weight: .semibold, design: .serif)
                 Text(verbatim: athlete.fullNameAr)
-                    .font(.system(size: 22, weight: .semibold, design: .serif))
+                    .scaledFont(size: 22, weight: .semibold, design: .serif)
             }
 
             // Belt transition
             HStack(spacing: 16) {
                 beltBadge(certificate.fromBelt, label: "grading.from_belt")
                 Image(systemName: "arrow.right")
-                    .font(.title3)
+                    .scaledFont(.title3)
                     .foregroundStyle(.secondary)
                 beltBadge(certificate.toBelt, label: "grading.to_belt")
             }
@@ -79,32 +85,32 @@ public struct CertificateView: View {
             // Dates: Gregorian + Hijri
             HStack(spacing: 32) {
                 VStack(spacing: 4) {
-                    Text("grading.issued_on").font(.caption).foregroundStyle(.secondary)
+                    Text("grading.issued_on").scaledFont(.caption).foregroundStyle(.secondary)
                     Text(verbatim: gregorianDate)
-                        .font(.callout)
+                        .scaledFont(.callout)
                 }
                 VStack(spacing: 4) {
-                    Text("grading.hijri_date").font(.caption).foregroundStyle(.secondary)
+                    Text("grading.hijri_date").scaledFont(.caption).foregroundStyle(.secondary)
                     Text(verbatim: hijriDate)
-                        .font(.callout)
+                        .scaledFont(.callout)
                 }
             }
 
             // Branch line
             if let branch {
                 Text(verbatim: "\(branch.name) · \(branch.nameAr)")
-                    .font(.caption)
+                    .scaledFont(.caption)
                     .foregroundStyle(.secondary)
             }
 
             // Signatures
             VStack(spacing: 8) {
-                Text("grading.signed_by").font(.caption).foregroundStyle(.secondary)
+                Text("grading.signed_by").scaledFont(.caption).foregroundStyle(.secondary)
                 ForEach(examiners) { c in
                     HStack(spacing: 8) {
                         Avatar(seed: c.avatarSeed, label: c.initials, size: 28)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(verbatim: c.fullName).font(.caption)
+                            Text(verbatim: c.fullName).scaledFont(.caption)
                             Rectangle()
                                 .fill(Color.primary.opacity(0.35))
                                 .frame(width: 120, height: 0.6)
@@ -116,7 +122,7 @@ public struct CertificateView: View {
 
             // Watermark
             Text(verbatim: "SSDSC")
-                .font(.system(size: 56, weight: .bold, design: .serif))
+                .scaledFont(size: 56, weight: .bold, design: .serif)
                 .foregroundStyle(Color.tint.opacity(0.06))
                 .padding(.top, 8)
         }
@@ -131,13 +137,13 @@ public struct CertificateView: View {
 
     private func beltBadge(_ belt: Belt, label: LocalizedStringKey) -> some View {
         VStack(spacing: 4) {
-            Text(label).font(.caption2).foregroundStyle(.secondary)
+            Text(label).scaledFont(.caption2).foregroundStyle(.secondary)
             RoundedRectangle(cornerRadius: 6)
                 .fill(belt.color.swiftUIColor)
                 .frame(width: 64, height: 14)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.primary.opacity(0.2), lineWidth: 0.5))
-            Text(LocalizedStringKey(belt.label))
-                .font(.caption.bold())
+            Text(localizedKey: belt.label)
+                .scaledFont(.caption, weight: .bold)
         }
     }
 
@@ -181,6 +187,3 @@ public struct CertificateView: View {
     }
 }
 
-private extension Color {
-    static var tint: Color { .accentColor }
-}

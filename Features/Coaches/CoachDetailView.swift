@@ -1,15 +1,53 @@
 import SwiftUI
 
+/// Federation-grade coach profile. Header + 8-tab module, adapts to
+/// iPhone (single-column, sticky header) and iPad landscape (multi-column,
+/// higher data density). Mirrors `AthleteDetailView` so the two profile
+/// modules feel like one ecosystem.
 public struct CoachDetailView: View {
     @Environment(AppSession.self) private var session
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     @State private var coach: Coach
-    @State private var primaryBranch: Branch?
-    @State private var secondaryBranches: [Branch] = []
-    @State private var assignedAthletes: Int = 0
-    @State private var classesThisWeek: Int = 0
-    @State private var medalsThisYear: Int = 0
-    @State private var promotionsThisYear: Int = 0
+    @State private var selectedTab: ProfileTab = .overview
+
+    // Loaded by `load()`
+    @State private var allBranches: [Branch] = []
+    @State private var assignedAthletes: [Athlete] = []
+    @State private var coachMatches: [Match] = []
+    @State private var certifications: [Certification] = []
+    @State private var sessions: [ClassSession] = []
+    @State private var tournamentLookup: [EntityID: Tournament] = [:]
+    @State private var upcomingTournaments: [Tournament] = []
+
     @State private var showingEdit = false
+    @State private var coachNoteTarget: CoachNoteTarget?
+
+    private struct CoachNoteTarget: Identifiable {
+        let editing: CoachNote?
+        var id: String { editing?.id.uuidString ?? "new-coach-note" }
+    }
+
+    public enum ProfileTab: String, CaseIterable, Identifiable, Hashable {
+        case overview, athletes, performance, attendance, competitions, certifications, reports, more
+
+        public var id: String { rawValue }
+        public var title: String {
+            NSLocalizedString("coach.tab.\(rawValue)", comment: "")
+        }
+        public var systemIcon: String {
+            switch self {
+            case .overview: "rectangle.grid.2x2.fill"
+            case .athletes: "person.3.fill"
+            case .performance: "chart.line.uptrend.xyaxis"
+            case .attendance: "calendar.badge.checkmark"
+            case .competitions: "trophy.fill"
+            case .certifications: "checkmark.seal.fill"
+            case .reports: "doc.text.fill"
+            case .more: "ellipsis.circle.fill"
+            }
+        }
+    }
 
     public init(coach: Coach) {
         _coach = State(initialValue: coach)
@@ -17,353 +55,255 @@ public struct CoachDetailView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                hero
+            VStack(spacing: 14) {
+                CoachProfileHeader(
+                    coach: coach,
+                    primaryBranchName: primaryBranchName,
+                    isWide: isWide,
+                    onEditPhoto: { showingEdit = true }
+                )
                 if !coach.missingProfileFields.isEmpty {
-                    profileWarningBanner
+                    profileCompletenessBanner
                 }
-                kpiGrid
-                credentialsSection
-                assignmentSection
-                performanceSection
-                if let bio = coach.bio, !bio.isEmpty {
-                    bioSection(bio)
+                tabBar
+                Group {
+                    switch selectedTab {
+                    case .overview:
+                        CoachOverviewTab(
+                            coach: coach,
+                            primaryBranchName: primaryBranchName,
+                            assignedAthletes: assignedAthletes,
+                            coachMatches: coachMatches,
+                            certifications: certifications,
+                            upcomingTournaments: upcomingTournaments,
+                            isWide: isWide
+                        )
+                    case .athletes:
+                        CoachAthletesTab(athletes: assignedAthletes, isWide: isWide)
+                    case .performance:
+                        CoachPerformanceTab(
+                            coach: coach,
+                            assignedAthletes: assignedAthletes,
+                            coachMatches: coachMatches,
+                            isWide: isWide
+                        )
+                    case .attendance:
+                        CoachAttendanceTab(coach: coach, sessions: sessions, isWide: isWide)
+                    case .competitions:
+                        CoachCompetitionsTab(
+                            coach: coach,
+                            coachMatches: coachMatches,
+                            tournaments: tournamentLookup,
+                            isWide: isWide
+                        )
+                    case .certifications:
+                        CoachCertificationsTab(
+                            coach: coach,
+                            certifications: certifications,
+                            isWide: isWide
+                        )
+                    case .reports:
+                        CoachReportsTab(coach: coach, isWide: isWide)
+                    case .more:
+                        CoachMoreTab(
+                            coach: coach,
+                            primaryBranchName: primaryBranchName,
+                            secondaryBranchNames: secondaryBranchNames,
+                            isWide: isWide
+                        )
+                    }
+                }
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.18), value: selectedTab)
+            }
+            .padding(.horizontal, isWide ? 20 : 14)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
+        }
+        .background(Color.appBackground.ignoresSafeArea())
+        .navigationTitle(Text(verbatim: coach.fullName))
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            if canEditCoach {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingEdit = true
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                    .accessibilityLabel(Text("coach.edit"))
+                    .bareToolbarButton()
                 }
             }
-            .padding()
         }
         .navigationDestination(isPresented: $showingEdit) {
             AddCoachView(initialBranchID: coach.primaryBranchID, editing: coach) { updated in
                 coach = updated
             }
         }
-        .navigationTitle(Text(verbatim: coach.fullName))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            if let role = session.currentUser?.role,
-               PermissionMatrix.allowed(role: role, permission: .editCoach) {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingEdit = true
-                    } label: {
-                        Label("coach.edit", systemImage: "pencil")
-                    }
-                }
+        .sheet(item: $coachNoteTarget) { target in
+            CoachNoteEditor(editing: target.editing) { note in
+                Task { await saveCoachNote(note) }
             }
         }
         .task { await load() }
     }
 
-    private var hero: some View {
-        HStack(spacing: 16) {
-            Avatar(seed: coach.avatarSeed, label: coach.initials, size: 64)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(verbatim: coach.fullName).font(.title2.bold())
-                Text(verbatim: coach.fullNameAr).font(.body).foregroundStyle(.secondary)
-                HStack(spacing: 8) {
-                    Text(verbatim: "\(coach.danRank) Dan")
-                        .font(.caption.bold())
-                        .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(Color.accentColor.opacity(0.15), in: Capsule())
-                    Text(LocalizedStringKey(coach.contractType.labelKey))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if coach.onCall {
-                        Label("coach.on_call", systemImage: "bell.badge.fill")
-                            .font(.caption.bold())
-                            .foregroundStyle(.green)
-                    }
-                }
-            }
-            Spacer()
-        }
+    // MARK: - Tab bar
+
+    private var tabBar: some View {
+        SegmentedTabBar(
+            selection: $selectedTab,
+            tabs: ProfileTab.allCases,
+            title: { $0.title },
+            icon: { $0.systemIcon }
+        )
+        .padding(.vertical, 4)
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .shadow(color: .black.opacity(0.03), radius: 8, y: 3)
     }
 
-    private var profileWarningBanner: some View {
+    // MARK: - Profile completeness banner
+
+    private var profileCompletenessBanner: some View {
         let missing = coach.missingProfileFields
         let pct = Int((coach.profileCompleteness * 100).rounded())
-        let canEdit = (session.currentUser?.role).map {
-            PermissionMatrix.allowed(role: $0, permission: .editCoach)
-        } ?? false
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("coach.profile_incomplete").font(.subheadline.bold())
-                    Text(verbatim: String(format: NSLocalizedString("coach.profile_completeness", comment: ""), pct, missing.count))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
+        return HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("coach.profile_incomplete")
+                    .scaledFont(.footnote, weight: .semibold)
+                Text(verbatim: String(format: NSLocalizedString("coach.profile_completeness", comment: ""), pct, missing.count))
+                    .scaledFont(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            ProgressView(value: coach.profileCompleteness)
-                .tint(.orange)
-            VStack(alignment: .leading, spacing: 3) {
-                ForEach(missing, id: \.self) { key in
-                    HStack(spacing: 6) {
-                        Image(systemName: "circle").font(.caption2).foregroundStyle(.secondary)
-                        Text(LocalizedStringKey(key)).font(.caption)
-                    }
-                }
-            }
-            if canEdit {
+            Spacer(minLength: 0)
+            if canEditCoach {
                 Button {
                     showingEdit = true
                 } label: {
-                    Label("coach.complete_profile", systemImage: "pencil")
-                        .font(.subheadline.bold())
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                    Text("coach.complete_profile")
+                        .scaledFont(.caption, weight: .semibold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.orange.opacity(0.15), in: Capsule())
+                        .foregroundStyle(.orange)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .buttonStyle(.plain)
             }
         }
         .padding(12)
-        .background(Color.orange.opacity(0.10))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.orange.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.orange.opacity(0.18), lineWidth: 1)
+        )
     }
 
-    private var kpiGrid: some View {
-        let cols = [GridItem(.flexible()), GridItem(.flexible())]
-        return LazyVGrid(columns: cols, spacing: 10) {
-            KPITile(title: "coach.athletes_managed", value: "\(assignedAthletes)", icon: "person.3.fill")
-            KPITile(title: "coach.classes_this_week", value: "\(classesThisWeek)", icon: "calendar")
-            KPITile(title: "coach.athletes_promoted_year", value: "\(promotionsThisYear)", icon: "rosette")
-            KPITile(title: "coach.medals_this_year", value: "\(medalsThisYear)", icon: "medal.fill")
+    // MARK: - Helpers
+
+    private var isWide: Bool { sizeClass == .regular }
+
+    private var primaryBranchName: String? {
+        allBranches.first { $0.id == coach.primaryBranchID }?.name
+    }
+
+    private var secondaryBranchNames: [String] {
+        coach.secondaryBranchIDs.compactMap { id in
+            allBranches.first { $0.id == id }?.name
         }
     }
 
-    // MARK: - Credentials
-
-    private var credentialsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(icon: "checkmark.seal.fill", title: "coach.section.credentials")
-            VStack(alignment: .leading, spacing: 6) {
-                credentialRow(label: "coach.kukkiwon_cert", value: coach.kukkiwonCertNumber, expiry: nil)
-                credentialRow(label: "coach.wt_coach_licence", value: "L\(coach.wtCoachLicenceLevel)", expiry: coach.wtCoachLicenceExpiry)
-                credentialRow(label: "coach.poomsae_referee",
-                              value: coach.poomsaeRefereeLevel.map { "Class \($0)" },
-                              expiry: coach.poomsaeRefereeExpiry)
-                credentialRow(label: "coach.kyorugi_referee",
-                              value: coach.kyorugiRefereeLevel.map { "Class \($0)" },
-                              expiry: coach.kyorugiRefereeExpiry)
-                credentialRow(label: "coach.first_aid_expiry", value: nil, expiry: coach.firstAidExpiry)
-                credentialRow(label: "coach.safeguarding_expiry", value: nil, expiry: coach.safeguardingExpiry)
-                credentialRow(label: "coach.anti_doping_expiry", value: nil, expiry: coach.antiDopingExpiry)
-            }
-            .padding(12)
-            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
-        }
+    private var canEditCoach: Bool {
+        guard let role = session.currentUser?.role else { return false }
+        return PermissionMatrix.allowed(role: role, permission: .editCoach)
     }
 
-    private func credentialRow(label: LocalizedStringKey, value: String?, expiry: Date?) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer(minLength: 8)
-            if let value, !value.isEmpty {
-                Text(verbatim: value)
-                    .font(.callout.bold())
-                    .environment(\.layoutDirection, .leftToRight)
-            }
-            if let expiry {
-                expiryPill(expiry)
-            } else if value == nil {
-                Text("coach.not_set").font(.caption).foregroundStyle(.tertiary)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-
-    private func expiryPill(_ expiry: Date) -> some View {
-        let days = Calendar.current.dateComponents([.day], from: Date(), to: expiry).day ?? 0
-        let tint: Color = days < 0 ? .red : (days < 60 ? .orange : .green)
-        let labelKey: LocalizedStringKey = days < 0 ? "cert.severity.expired" : (days < 60 ? "cert.severity.expiring" : "cert.severity.ok")
-        return HStack(spacing: 4) {
-            Text(labelKey).font(.caption2.bold())
-            Text(expiry, style: .date).font(.caption2.monospacedDigit())
-                .environment(\.layoutDirection, .leftToRight)
-        }
-        .padding(.horizontal, 6).padding(.vertical, 2)
-        .background(tint.opacity(0.15), in: Capsule())
-        .foregroundStyle(tint)
-    }
-
-    // MARK: - Assignment
-
-    private var assignmentSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(icon: "building.2.fill", title: "coach.section.assignment")
-            VStack(alignment: .leading, spacing: 6) {
-                assignmentRow(label: "coach.primary_branch", value: primaryBranch?.name ?? "—")
-                let secondaries = secondaryBranches.map(\.name).joined(separator: ", ")
-                assignmentRow(label: "coach.secondary_branches",
-                              value: secondaries.isEmpty ? "—" : secondaries)
-                assignmentRow(label: "coach.weekly_hours",
-                              value: coach.weeklyHoursTarget.map { "\($0) h" } ?? "—")
-                assignmentRow(label: "coach.hired_at", value: dateFormatter.string(from: coach.hiredAt))
-            }
-            .padding(12)
-            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
-        }
-    }
-
-    private func assignmentRow(label: LocalizedStringKey, value: String) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Spacer(minLength: 8)
-            Text(verbatim: value).font(.callout)
-                .multilineTextAlignment(.trailing)
-                .lineLimit(2)
-        }
-        .padding(.vertical, 2)
-    }
-
-    // MARK: - Performance
-
-    private var performanceSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader(icon: "chart.bar.fill", title: "coach.section.performance")
-            VStack(alignment: .leading, spacing: 6) {
-                performanceRow(label: "coach.cpd_hours",
-                               value: "\(Int(coach.cpdHoursThisYear)) h")
-                performanceRow(label: "coach.parent_satisfaction",
-                               rating: coach.parentSatisfactionAvg)
-                performanceRow(label: "coach.peer_review",
-                               rating: coach.peerReviewAvg)
-                performanceRow(label: "coach.athletes_promoted_year",
-                               value: "\(promotionsThisYear)")
-                performanceRow(label: "coach.medals_this_year",
-                               value: "\(medalsThisYear)")
-            }
-            .padding(12)
-            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
-        }
-    }
-
-    private func performanceRow(label: LocalizedStringKey, value: String) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Spacer(minLength: 8)
-            Text(verbatim: value)
-                .font(.callout.monospacedDigit())
-                .environment(\.layoutDirection, .leftToRight)
-        }
-        .padding(.vertical, 2)
-    }
-
-    private func performanceRow(label: LocalizedStringKey, rating: Double?) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Spacer(minLength: 8)
-            if let rating {
-                HStack(spacing: 2) {
-                    ForEach(0..<5, id: \.self) { i in
-                        Image(systemName: starName(for: i, rating: rating))
-                            .font(.caption2)
-                            .foregroundStyle(.yellow)
-                    }
-                    Text(verbatim: String(format: " %.1f", rating))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .environment(\.layoutDirection, .leftToRight)
-                }
-            } else {
-                Text("coach.not_set").font(.caption).foregroundStyle(.tertiary)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-
-    private func starName(for index: Int, rating: Double) -> String {
-        let v = rating - Double(index)
-        if v >= 1 { return "star.fill" }
-        if v >= 0.5 { return "star.leadinghalf.filled" }
-        return "star"
-    }
-
-    // MARK: - Bio
-
-    private func bioSection(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionHeader(icon: "text.alignleft", title: "coach.bio")
-            Text(verbatim: text)
-                .font(.callout)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
-        }
-    }
-
-    private func sectionHeader(icon: String, title: LocalizedStringKey) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
-                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 6))
-            Text(title).font(.subheadline.bold())
-            Spacer()
-        }
-    }
-
-    private var dateFormatter: DateFormatter {
-        let df = DateFormatter()
-        df.dateStyle = .medium
-        return df
-    }
-
-    // MARK: - Load
+    // MARK: - Data load
 
     private func load() async {
-        let repo = session.repository
-        async let branchesTask = (try? await repo.branches()) ?? []
-        async let athletesTask = (try? await repo.athletes(coachID: coach.id)) ?? []
-        async let weekSessionsTask = loadWeekSessions(repo: repo)
+        do {
+            async let branchesTask = session.repository.branches()
+            async let athletesTask = session.repository.athletes(coachID: coach.id)
+            async let certsTask = session.repository.certifications(coachID: coach.id)
+            async let tournamentsTask = session.repository.tournaments()
 
-        let (allBranches, athletes, weekClasses) = await (branchesTask, athletesTask, weekSessionsTask)
-        let lookup = Dictionary(uniqueKeysWithValues: allBranches.map { ($0.id, $0) })
-        primaryBranch = lookup[coach.primaryBranchID]
-        secondaryBranches = coach.secondaryBranchIDs.compactMap { lookup[$0] }
-        assignedAthletes = athletes.count
-        classesThisWeek = weekClasses
+            allBranches = try await branchesTask
+            assignedAthletes = try await athletesTask
+            certifications = try await certsTask
+            let allTournaments = try await tournamentsTask
+            let now = Date()
+            upcomingTournaments = allTournaments
+                .filter { $0.startsAt > now }
+                .sorted { $0.startsAt < $1.startsAt }
 
-        // Promotions & medals are best-effort, decorative KPIs — silently
-        // swallow errors. "Promoted" = grading certificate signed by this
-        // coach this calendar year. "Medals" = athletes-managed who earned
-        // any medal (gold/silver/bronze) this year.
-        let yearStart = Calendar.current.date(from: Calendar.current.dateComponents([.year], from: Date())) ?? Date()
-        var promos = 0
-        var medals = 0
-        for a in athletes {
-            if let certs = try? await repo.certificates(athleteID: a.id) {
-                promos += certs.filter { $0.signedByCoachIDs.contains(coach.id) && $0.awardedAt >= yearStart }.count
+            // Sessions for the last 12 weeks across all the coach's branches.
+            let cal = Calendar.current
+            let startDate = cal.date(byAdding: .day, value: -84, to: now) ?? now
+            var collected: [ClassSession] = []
+            var day = startDate
+            while day <= now {
+                if let next = cal.date(byAdding: .day, value: 1, to: day) {
+                    let coachSessions = (try? await session.repository.sessions(coachID: coach.id, on: day)) ?? []
+                    collected.append(contentsOf: coachSessions)
+                    day = next
+                } else {
+                    break
+                }
             }
-            if let matches = try? await repo.matches(athleteID: a.id) {
-                medals += matches.filter { $0.medal != .none && $0.date >= yearStart }.count
+            // Also collect upcoming sessions for the next 4 weeks
+            day = now
+            let upcomingEnd = cal.date(byAdding: .day, value: 28, to: now) ?? now
+            while day <= upcomingEnd {
+                if let next = cal.date(byAdding: .day, value: 1, to: day) {
+                    let coachSessions = (try? await session.repository.sessions(coachID: coach.id, on: day)) ?? []
+                    collected.append(contentsOf: coachSessions)
+                    day = next
+                } else {
+                    break
+                }
             }
+            sessions = Array(Set(collected.map { $0.id })).compactMap { id in
+                collected.first { $0.id == id }
+            }
+
+            // Matches across all assigned athletes.
+            var allMatches: [Match] = []
+            var tournamentMap: [EntityID: Tournament] = [:]
+            for athlete in assignedAthletes {
+                if let athleteMatches = try? await session.repository.matches(athleteID: athlete.id) {
+                    allMatches.append(contentsOf: athleteMatches)
+                    for m in athleteMatches {
+                        if let tid = m.tournamentID,
+                           tournamentMap[tid] == nil,
+                           let t = try? await session.repository.tournament(id: tid) {
+                            tournamentMap[tid] = t
+                        }
+                    }
+                }
+            }
+            coachMatches = allMatches
+            tournamentLookup = tournamentMap
+        } catch {
+            print("CoachDetailView.load:", error)
         }
-        promotionsThisYear = promos
-        medalsThisYear = medals
     }
 
-    private func loadWeekSessions(repo: Repository) async -> Int {
-        let cal = Calendar.current
-        let today = Date()
-        let weekStart = cal.date(byAdding: .day, value: -((cal.component(.weekday, from: today)) - 1), to: today) ?? today
-        var total = 0
-        for offset in 0..<7 {
-            guard let day = cal.date(byAdding: .day, value: offset, to: weekStart) else { continue }
-            if let sessions = try? await repo.sessions(coachID: coach.id, on: day) {
-                total += sessions.count
-            }
+    private func saveCoachNote(_ note: CoachNote) async {
+        var updated = coach
+        if let idx = updated.coachNotes.firstIndex(where: { $0.id == note.id }) {
+            updated.coachNotes[idx] = note
+        } else {
+            updated.coachNotes.append(note)
         }
-        return total
+        coach = updated
+        do {
+            try await session.repository.upsert(updated)
+        } catch {
+            print("CoachDetailView.saveCoachNote:", error)
+        }
     }
 }

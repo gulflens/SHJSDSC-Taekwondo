@@ -15,9 +15,9 @@ public struct KPITile: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 if let icon { Image(systemName: icon).foregroundStyle(.tint) }
-                Text(title).font(.caption).foregroundStyle(.secondary)
+                Text(title).scaledFont(.caption).foregroundStyle(.secondary)
             }
-            Text(verbatim: value).font(.title2.bold())
+            Text(verbatim: value).scaledFont(.title2, weight: .bold)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -29,21 +29,26 @@ public struct KPITile: View {
 public struct GradeBadge: View {
     public let grade: LetterGrade
     public let size: CGFloat
+    @Environment(\.uiScale) private var uiScale
 
     public init(grade: LetterGrade, size: CGFloat = 32) {
         self.grade = grade
         self.size = size
     }
 
+    /// Caller-provided size scaled by the UI Zoom factor — used for both the
+    /// circle frame and the inner letter font so they grow together.
+    private var renderSize: CGFloat { size * uiScale }
+
     public var body: some View {
         ZStack {
             Circle().fill(color.opacity(0.18))
             Circle().stroke(color, lineWidth: 1.5)
             Text(verbatim: grade.label)
-                .font(.system(size: size * 0.42, weight: .bold, design: .rounded))
+                .font(.system(size: renderSize * 0.42, weight: .bold, design: .rounded))
                 .foregroundStyle(color)
         }
-        .frame(width: size, height: size)
+        .frame(width: renderSize, height: renderSize)
     }
 
     private var color: Color {
@@ -62,8 +67,8 @@ public struct StatusPill: View {
     public init(status: AthleteStatus) { self.status = status }
 
     public var body: some View {
-        Text(LocalizedStringKey(status.labelKey))
-            .font(.caption.weight(.medium))
+        Text(localizedKey: status.labelKey)
+            .scaledFont(.caption, weight: .medium)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(color.opacity(0.18))

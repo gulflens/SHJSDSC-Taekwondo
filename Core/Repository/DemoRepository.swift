@@ -11,7 +11,7 @@ public enum DemoAuthError: Error, LocalizedError {
     }
 }
 
-enum PasswordHasher {
+nonisolated enum PasswordHasher {
     static func sha256(_ input: String) -> String {
         let data = Data(input.utf8)
         let digest = SHA256.hash(data: data)
@@ -28,8 +28,14 @@ public actor DemoStore {
     public var attendance: [AttendanceRecord]
     public var scores: [PerformanceScore]
     public var matches: [Match]
-    public var physicalTests: [PhysicalTest]
-    public var assessments: [TechnicalAssessment]
+    public var physicalMetrics: [PhysicalMetric]
+    public var technicalSkills: [TechnicalSkill]
+    public var poomsaeAssessments: [PoomsaeAssessment]
+    public var goals: [Goal] = []
+    public var trainingLoad: [TrainingLoadEntry] = []
+    public var drills: [DrillLibraryEntry] = []
+    public var improvementPlans: [ImprovementPlan] = []
+    public var peerBenchmarks: [PeerBenchmark] = []
     public var wellness: [WellnessEntry]
     public var gradingSessions: [GradingSession]
     public var gradingScores: [GradingScore]
@@ -55,6 +61,7 @@ public actor DemoStore {
     public var branchSocialLinks: [BranchSocialLinks]
     public var branchSafeguardings: [BranchSafeguarding]
     public var branchMilestones: [BranchMilestone]
+    public var athleteGroups: [AthleteGroup]
     public var currentUserID: EntityID
     private var emailPasswordHashes: [String: String] = [:]
     private var emailUserIDs: [String: EntityID] = [:]
@@ -73,8 +80,13 @@ public actor DemoStore {
         self.attendance = seed.attendance
         self.scores = seed.scores
         self.matches = seed.matches
-        self.physicalTests = seed.physicalTests
-        self.assessments = seed.assessments
+        self.physicalMetrics = seed.physicalMetrics
+        self.technicalSkills = seed.technicalSkills
+        self.poomsaeAssessments = seed.poomsaeAssessments
+        self.trainingLoad = seed.trainingLoad
+        self.drills = seed.drills
+        self.improvementPlans = seed.improvementPlans
+        self.peerBenchmarks = seed.peerBenchmarks
         self.wellness = seed.wellness
         self.gradingSessions = seed.gradingSessions
         self.gradingScores = seed.gradingScores
@@ -100,6 +112,7 @@ public actor DemoStore {
         self.branchSocialLinks = seed.branchSocialLinks
         self.branchSafeguardings = seed.branchSafeguardings
         self.branchMilestones = seed.branchMilestones
+        self.athleteGroups = seed.athleteGroups
         self.currentUserID = seed.defaultCurrentUserID
         for cred in seed.credentials {
             emailPasswordHashes[cred.email] = cred.passwordHash
@@ -134,6 +147,10 @@ public actor DemoStore {
 
     public func upsertCoach(_ c: Coach) {
         if let i = coaches.firstIndex(where: { $0.id == c.id }) { coaches[i] = c } else { coaches.append(c) }
+    }
+
+    public func upsertBranch(_ b: Branch) {
+        if let i = branches.firstIndex(where: { $0.id == b.id }) { branches[i] = b } else { branches.append(b) }
     }
 
     public func upsertFacility(_ f: BranchFacility) {
@@ -214,6 +231,26 @@ public actor DemoStore {
         }
     }
 
+    public func upsertAthleteGroup(_ g: AthleteGroup) {
+        if let i = athleteGroups.firstIndex(where: { $0.id == g.id }) {
+            athleteGroups[i] = g
+        } else {
+            athleteGroups.append(g)
+        }
+    }
+
+    public func deleteAthleteGroup(id: EntityID) {
+        athleteGroups.removeAll { $0.id == id }
+    }
+
+    public func upsertSession(_ s: ClassSession) {
+        if let i = sessions.firstIndex(where: { $0.id == s.id }) { sessions[i] = s } else { sessions.append(s) }
+    }
+
+    public func deleteSession(id: EntityID) {
+        sessions.removeAll { $0.id == id }
+    }
+
     public func upsertAttendance(_ r: AttendanceRecord) {
         if let i = attendance.firstIndex(where: { $0.sessionID == r.sessionID && $0.athleteID == r.athleteID }) {
             attendance[i] = r
@@ -224,12 +261,82 @@ public actor DemoStore {
 
     public func setCurrent(_ id: EntityID) { currentUserID = id }
 
-    public func upsertPhysicalTest(_ t: PhysicalTest) {
-        if let i = physicalTests.firstIndex(where: { $0.id == t.id }) { physicalTests[i] = t } else { physicalTests.append(t) }
+    public func upsertPhysicalMetric(_ m: PhysicalMetric) {
+        if let i = physicalMetrics.firstIndex(where: { $0.id == m.id }) { physicalMetrics[i] = m } else { physicalMetrics.append(m) }
     }
 
-    public func upsertAssessment(_ a: TechnicalAssessment) {
-        if let i = assessments.firstIndex(where: { $0.id == a.id }) { assessments[i] = a } else { assessments.append(a) }
+    public func deletePhysicalMetric(id: EntityID) {
+        physicalMetrics.removeAll { $0.id == id }
+    }
+
+    public func upsertTechnicalSkill(_ s: TechnicalSkill) {
+        if let i = technicalSkills.firstIndex(where: { $0.id == s.id }) { technicalSkills[i] = s } else { technicalSkills.append(s) }
+    }
+
+    public func deleteTechnicalSkill(id: EntityID) {
+        technicalSkills.removeAll { $0.id == id }
+    }
+
+    public func upsertPoomsaeAssessment(_ a: PoomsaeAssessment) {
+        if let i = poomsaeAssessments.firstIndex(where: { $0.id == a.id }) { poomsaeAssessments[i] = a } else { poomsaeAssessments.append(a) }
+    }
+
+    public func deletePoomsaeAssessment(id: EntityID) {
+        poomsaeAssessments.removeAll { $0.id == id }
+    }
+
+    public func upsertGoal(_ g: Goal) {
+        if let i = goals.firstIndex(where: { $0.id == g.id }) { goals[i] = g } else { goals.append(g) }
+    }
+
+    public func deleteGoal(id: EntityID) {
+        goals.removeAll { $0.id == id }
+    }
+
+    public func upsertTrainingLoad(_ entry: TrainingLoadEntry) {
+        if let i = trainingLoad.firstIndex(where: { $0.id == entry.id }) {
+            trainingLoad[i] = entry
+        } else {
+            trainingLoad.append(entry)
+        }
+    }
+
+    public func deleteTrainingLoad(id: EntityID) {
+        trainingLoad.removeAll { $0.id == id }
+    }
+
+    public func upsertDrill(_ d: DrillLibraryEntry) {
+        if let i = drills.firstIndex(where: { $0.id == d.id }) { drills[i] = d } else { drills.append(d) }
+    }
+
+    public func deleteDrill(id: EntityID) {
+        drills.removeAll { $0.id == id }
+    }
+
+    public func upsertPlan(_ p: ImprovementPlan) {
+        if let i = improvementPlans.firstIndex(where: { $0.id == p.id }) {
+            improvementPlans[i] = p
+        } else {
+            improvementPlans.append(p)
+        }
+    }
+
+    public func deletePlan(id: EntityID) {
+        improvementPlans.removeAll { $0.id == id }
+    }
+
+    public func replaceBenchmarks(_ benchmarks: [PeerBenchmark]) {
+        peerBenchmarks = benchmarks
+    }
+
+    public func mergeBenchmarks(_ benchmarks: [PeerBenchmark]) {
+        for b in benchmarks {
+            if let i = peerBenchmarks.firstIndex(where: { $0.id == b.id }) {
+                peerBenchmarks[i] = b
+            } else {
+                peerBenchmarks.append(b)
+            }
+        }
     }
 
     public func upsertWellness(_ w: WellnessEntry) {
@@ -352,6 +459,10 @@ public struct DemoRepository: Repository {
         await store.registerCredential(email: email, password: password, userID: user.id)
         await store.logAudit(action: "createAccount", target: "User", targetID: user.id)
     }
+    public func updateUser(_ user: User) async throws {
+        await store.upsertUser(user)
+        await store.logAudit(action: "updateUser", target: "User", targetID: user.id)
+    }
     public func linkChild(userID: EntityID, athleteID: EntityID) async throws {
         guard var user = await store.users.first(where: { $0.id == userID }) else { return }
         if !user.linkedAthleteIDs.contains(athleteID) {
@@ -371,6 +482,10 @@ public struct DemoRepository: Repository {
 
     public func branches() async throws -> [Branch] { await store.branches }
     public func branch(id: EntityID) async throws -> Branch? { await store.branches.first { $0.id == id } }
+    public func upsert(_ branch: Branch) async throws {
+        await store.upsertBranch(branch)
+        await store.logAudit(action: "upsertBranch", target: "Branch", targetID: branch.id)
+    }
 
     // MARK: Athlete
 
@@ -424,6 +539,8 @@ public struct DemoRepository: Repository {
     public func session(id: EntityID) async throws -> ClassSession? {
         await store.sessions.first { $0.id == id }
     }
+    public func upsert(_ session: ClassSession) async throws { await store.upsertSession(session) }
+    public func deleteSession(id: EntityID) async throws { await store.deleteSession(id: id) }
 
     // MARK: Attendance
 
@@ -492,19 +609,76 @@ public struct DemoRepository: Repository {
 
     // MARK: Performance entry
 
-    public func physicalTests(athleteID: EntityID) async throws -> [PhysicalTest] {
-        await store.physicalTests.filter { $0.athleteID == athleteID }.sorted { $0.recordedAt > $1.recordedAt }
+    public func physicalMetrics(athleteID: EntityID) async throws -> [PhysicalMetric] {
+        await store.physicalMetrics.filter { $0.athleteID == athleteID }.sorted { $0.recordedAt > $1.recordedAt }
     }
-    public func assessments(athleteID: EntityID) async throws -> [TechnicalAssessment] {
-        await store.assessments.filter { $0.athleteID == athleteID }.sorted { $0.recordedAt > $1.recordedAt }
+    public func technicalSkills(athleteID: EntityID) async throws -> [TechnicalSkill] {
+        await store.technicalSkills.filter { $0.athleteID == athleteID }.sorted { $0.recordedAt > $1.recordedAt }
+    }
+    public func poomsaeAssessments(athleteID: EntityID) async throws -> [PoomsaeAssessment] {
+        await store.poomsaeAssessments.filter { $0.athleteID == athleteID }.sorted { $0.recordedAt > $1.recordedAt }
     }
     public func wellness(athleteID: EntityID, since: Date) async throws -> [WellnessEntry] {
         await store.wellness.filter { $0.athleteID == athleteID && $0.recordedAt >= since }
             .sorted { $0.recordedAt > $1.recordedAt }
     }
-    public func upsert(physicalTest: PhysicalTest) async throws { await store.upsertPhysicalTest(physicalTest) }
-    public func upsert(assessment: TechnicalAssessment) async throws { await store.upsertAssessment(assessment) }
+    public func upsert(metric: PhysicalMetric) async throws { await store.upsertPhysicalMetric(metric) }
+    public func upsert(skill: TechnicalSkill) async throws { await store.upsertTechnicalSkill(skill) }
+    public func upsert(poomsae: PoomsaeAssessment) async throws { await store.upsertPoomsaeAssessment(poomsae) }
     public func upsert(wellness entry: WellnessEntry) async throws { await store.upsertWellness(entry) }
+    public func deletePhysicalMetric(id: EntityID) async throws { await store.deletePhysicalMetric(id: id) }
+    public func deleteTechnicalSkill(id: EntityID) async throws { await store.deleteTechnicalSkill(id: id) }
+    public func deletePoomsaeAssessment(id: EntityID) async throws { await store.deletePoomsaeAssessment(id: id) }
+
+    // MARK: Goals
+    public func goals(athleteID: EntityID) async throws -> [Goal] {
+        await store.goals.filter { $0.athleteID == athleteID }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+    public func upsert(goal: Goal) async throws { await store.upsertGoal(goal) }
+    public func deleteGoal(id: EntityID) async throws { await store.deleteGoal(id: id) }
+
+    // MARK: Training load
+    public func trainingLoad(athleteID: EntityID, since: Date) async throws -> [TrainingLoadEntry] {
+        await store.trainingLoad
+            .filter { $0.athleteID == athleteID && $0.recordedAt >= since }
+            .sorted { $0.recordedAt > $1.recordedAt }
+    }
+    public func upsert(load: TrainingLoadEntry) async throws { await store.upsertTrainingLoad(load) }
+    public func deleteTrainingLoad(id: EntityID) async throws { await store.deleteTrainingLoad(id: id) }
+
+    // MARK: Improvement plans
+    public func drills() async throws -> [DrillLibraryEntry] {
+        await store.drills.sorted { $0.name < $1.name }
+    }
+    public func upsert(drill: DrillLibraryEntry) async throws { await store.upsertDrill(drill) }
+    public func deleteDrill(id: EntityID) async throws { await store.deleteDrill(id: id) }
+    public func improvementPlans(athleteID: EntityID) async throws -> [ImprovementPlan] {
+        await store.improvementPlans.filter { $0.athleteID == athleteID }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+    public func upsert(plan: ImprovementPlan) async throws { await store.upsertPlan(plan) }
+    public func deletePlan(id: EntityID) async throws { await store.deletePlan(id: id) }
+
+    // MARK: Peer benchmarks
+    public func peerBenchmarks() async throws -> [PeerBenchmark] {
+        await store.peerBenchmarks
+    }
+    public func upsertBenchmarks(_ benchmarks: [PeerBenchmark]) async throws {
+        await store.mergeBenchmarks(benchmarks)
+    }
+    @discardableResult
+    public func recomputeBenchmarks() async throws -> [PeerBenchmark] {
+        // Pull all athletes; then their physical metrics.
+        let allAthletes = try await athletes()
+        var allMetrics: [PhysicalMetric] = []
+        for a in allAthletes {
+            allMetrics.append(contentsOf: try await physicalMetrics(athleteID: a.id))
+        }
+        let fresh = BenchmarkComputer.compute(athletes: allAthletes, metrics: allMetrics)
+        await store.replaceBenchmarks(fresh)
+        return fresh
+    }
 
     // MARK: Grading
 
@@ -519,9 +693,9 @@ public struct DemoRepository: Repository {
         }
         let since = Date().addingTimeInterval(-90 * 24 * 3600)
         let attRecords = try await attendance(athleteID: athleteID, since: since)
-        let techs = try await assessments(athleteID: athleteID)
-        let physes = try await physicalTests(athleteID: athleteID)
-        return GradingEngine.evaluateEligibility(athlete: athlete, attendance: attRecords, technical: techs, physical: physes)
+        let skills = try await technicalSkills(athleteID: athleteID)
+        let metrics = try await physicalMetrics(athleteID: athleteID)
+        return GradingEngine.evaluateEligibility(athlete: athlete, attendance: attRecords, technical: skills, physical: metrics)
     }
     public func gradingSessions(branchID: EntityID) async throws -> [GradingSession] {
         await store.gradingSessions.filter { $0.branchID == branchID }.sorted { $0.scheduledAt < $1.scheduledAt }
@@ -680,6 +854,18 @@ public struct DemoRepository: Repository {
         return dest.absoluteString
     }
 
+    public func uploadUserAvatar(userID: EntityID, data: Data, contentType: String) async throws -> String {
+        let documents = try FileManager.default.url(
+            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+        )
+        let dir = documents.appendingPathComponent("userAvatars", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let ext = contentType.contains("png") ? "png" : "jpg"
+        let dest = dir.appendingPathComponent("\(userID.uuidString).\(ext)")
+        try data.write(to: dest, options: .atomic)
+        return dest.absoluteString
+    }
+
     // MARK: BranchProfile
 
     public func facility(branchID: EntityID) async throws -> BranchFacility? {
@@ -773,5 +959,22 @@ public struct DemoRepository: Repository {
     public func upsert(_ milestone: BranchMilestone) async throws {
         await store.upsertBranchMilestone(milestone)
         await store.logAudit(action: "upsertMilestone", target: "BranchMilestone", targetID: milestone.id)
+    }
+
+    // MARK: AthleteGroup
+
+    public func athleteGroups() async throws -> [AthleteGroup] {
+        await store.athleteGroups.sorted { $0.createdAt > $1.createdAt }
+    }
+    public func athleteGroup(id: EntityID) async throws -> AthleteGroup? {
+        await store.athleteGroups.first { $0.id == id }
+    }
+    public func upsert(_ group: AthleteGroup) async throws {
+        await store.upsertAthleteGroup(group)
+        await store.logAudit(action: "upsertSquad", target: "AthleteGroup", targetID: group.id)
+    }
+    public func deleteAthleteGroup(id: EntityID) async throws {
+        await store.deleteAthleteGroup(id: id)
+        await store.logAudit(action: "deleteSquad", target: "AthleteGroup", targetID: id)
     }
 }

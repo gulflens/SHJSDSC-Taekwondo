@@ -10,24 +10,29 @@ public struct CoachListView: View {
     public init() {}
 
     public var body: some View {
-        List {
-            let filtered = coaches.filter { c in
-                query.isEmpty
-                    || c.fullName.localizedCaseInsensitiveContains(query)
-                    || c.fullNameAr.contains(query)
-            }
-            if filtered.isEmpty {
-                Text("empty.search_no_results").foregroundStyle(.secondary)
-            } else {
-                ForEach(filtered) { c in
-                    NavigationLink(destination: CoachDetailView(coach: c)) {
-                        CoachRow(coach: c, branch: branches[c.primaryBranchID])
+        VStack(spacing: 0) {
+            AppSearchField(text: $query)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+
+            List {
+                let filtered = coaches.filter { c in
+                    query.isEmpty
+                        || c.fullName.localizedCaseInsensitiveContains(query)
+                        || c.fullNameAr.contains(query)
+                }
+                if filtered.isEmpty {
+                    Text("empty.search_no_results").foregroundStyle(.secondary)
+                } else {
+                    ForEach(filtered) { c in
+                        NavigationLink(destination: CoachDetailView(coach: c)) {
+                            CoachRow(coach: c, branch: branches[c.primaryBranchID])
+                        }
                     }
                 }
             }
         }
-        .searchable(text: $query)
-        .navigationTitle(Text("tab.coaches"))
         .toolbar {
             if let role = session.currentUser?.role,
                PermissionMatrix.allowed(role: role, permission: .editCoach) {
@@ -35,8 +40,10 @@ public struct CoachListView: View {
                     Button {
                         showingAdd = true
                     } label: {
-                        Label("coach.add", systemImage: "plus")
+                        Image(systemName: "plus")
                     }
+                    .accessibilityLabel(Text("coach.add"))
+                    .bareToolbarButton()
                 }
             }
         }
@@ -75,12 +82,12 @@ private struct CoachRow: View {
                 HStack(spacing: 6) {
                     if let branch {
                         Text(verbatim: branch.name)
-                            .font(.caption)
+                            .scaledFont(.caption)
                             .foregroundStyle(.secondary)
                     }
                     if coach.onCall {
                         Text("coach.on_call_short")
-                            .font(.caption2.bold())
+                            .scaledFont(.caption2, weight: .bold)
                             .padding(.horizontal, 4).padding(.vertical, 1)
                             .background(Color.green.opacity(0.18), in: Capsule())
                             .foregroundStyle(.green)
@@ -90,9 +97,10 @@ private struct CoachRow: View {
             Spacer()
             expiryWarning
             Text(verbatim: "\(coach.danRank) Dan")
-                .font(.caption.bold())
+                .scaledFont(.caption, weight: .bold)
                 .foregroundStyle(.secondary)
                 .environment(\.layoutDirection, .leftToRight)
+                .help(Text("tooltip.dan"))
         }
         .padding(.vertical, 2)
     }

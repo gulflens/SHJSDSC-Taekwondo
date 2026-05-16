@@ -12,6 +12,7 @@ public struct AthleteListView: View {
     @State private var query: String = ""
     @State private var statusFilter: AthleteStatus?
     @State private var showingAdd = false
+    @State private var showingImport = false
 
     public let scope: AthleteListScope
 
@@ -27,7 +28,6 @@ public struct AthleteListView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(Text("tab.athletes"))
         .task {
             if store == nil { store = AthletesStore(repository: session.repository) }
             guard let store else { return }
@@ -47,20 +47,31 @@ public struct AthleteListView: View {
                 || athlete.fullName.localizedCaseInsensitiveContains(query)
                 || athlete.fullNameAr.contains(query))
         }
-        List {
-            if filtered.isEmpty {
-                Text("empty.search_no_results").foregroundStyle(.secondary)
-            } else {
-                ForEach(filtered) { a in
-                    NavigationLink(destination: AthleteDetailView(athlete: a)) {
-                        AthleteRow(athlete: a, score: store.scoreByAthlete[a.id])
+        VStack(spacing: 0) {
+            AppSearchField(text: $query)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+
+            List {
+                if filtered.isEmpty {
+                    Text("empty.search_no_results").foregroundStyle(.secondary)
+                } else {
+                    ForEach(filtered) { a in
+                        NavigationLink(destination: AthleteDetailView(athlete: a)) {
+                            AthleteRow(athlete: a, score: store.scoreByAthlete[a.id])
+                        }
                     }
                 }
             }
         }
-        .searchable(text: $query)
         .toolbar {
-            ToolbarItem {
+            #if os(iOS)
+            let filterPlacement: ToolbarItemPlacement = .topBarTrailing
+            #else
+            let filterPlacement: ToolbarItemPlacement = .primaryAction
+            #endif
+            ToolbarItem(placement: filterPlacement) {
                 Menu {
                     Button("filter.all") { statusFilter = nil }
                     Divider()
@@ -71,6 +82,7 @@ public struct AthleteListView: View {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                 }
                 .accessibilityLabel(Text("filter.title"))
+                .bareToolbarButton()
             }
             if let role = session.currentUser?.role,
                PermissionMatrix.allowed(role: role, permission: .editAthlete) {
@@ -78,14 +90,36 @@ public struct AthleteListView: View {
                     Button {
                         showingAdd = true
                     } label: {
-                        Label("athlete.add", systemImage: "plus")
+                        Image(systemName: "plus")
                     }
+                    .accessibilityLabel(Text("athlete.add"))
+                    .bareToolbarButton()
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingImport = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .accessibilityLabel(Text("athlete.import"))
+                    .bareToolbarButton()
                 }
             }
         }
         .navigationDestination(isPresented: $showingAdd) {
             AddAthleteView(initialBranchID: scopeBranchID()) { newAthlete in
                 store.insertOrUpdate(newAthlete)
+            }
+        }
+        .navigationDestination(isPresented: $showingImport) {
+            AthleteImportView {
+                Task {
+                    switch scope {
+                    case .all: await store.loadAll()
+                    case .byBranch(let bid): await store.load(branchID: bid)
+                    case .myAthletes(let cid): await store.loadForCoach(cid)
+                    }
+                }
             }
         }
     }
@@ -106,12 +140,12 @@ private struct AthleteRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: athlete.fullName)
                 HStack(spacing: 6) {
-                    Text(LocalizedStringKey(athlete.currentBelt.label))
-                        .font(.caption)
+                    Text(localizedKey: athlete.currentBelt.label)
+                        .scaledFont(.caption)
                         .foregroundStyle(.secondary)
                     Text(verbatim: "·").foregroundStyle(.secondary)
-                    Text(LocalizedStringKey(athlete.ageGroup.labelKey))
-                        .font(.caption)
+                    Text(localizedKey: athlete.ageGroup.labelKey)
+                        .scaledFont(.caption)
                         .foregroundStyle(.secondary)
                 }
             }

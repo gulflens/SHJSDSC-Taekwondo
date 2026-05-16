@@ -43,11 +43,16 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     }
 
     /// Foundation's built-in snake_case strategies don't know about our
-    /// `ID` / `IDs` acronym convention — `branch_id` becomes `branchId`
-    /// (lowercase 'd') instead of `branchID`, and decoding silently fails on
-    /// every type that has an ID-suffixed property. These custom strategies
-    /// special-case `_id` ↔ `ID` and `_ids` ↔ `IDs`, then fall back to the
-    /// standard camelCase ↔ snake_case rule.
+    /// uppercase-acronym property convention — `branchID`, `avatarURL`,
+    /// `requiresRSVP`, `revenueAED`, `hasPSS`, `hasAC` would each decompose
+    /// into one underscore per uppercase letter, producing nonsense column
+    /// names like `avatar_u_r_l` or `has_p_s_s` that Postgres rejects with
+    /// PGRST204 ("Could not find the 'avatar_u_r_l' column"). The list below
+    /// is every suffix acronym that appears on a Codable property in `Core/`.
+    /// Add to it whenever a new acronym is introduced — the decoder uses the
+    /// same list to walk the conversion back the other way.
+    private static let suffixAcronyms = ["IDs", "ID", "URLs", "URL", "AED", "RSVP", "PSS", "AC"]
+
     private static func makeEncoder() -> JSONEncoder {
         let e = JSONEncoder()
         e.keyEncodingStrategy = .custom { codingPath in
@@ -66,21 +71,20 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         return d
     }
 
-    private static func snakeToCamel(_ key: String) -> String {
-        guard key.contains("_") else { return key }
-        let parts = key.split(separator: "_")
-        let camel = parts.enumerated().map { i, part in
-            i == 0 ? String(part) : part.capitalized
-        }.joined()
-        if camel.hasSuffix("Ids") { return String(camel.dropLast(3)) + "IDs" }
-        if camel.hasSuffix("Id")  { return String(camel.dropLast(2)) + "ID" }
-        return camel
-    }
-
     private static func camelToSnake(_ key: String) -> String {
+        // Normalise an acronym suffix to TitleCase first so the generic
+        // splitter treats it as a single word: `avatarURL` → `avatarUrl`,
+        // `requiresRSVP` → `requiresRsvp`, `hasAC` → `hasAc`. The first
+        // letter stays uppercase so the splitter still inserts an `_`
+        // before it.
         var k = key
-        if k.hasSuffix("IDs") { k = String(k.dropLast(3)) + "Ids" }
-        else if k.hasSuffix("ID") { k = String(k.dropLast(2)) + "Id" }
+        for acronym in suffixAcronyms where k.hasSuffix(acronym) {
+            let head = String(k.dropLast(acronym.count))
+            let firstUpper = String(acronym.prefix(1))
+            let restLower = acronym.dropFirst().lowercased()
+            k = head + firstUpper + restLower
+            break
+        }
         var out = ""
         for (i, c) in k.enumerated() {
             if c.isUppercase && i > 0 { out += "_" }
@@ -89,22 +93,45 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         return out
     }
 
+    private static func snakeToCamel(_ key: String) -> String {
+        // Restore an acronym suffix by matching against the snake-case form
+        // (`_url`, `_rsvp`, …) so we don't accidentally upcase unrelated
+        // tail tokens like `pss_brand` → `pssBRAND`. Only the exact suffix
+        // (`avatar_url` → ends with `_url`) flips back to all-caps.
+        for acronym in suffixAcronyms {
+            let snakeSuffix = "_" + acronym.lowercased()
+            if key.hasSuffix(snakeSuffix) {
+                let head = String(key.dropLast(snakeSuffix.count))
+                return baseSnakeToCamel(head) + acronym
+            }
+        }
+        return baseSnakeToCamel(key)
+    }
+
+    private static func baseSnakeToCamel(_ key: String) -> String {
+        guard key.contains("_") else { return key }
+        let parts = key.split(separator: "_")
+        return parts.enumerated().map { i, part in
+            i == 0 ? String(part) : part.capitalized
+        }.joined()
+    }
+
     // MARK: User
 
     public func currentUser() async throws -> User? {
-        let session: Session
+        var session: Session
         do {
             session = try await client.auth.session
         } catch {
-            // No session = not authenticated yet, normal at first launch.
             return nil
         }
-        // With emitLocalSessionAsInitialSession=true the local session is
-        // returned even when expired. Treat expired as not-signed-in so
-        // RoleRouter falls through to SignInView instead of trying to
-        // fetch a profile with a stale JWT.
         if session.isExpired {
-            return nil
+            do {
+                session = try await client.auth.refreshSession()
+            } catch {
+                print("SupabaseRepository.currentUser: session refresh failed:", error)
+                return nil
+            }
         }
         do {
             let response: [User] = try await client
@@ -116,8 +143,6 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
                 .value
             return response.first
         } catch {
-            // Session exists but profile fetch failed (decode mismatch, RLS,
-            // network). Surface it so the auth flow doesn't silently stall.
             print("SupabaseRepository.currentUser profile fetch failed:", error)
             return nil
         }
@@ -140,7 +165,7 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     }
 
     public func users(role: Role?) async throws -> [User] {
-        var query = client.from("user_profiles").select()
+        let query = client.from("user_profiles").select()
         if let role { _ = query.eq("role", value: role.rawValue) }
         return try await query.execute().value
     }
@@ -169,6 +194,10 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         try await client.from("user_profiles").upsert(row).execute()
     }
 
+    public func updateUser(_ user: User) async throws {
+        try await client.from("user_profiles").upsert(user).execute()
+    }
+
     public func linkChild(userID: EntityID, athleteID: EntityID) async throws {
         guard var user: User = try await user(id: userID) else { return }
         if !user.linkedAthleteIDs.contains(athleteID) {
@@ -193,6 +222,10 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
 
     public func branches() async throws -> [Branch] {
         try await client.from("branches").select().order("name").execute().value
+    }
+
+    public func upsert(_ branch: Branch) async throws {
+        try await client.from("branches").upsert(branch).execute()
     }
 
     public func branch(id: EntityID) async throws -> Branch? {
@@ -294,6 +327,15 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
             .eq("id", value: id.uuidString).limit(1).execute().value
         return rows.first
     }
+    public func upsert(_ session: ClassSession) async throws {
+        try await client.from("class_sessions").upsert(session).execute()
+    }
+    public func deleteSession(id: EntityID) async throws {
+        try await client.from("class_sessions")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
 
     // MARK: Attendance
 
@@ -391,14 +433,20 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
 
     // MARK: Performance entry
 
-    public func physicalTests(athleteID: EntityID) async throws -> [PhysicalTest] {
-        try await client.from("physical_tests").select()
+    public func physicalMetrics(athleteID: EntityID) async throws -> [PhysicalMetric] {
+        try await client.from("athlete_physical_metric").select()
             .eq("athlete_id", value: athleteID.uuidString)
             .order("recorded_at", ascending: false).execute().value
     }
 
-    public func assessments(athleteID: EntityID) async throws -> [TechnicalAssessment] {
-        try await client.from("technical_assessments").select()
+    public func technicalSkills(athleteID: EntityID) async throws -> [TechnicalSkill] {
+        try await client.from("technical_skill").select()
+            .eq("athlete_id", value: athleteID.uuidString)
+            .order("recorded_at", ascending: false).execute().value
+    }
+
+    public func poomsaeAssessments(athleteID: EntityID) async throws -> [PoomsaeAssessment] {
+        try await client.from("poomsae_assessment").select()
             .eq("athlete_id", value: athleteID.uuidString)
             .order("recorded_at", ascending: false).execute().value
     }
@@ -410,14 +458,127 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
             .order("recorded_at", ascending: false).execute().value
     }
 
-    public func upsert(physicalTest: PhysicalTest) async throws {
-        try await client.from("physical_tests").upsert(physicalTest).execute()
+    public func upsert(metric: PhysicalMetric) async throws {
+        try await client.from("athlete_physical_metric").upsert(metric).execute()
     }
-    public func upsert(assessment: TechnicalAssessment) async throws {
-        try await client.from("technical_assessments").upsert(assessment).execute()
+    public func upsert(skill: TechnicalSkill) async throws {
+        try await client.from("technical_skill").upsert(skill).execute()
+    }
+    public func upsert(poomsae: PoomsaeAssessment) async throws {
+        try await client.from("poomsae_assessment").upsert(poomsae).execute()
     }
     public func upsert(wellness entry: WellnessEntry) async throws {
         try await client.from("wellness_entries").upsert(entry).execute()
+    }
+    public func deletePhysicalMetric(id: EntityID) async throws {
+        try await client.from("athlete_physical_metric")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+    public func deleteTechnicalSkill(id: EntityID) async throws {
+        try await client.from("technical_skill")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+    public func deletePoomsaeAssessment(id: EntityID) async throws {
+        try await client.from("poomsae_assessment")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+
+    // MARK: Goals
+
+    public func goals(athleteID: EntityID) async throws -> [Goal] {
+        try await client.from("goal").select()
+            .eq("athlete_id", value: athleteID.uuidString)
+            .order("created_at", ascending: false).execute().value
+    }
+    public func upsert(goal: Goal) async throws {
+        try await client.from("goal").upsert(goal).execute()
+    }
+    public func deleteGoal(id: EntityID) async throws {
+        try await client.from("goal")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+
+    // MARK: Training load
+
+    public func trainingLoad(athleteID: EntityID, since: Date) async throws -> [TrainingLoadEntry] {
+        try await client.from("training_load_entry").select()
+            .eq("athlete_id", value: athleteID.uuidString)
+            .gte("recorded_at", value: ISO8601DateFormatter().string(from: since))
+            .order("recorded_at", ascending: false).execute().value
+    }
+    public func upsert(load: TrainingLoadEntry) async throws {
+        try await client.from("training_load_entry").upsert(load).execute()
+    }
+    public func deleteTrainingLoad(id: EntityID) async throws {
+        try await client.from("training_load_entry")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+
+    // MARK: Improvement plans
+
+    public func drills() async throws -> [DrillLibraryEntry] {
+        try await client.from("drill_library_entry").select()
+            .order("name", ascending: true).execute().value
+    }
+    public func upsert(drill: DrillLibraryEntry) async throws {
+        try await client.from("drill_library_entry").upsert(drill).execute()
+    }
+    public func deleteDrill(id: EntityID) async throws {
+        try await client.from("drill_library_entry")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+    public func improvementPlans(athleteID: EntityID) async throws -> [ImprovementPlan] {
+        try await client.from("improvement_plan").select()
+            .eq("athlete_id", value: athleteID.uuidString)
+            .order("created_at", ascending: false).execute().value
+    }
+    public func upsert(plan: ImprovementPlan) async throws {
+        try await client.from("improvement_plan").upsert(plan).execute()
+    }
+    public func deletePlan(id: EntityID) async throws {
+        try await client.from("improvement_plan")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+
+    // MARK: Peer benchmarks
+
+    public func peerBenchmarks() async throws -> [PeerBenchmark] {
+        try await client.from("peer_benchmark").select()
+            .order("computed_at", ascending: false).execute().value
+    }
+    public func upsertBenchmarks(_ benchmarks: [PeerBenchmark]) async throws {
+        guard !benchmarks.isEmpty else { return }
+        try await client.from("peer_benchmark").upsert(benchmarks).execute()
+    }
+    @discardableResult
+    public func recomputeBenchmarks() async throws -> [PeerBenchmark] {
+        let allAthletes = try await athletes()
+        var allMetrics: [PhysicalMetric] = []
+        for a in allAthletes {
+            allMetrics.append(contentsOf: try await physicalMetrics(athleteID: a.id))
+        }
+        let fresh = BenchmarkComputer.compute(athletes: allAthletes, metrics: allMetrics)
+        // Wipe-and-replace to drop benchmarks for cohort/metric pairs that no
+        // longer have enough data.
+        try await client.from("peer_benchmark").delete().neq("id", value: "").execute()
+        if !fresh.isEmpty {
+            try await client.from("peer_benchmark").insert(fresh).execute()
+        }
+        return fresh
     }
 
     // MARK: Grading
@@ -433,13 +594,13 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         }
         let since = Date().addingTimeInterval(-90 * 24 * 3600)
         async let attRecords = attendance(athleteID: athleteID, since: since)
-        async let techs = assessments(athleteID: athleteID)
-        async let physes = physicalTests(athleteID: athleteID)
+        async let skills = technicalSkills(athleteID: athleteID)
+        async let metrics = physicalMetrics(athleteID: athleteID)
         return try await GradingEngine.evaluateEligibility(
             athlete: athlete,
             attendance: attRecords,
-            technical: techs,
-            physical: physes
+            technical: skills,
+            physical: metrics
         )
     }
 
@@ -568,7 +729,7 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     // MARK: Operations
 
     public func announcements(audience: AnnouncementAudience?) async throws -> [Announcement] {
-        var query = client.from("announcements").select()
+        let query = client.from("announcements").select()
         if let audience {
             _ = query.in("audience", values: [audience.rawValue, AnnouncementAudience.all.rawValue])
         }
@@ -608,7 +769,7 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         try await client.from("audit_log").insert(entry).execute()
     }
     public func entries(actor: EntityID?, since: Date?) async throws -> [AuditEntry] {
-        var query = client.from("audit_log").select()
+        let query = client.from("audit_log").select()
         if let actor { _ = query.eq("actor_user_id", value: actor.uuidString) }
         if let since { _ = query.gte("at", value: ISO8601DateFormatter().string(from: since)) }
         return try await query.order("at", ascending: false).execute().value
@@ -639,6 +800,10 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
 
     public func signOut() async throws {
         try await client.auth.signOut()
+    }
+
+    public func changePassword(newPassword: String) async throws {
+        try await client.auth.update(user: UserAttributes(password: newPassword))
     }
 
     public func claimRole(fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws {
@@ -676,44 +841,141 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
         return try bucket.getPublicURL(path: path).absoluteString
     }
 
-    // MARK: BranchProfile (Stage 5 will fill these in against new tables)
-    //
-    // Returning nil/empty arrays keeps the protocol satisfied while the
-    // backend tables are still under design — the demo backend exercises
-    // every code path that depends on these reads.
+    public func uploadUserAvatar(userID: EntityID, data: Data, contentType: String) async throws -> String {
+        let ext = contentType.contains("png") ? "png" : "jpg"
+        let path = "\(userID.uuidString).\(ext)"
+        let bucket = client.storage.from("userAvatars")
+        _ = try await bucket.upload(
+            path,
+            data: data,
+            options: FileOptions(contentType: contentType, upsert: true)
+        )
+        return try bucket.getPublicURL(path: path).absoluteString
+    }
 
-    public func facility(branchID: EntityID) async throws -> BranchFacility? { nil }
-    public func upsert(_ facility: BranchFacility) async throws {}
+    // MARK: BranchProfile
 
-    public func hours(branchID: EntityID) async throws -> BranchHours? { nil }
-    public func upsert(_ hours: BranchHours) async throws {}
+    public func facility(branchID: EntityID) async throws -> BranchFacility? {
+        let rows: [BranchFacility] = try await client.from("branch_facilities").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ facility: BranchFacility) async throws {
+        try await client.from("branch_facilities").upsert(facility).execute()
+    }
 
-    public func programs(branchID: EntityID) async throws -> [BranchProgram] { [] }
-    public func upsert(_ program: BranchProgram) async throws {}
+    public func hours(branchID: EntityID) async throws -> BranchHours? {
+        let rows: [BranchHours] = try await client.from("branch_hours").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ hours: BranchHours) async throws {
+        try await client.from("branch_hours").upsert(hours).execute()
+    }
 
-    public func inventory(branchID: EntityID) async throws -> BranchInventory? { nil }
-    public func upsert(_ inventory: BranchInventory) async throws {}
+    public func programs(branchID: EntityID) async throws -> [BranchProgram] {
+        try await client.from("branch_programs").select()
+            .eq("branch_id", value: branchID.uuidString)
+            .order("start_time").execute().value
+    }
+    public func upsert(_ program: BranchProgram) async throws {
+        try await client.from("branch_programs").upsert(program).execute()
+    }
 
-    public func compliance(branchID: EntityID) async throws -> BranchCompliance? { nil }
-    public func upsert(_ compliance: BranchCompliance) async throws {}
+    public func inventory(branchID: EntityID) async throws -> BranchInventory? {
+        let rows: [BranchInventory] = try await client.from("branch_inventories").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ inventory: BranchInventory) async throws {
+        try await client.from("branch_inventories").upsert(inventory).execute()
+    }
 
-    public func pricing(branchID: EntityID) async throws -> BranchPricing? { nil }
-    public func upsert(_ pricing: BranchPricing) async throws {}
+    public func compliance(branchID: EntityID) async throws -> BranchCompliance? {
+        let rows: [BranchCompliance] = try await client.from("branch_compliances").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ compliance: BranchCompliance) async throws {
+        try await client.from("branch_compliances").upsert(compliance).execute()
+    }
 
-    public func financials(branchID: EntityID, monthsBack: Int) async throws -> [BranchFinancials] { [] }
-    public func upsert(_ financials: BranchFinancials) async throws {}
+    public func pricing(branchID: EntityID) async throws -> BranchPricing? {
+        let rows: [BranchPricing] = try await client.from("branch_pricings").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ pricing: BranchPricing) async throws {
+        try await client.from("branch_pricings").upsert(pricing).execute()
+    }
 
-    public func media(branchID: EntityID) async throws -> BranchMedia? { nil }
-    public func upsert(_ media: BranchMedia) async throws {}
+    public func financials(branchID: EntityID, monthsBack: Int) async throws -> [BranchFinancials] {
+        let cutoff = Calendar.current.date(byAdding: .month, value: -monthsBack, to: Date()) ?? Date()
+        return try await client.from("branch_financials").select()
+            .eq("branch_id", value: branchID.uuidString)
+            .gte("month", value: ISO8601DateFormatter().string(from: cutoff))
+            .order("month").execute().value
+    }
+    public func upsert(_ financials: BranchFinancials) async throws {
+        try await client.from("branch_financials").upsert(financials).execute()
+    }
 
-    public func socialLinks(branchID: EntityID) async throws -> BranchSocialLinks? { nil }
-    public func upsert(_ links: BranchSocialLinks) async throws {}
+    public func media(branchID: EntityID) async throws -> BranchMedia? {
+        let rows: [BranchMedia] = try await client.from("branch_medias").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ media: BranchMedia) async throws {
+        try await client.from("branch_medias").upsert(media).execute()
+    }
 
-    public func safeguarding(branchID: EntityID) async throws -> BranchSafeguarding? { nil }
-    public func upsert(_ safe: BranchSafeguarding) async throws {}
+    public func socialLinks(branchID: EntityID) async throws -> BranchSocialLinks? {
+        let rows: [BranchSocialLinks] = try await client.from("branch_social_links").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ links: BranchSocialLinks) async throws {
+        try await client.from("branch_social_links").upsert(links).execute()
+    }
 
-    public func milestones(branchID: EntityID) async throws -> [BranchMilestone] { [] }
-    public func upsert(_ milestone: BranchMilestone) async throws {}
+    public func safeguarding(branchID: EntityID) async throws -> BranchSafeguarding? {
+        let rows: [BranchSafeguarding] = try await client.from("branch_safeguardings").select()
+            .eq("branch_id", value: branchID.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ safe: BranchSafeguarding) async throws {
+        try await client.from("branch_safeguardings").upsert(safe).execute()
+    }
+
+    public func milestones(branchID: EntityID) async throws -> [BranchMilestone] {
+        try await client.from("branch_milestones").select()
+            .eq("branch_id", value: branchID.uuidString)
+            .order("occurred_at", ascending: false).execute().value
+    }
+    public func upsert(_ milestone: BranchMilestone) async throws {
+        try await client.from("branch_milestones").upsert(milestone).execute()
+    }
+
+    // MARK: AthleteGroup
+
+    public func athleteGroups() async throws -> [AthleteGroup] {
+        try await client.from("athlete_groups").select()
+            .order("created_at", ascending: false).execute().value
+    }
+    public func athleteGroup(id: EntityID) async throws -> AthleteGroup? {
+        let rows: [AthleteGroup] = try await client.from("athlete_groups").select()
+            .eq("id", value: id.uuidString).limit(1).execute().value
+        return rows.first
+    }
+    public func upsert(_ group: AthleteGroup) async throws {
+        try await client.from("athlete_groups").upsert(group).execute()
+    }
+    public func deleteAthleteGroup(id: EntityID) async throws {
+        try await client.from("athlete_groups")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
 }
 
 #endif

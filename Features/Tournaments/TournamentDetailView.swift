@@ -34,8 +34,10 @@ public struct TournamentDetailView: View {
                     Button {
                         showRegister = true
                     } label: {
-                        Label("tournament.register", systemImage: "person.badge.plus")
+                        Image(systemName: "person.badge.plus")
                     }
+                    .accessibilityLabel(Text("tournament.register"))
+                    .bareToolbarButton()
                 }
             }
             if let t = tournament, !registrations.isEmpty {
@@ -83,32 +85,32 @@ public struct TournamentDetailView: View {
                 Image(systemName: t.isOfficial ? "checkmark.seal.fill" : "rosette")
                     .foregroundStyle(.tint)
                 VStack(alignment: .leading) {
-                    Text(verbatim: t.name).font(.title3.bold())
+                    Text(verbatim: t.name).scaledFont(.title3, weight: .bold)
                     if let nameAr = t.nameAr {
-                        Text(verbatim: nameAr).font(.subheadline).foregroundStyle(.secondary)
+                        Text(verbatim: nameAr).scaledFont(.subheadline).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
             }
             HStack {
-                Image(systemName: "calendar").font(.caption2)
-                Text(t.startsAt, style: .date).font(.caption)
+                Image(systemName: "calendar").scaledFont(.caption2)
+                Text(t.startsAt, style: .date).scaledFont(.caption)
                 Text(verbatim: "→")
-                Text(t.endsAt, style: .date).font(.caption)
+                Text(t.endsAt, style: .date).scaledFont(.caption)
             }
             .foregroundStyle(.secondary)
             HStack {
-                Image(systemName: "mappin.and.ellipse").font(.caption2)
-                Text(verbatim: t.location).font(.caption)
+                Image(systemName: "mappin.and.ellipse").scaledFont(.caption2)
+                Text(verbatim: t.location).scaledFont(.caption)
                 if let locAr = t.locationAr {
                     Text(verbatim: "·")
-                    Text(verbatim: locAr).font(.caption)
+                    Text(verbatim: locAr).scaledFont(.caption)
                 }
             }
             .foregroundStyle(.secondary)
             HStack {
-                Text(LocalizedStringKey(t.hostingFederation.labelKey))
-                    .font(.caption.bold())
+                Text(localizedKey: t.hostingFederation.labelKey)
+                    .scaledFont(.caption, weight: .bold)
                     .foregroundStyle(.secondary)
             }
         }
@@ -119,7 +121,7 @@ public struct TournamentDetailView: View {
 
     private var registrationsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("grading.candidates").font(.headline)
+            Text("grading.candidates").scaledFont(.headline)
             if registrations.isEmpty {
                 Text("empty.no_registrations").foregroundStyle(.secondary)
             } else {
@@ -130,13 +132,13 @@ public struct TournamentDetailView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(verbatim: a.fullName)
                                 Text(verbatim: r.weightCategory.shortLabel)
-                                    .font(.caption)
+                                    .scaledFont(.caption)
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
                             if let seed = r.seedRank {
                                 Text(verbatim: "#\(seed)")
-                                    .font(.caption.bold())
+                                    .scaledFont(.caption, weight: .bold)
                                     .foregroundStyle(.secondary)
                                     .environment(\.layoutDirection, .leftToRight)
                             }
@@ -151,7 +153,7 @@ public struct TournamentDetailView: View {
     private func bracketsSection(tournament t: Tournament) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("tournament.bracket").font(.headline)
+                Text("tournament.bracket").scaledFont(.headline)
                 Spacer()
                 if let role = session.currentUser?.role,
                    PermissionMatrix.allowed(role: role, permission: .createTournament) {
@@ -174,14 +176,14 @@ public struct TournamentDetailView: View {
                 ForEach(brackets) { b in
                     NavigationLink(destination: BracketView(bracketID: b.id)) {
                         HStack {
-                            Text(verbatim: b.weightCategory.shortLabel).font(.subheadline.bold())
+                            Text(verbatim: b.weightCategory.shortLabel).scaledFont(.subheadline, weight: .bold)
                             Spacer()
                             let matchCount = bracketMatches[b.id]?.count ?? 0
                             Text(verbatim: "\(matchCount)")
-                                .font(.caption.monospacedDigit())
+                                .scaledFont(.caption, monospacedDigit: true)
                                 .foregroundStyle(.secondary)
                                 .environment(\.layoutDirection, .leftToRight)
-                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right").scaledFont(.caption).foregroundStyle(.secondary)
                         }
                         .padding(10)
                         .background(Color.secondary.opacity(0.08))

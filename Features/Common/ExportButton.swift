@@ -29,6 +29,7 @@ public struct ExportButton: View {
             Image(systemName: "square.and.arrow.up")
                 .accessibilityLabel(Text("export.share"))
         }
+        .bareToolbarButton()
     }
 
     @ViewBuilder

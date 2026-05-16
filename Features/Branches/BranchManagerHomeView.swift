@@ -1,11 +1,16 @@
 import SwiftUI
 
+/// Branch manager's home dashboard. Stage 1.7 remodel — every block now uses
+/// the shared `SectionCard` + `KPITile` + `GreetingHero` primitives so the
+/// surface feels part of the federation-grade ecosystem.
 public struct BranchManagerHomeView: View {
     @Environment(AppSession.self) private var session
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var store: BranchProfileStore?
     @State private var auditEntries: [AuditEntry] = []
     @State private var sessionsToday: [ClassSession] = []
     @State private var coachLookup: [EntityID: Coach] = [:]
+    @State private var userLookup: [EntityID: User] = [:]
     @State private var showingEdit = false
     @State private var showingPrograms = false
     @State private var showingInventory = false
@@ -15,19 +20,20 @@ public struct BranchManagerHomeView: View {
     public init() {}
 
     public var body: some View {
-        NavigationStack {
-            Group {
-                if let store, let branch = store.branch {
-                    content(store: store, branch: branch)
-                } else {
-                    ProgressView()
-                }
+        Group {
+            if let store, let branch = store.branch {
+                content(store: store, branch: branch)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationTitle(Text("manager.dashboard"))
-            .demoRoleSwitcher()
         }
+        .background(Color.appBackground.ignoresSafeArea())
+        .demoRoleSwitcher()
         .task { await load() }
     }
+
+    private var isWide: Bool { sizeClass == .regular }
 
     private var branchID: EntityID? {
         session.currentUser?.primaryBranchID
@@ -41,9 +47,10 @@ public struct BranchManagerHomeView: View {
             sessionsToday = try await session.repository.sessions(branchID: branchID, on: Date())
             let coaches = try await session.repository.coaches(branchID: branchID)
             coachLookup = Dictionary(uniqueKeysWithValues: coaches.map { ($0.id, $0) })
-            auditEntries = try await session.repository
-                .entries(actor: nil, since: Calendar.current.date(byAdding: .day, value: -7, to: Date()))
-                .prefix(15).map { $0 }
+            let since = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+            auditEntries = Array(try await session.repository.entries(actor: nil, since: since).prefix(10))
+            let actors = try await session.repository.availableUsers()
+            userLookup = Dictionary(uniqueKeysWithValues: actors.map { ($0.id, $0) })
         } catch {
             print("BranchManagerHomeView.load:", error)
         }
@@ -53,19 +60,37 @@ public struct BranchManagerHomeView: View {
     private func content(store: BranchProfileStore, branch: Branch) -> some View {
         ScrollView {
             VStack(spacing: 14) {
+                if let user = session.currentUser {
+                    GreetingHero(
+                        fullName: user.fullName,
+                        fullNameAr: user.fullNameAr,
+                        roleLabel: NSLocalizedString("role.\(user.role.rawValue)", comment: ""),
+                        subtitleKey: "manager.dashboard.subtitle"
+                    )
+                }
                 identityCard(branch: branch, media: store.media)
                 kpiGrid(store: store)
-                todayScheduleCard(branch: branch)
-                complianceAlerts(store: store)
-                watchListCard(store: store, branch: branch)
-                quickActions(branch: branch)
+                if isWide {
+                    HStack(alignment: .top, spacing: 14) {
+                        todayScheduleCard(branch: branch).frame(maxWidth: .infinity)
+                        complianceAlerts(store: store).frame(maxWidth: .infinity)
+                    }
+                    HStack(alignment: .top, spacing: 14) {
+                        watchListCard(store: store, branch: branch).frame(maxWidth: .infinity)
+                        quickActions(branch: branch).frame(maxWidth: .infinity)
+                    }
+                } else {
+                    todayScheduleCard(branch: branch)
+                    complianceAlerts(store: store)
+                    watchListCard(store: store, branch: branch)
+                    quickActions(branch: branch)
+                }
                 activityFeed
-                Color.clear.frame(height: 24)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, isWide ? 20 : 14)
             .padding(.top, 12)
+            .padding(.bottom, 24)
         }
-        .background(Color(.systemGroupedBackground))
         .navigationDestination(isPresented: $showingEdit) {
             BranchEditView(branchID: branch.id)
         }
@@ -83,25 +108,54 @@ public struct BranchManagerHomeView: View {
         }
     }
 
+    // MARK: - Identity
+
     private func identityCard(branch: Branch, media: BranchMedia?) -> some View {
-        HStack(spacing: 12) {
-            heroThumb(url: media?.logoURL, branch: branch)
-                .frame(width: 56, height: 56)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: branch.name).font(.title3.bold())
-                Text(verbatim: branch.nameAr).font(.caption).foregroundStyle(.secondary)
-                Text(verbatim: branch.area).font(.caption2).foregroundStyle(.tertiary)
-            }
-            Spacer()
-            Button {
-                showingEdit = true
-            } label: {
-                Image(systemName: "slider.horizontal.3").font(.title3)
+        SectionCard {
+            HStack(spacing: 14) {
+                heroThumb(url: media?.logoURL, branch: branch)
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                    )
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(verbatim: branch.name).scaledFont(.title3, weight: .bold)
+                        if branch.isMain {
+                            CategoryBadge(
+                                value: NSLocalizedString("branch.badge.main", comment: ""),
+                                tone: .elite,
+                                icon: "crown.fill"
+                            )
+                        }
+                    }
+                    Text(verbatim: branch.nameAr)
+                        .scaledFont(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .environment(\.layoutDirection, .rightToLeft)
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin.and.ellipse")
+                            .scaledFont(.caption2)
+                        Text(verbatim: branch.area.isEmpty ? branch.emirate : "\(branch.area), \(branch.emirate)")
+                            .scaledFont(.caption2)
+                    }
+                    .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Button {
+                    showingEdit = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .scaledFont(.title3)
+                        .foregroundStyle(.tint)
+                        .padding(10)
+                        .background(Color.accentColor.opacity(0.12), in: Circle())
+                }
+                .buttonStyle(.plain)
             }
         }
-        .padding(12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
@@ -110,18 +164,29 @@ public struct BranchManagerHomeView: View {
             AsyncImage(url: parsed) { phase in
                 switch phase {
                 case .success(let img): img.resizable().aspectRatio(contentMode: .fill)
-                default: Color.accentColor.opacity(0.2)
+                default: Color.accentColor.opacity(0.18)
                 }
             }
         } else {
-            Color.accentColor.opacity(0.2)
+            ZStack {
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.85), Color.accentColor.opacity(0.45)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                Image(systemName: "building.2.fill")
+                    .scaledFont(.title2)
+                    .foregroundStyle(.white.opacity(0.85))
+            }
         }
     }
 
+    // MARK: - KPI grid
+
     private func kpiGrid(store: BranchProfileStore) -> some View {
         let m = store.metrics
-        let cols = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
-        return LazyVGrid(columns: cols, spacing: 8) {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: isWide ? 6 : 2)
+        return LazyVGrid(columns: columns, spacing: 12) {
             KPITile(title: "manager.kpi.registered", value: "\(m.registeredCount)", icon: "person.3.fill")
             KPITile(title: "manager.kpi.active", value: "\(m.activeCount)", icon: "bolt.fill")
             KPITile(title: "manager.kpi.utilisation", value: "\(Int(m.utilisationPct * 100))%", icon: "gauge.with.needle")
@@ -139,91 +204,145 @@ public struct BranchManagerHomeView: View {
         let status = store.compliance?.status() ?? .ok
         let tint: Color = status == .expired ? .red : (status == .expiring ? .orange : .green)
         return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: "checkmark.shield.fill").foregroundStyle(tint)
-                Text("manager.kpi.compliance").font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                Image(systemName: "checkmark.shield.fill").foregroundStyle(tint).scaledFont(.caption)
+                Text("manager.kpi.compliance").scaledFont(.caption).foregroundStyle(.secondary)
             }
-            Text(LocalizedStringKey(status.labelKey))
-                .font(.title3.bold())
+            Text(localizedKey: status.labelKey)
+                .scaledFont(.title3, weight: .bold)
                 .foregroundStyle(tint)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.secondary.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 8, y: 3)
     }
 
+    // MARK: - Today's schedule
+
     private func todayScheduleCard(branch: Branch) -> some View {
-        sectionCard(icon: "calendar", title: "heading.today") {
+        SectionCard("heading.today", icon: "calendar.badge.checkmark") {
             if sessionsToday.isEmpty {
-                Text("empty.no_classes_today").font(.caption).foregroundStyle(.secondary)
+                EmptyStateCard(
+                    icon: "calendar",
+                    titleKey: "empty.no_classes_today",
+                    messageKey: nil
+                )
             } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(sessionsToday) { s in
-                        HStack(spacing: 6) {
-                            Text(s.startsAt, style: .time)
-                                .font(.caption.monospacedDigit())
-                                .frame(width: 56, alignment: .leading)
-                                .environment(\.layoutDirection, .leftToRight)
-                            Text(verbatim: s.title).font(.caption).lineLimit(1)
-                            Spacer()
-                            if let c = coachLookup[s.coachID] {
-                                Text(verbatim: c.fullName).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                            }
+                VStack(spacing: 8) {
+                    ForEach(sessionsToday.sorted { $0.startsAt < $1.startsAt }) { s in
+                        scheduleRow(s)
+                        if s.id != sessionsToday.sorted(by: { $0.startsAt < $1.startsAt }).last?.id {
+                            Divider().opacity(0.3)
                         }
                     }
                     NavigationLink(destination: AthleteListView(scope: .byBranch(branch.id))) {
-                        Text("manager.view_attendance").font(.caption.bold())
+                        HStack(spacing: 4) {
+                            Text("manager.view_attendance")
+                                .scaledFont(.caption, weight: .semibold)
+                                .foregroundStyle(.tint)
+                            Image(systemName: "chevron.right")
+                                .scaledFont(.caption2, weight: .semibold)
+                                .foregroundStyle(.tint)
+                                .flipsForRightToLeftLayoutDirection(true)
+                        }
+                        .padding(.top, 4)
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
     }
 
+    private func scheduleRow(_ s: ClassSession) -> some View {
+        HStack(spacing: 10) {
+            Text(s.startsAt, format: .dateTime.hour().minute())
+                .scaledFont(.caption, weight: .semibold, monospacedDigit: true)
+                .frame(width: 54, alignment: .leading)
+                .environment(\.layoutDirection, .leftToRight)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(verbatim: s.title)
+                    .scaledFont(.subheadline, weight: .medium)
+                    .lineLimit(1)
+                if let c = coachLookup[s.coachID] {
+                    Text(verbatim: c.fullName)
+                        .scaledFont(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+            Text(verbatim: "\(s.enrolledAthleteIDs.count)/\(s.capacity)")
+                .scaledFont(.caption2, monospacedDigit: true)
+                .foregroundStyle(.secondary)
+                .environment(\.layoutDirection, .leftToRight)
+        }
+        .padding(.vertical, 4)
+    }
+
+    // MARK: - Compliance alerts
+
     private func complianceAlerts(store: BranchProfileStore) -> some View {
         let now = Date()
-        var alerts: [(LocalizedStringKey, Date?, ComplianceStatus)] = []
+        var alerts: [(String, Date?, ComplianceStatus)] = []
         if let c = store.compliance {
             if let d = c.civilDefenceExpiry, daysFrom(d, now) <= 30 {
-                alerts.append(("compliance.civil_defence", d, daysFrom(d, now) < 0 ? .expired : .expiring))
+                alerts.append((NSLocalizedString("compliance.civil_defence", comment: ""), d, daysFrom(d, now) < 0 ? .expired : .expiring))
             }
             if let d = c.sharjahSportsCouncilExpiry, daysFrom(d, now) <= 30 {
-                alerts.append(("compliance.sports_council", d, daysFrom(d, now) < 0 ? .expired : .expiring))
+                alerts.append((NSLocalizedString("compliance.sports_council", comment: ""), d, daysFrom(d, now) < 0 ? .expired : .expiring))
             }
             if let d = c.insuranceExpiry, daysFrom(d, now) <= 30 {
-                alerts.append(("compliance.insurance", d, daysFrom(d, now) < 0 ? .expired : .expiring))
+                alerts.append((NSLocalizedString("compliance.insurance", comment: ""), d, daysFrom(d, now) < 0 ? .expired : .expiring))
             }
         }
         for c in store.coaches {
             if c.firstAidExpiry < now.addingTimeInterval(30 * 24 * 3600) {
-                alerts.append((LocalizedStringKey(c.fullName + " · first-aid"), c.firstAidExpiry,
-                               c.firstAidExpiry < now ? .expired : .expiring))
+                alerts.append(("\(c.fullName) · first-aid", c.firstAidExpiry, c.firstAidExpiry < now ? .expired : .expiring))
             }
             if c.safeguardingExpiry < now.addingTimeInterval(30 * 24 * 3600) {
-                alerts.append((LocalizedStringKey(c.fullName + " · safeguarding"), c.safeguardingExpiry,
-                               c.safeguardingExpiry < now ? .expired : .expiring))
+                alerts.append(("\(c.fullName) · safeguarding", c.safeguardingExpiry, c.safeguardingExpiry < now ? .expired : .expiring))
             }
         }
-        return sectionCard(icon: "exclamationmark.triangle.fill", title: "manager.alerts") {
+        return SectionCard("manager.alerts", icon: "exclamationmark.triangle.fill") {
             if alerts.isEmpty {
-                Text("manager.no_alerts").font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.shield.fill")
+                        .foregroundStyle(.green)
+                    Text("manager.no_alerts")
+                        .scaledFont(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 4)
             } else {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(alerts.indices, id: \.self) { i in
                         let (label, date, status) = alerts[i]
-                        HStack {
-                            Image(systemName: "circle.fill")
-                                .font(.system(size: 8))
-                                .foregroundStyle(status == .expired ? .red : .orange)
-                            Text(label).font(.caption)
-                            Spacer()
-                            if let d = date {
-                                Text(d, style: .date).font(.caption2).foregroundStyle(.secondary)
-                                    .environment(\.layoutDirection, .leftToRight)
-                            }
+                        alertRow(label: label, date: date, status: status)
+                        if i < alerts.count - 1 {
+                            Divider().opacity(0.3)
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private func alertRow(label: String, date: Date?, status: ComplianceStatus) -> some View {
+        let color: Color = status == .expired ? .red : .orange
+        return HStack(spacing: 10) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(verbatim: label)
+                .scaledFont(.footnote)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+            if let d = date {
+                Text(d, format: .dateTime.day().month(.abbreviated))
+                    .scaledFont(.caption2, monospacedDigit: true)
+                    .foregroundStyle(.secondary)
+                    .environment(\.layoutDirection, .leftToRight)
             }
         }
     }
@@ -232,71 +351,106 @@ public struct BranchManagerHomeView: View {
         Calendar.current.dateComponents([.day], from: now, to: d).day ?? 0
     }
 
+    // MARK: - Watch list
+
     private func watchListCard(store: BranchProfileStore, branch: Branch) -> some View {
         let count = store.metrics.watchListCount
-        return sectionCard(icon: "eye.fill", title: "manager.watch_list") {
-            HStack {
-                Text(verbatim: "\(count)")
-                    .font(.title2.bold().monospacedDigit())
-                    .environment(\.layoutDirection, .leftToRight)
-                Text("status.watch").font(.caption).foregroundStyle(.secondary)
-                Spacer()
+        return SectionCard("manager.watch_list", icon: "eye.fill") {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(count > 0 ? Color.orange.opacity(0.18) : Color.green.opacity(0.18))
+                        .frame(width: 44, height: 44)
+                    Text(verbatim: "\(count)")
+                        .scaledFont(.title2, weight: .bold, monospacedDigit: true)
+                        .foregroundStyle(count > 0 ? .orange : .green)
+                        .environment(\.layoutDirection, .leftToRight)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("status.watch")
+                        .scaledFont(.subheadline, weight: .semibold)
+                    Text("manager.watch_list.subtitle")
+                        .scaledFont(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
                 NavigationLink(destination: AthleteListView(scope: .byBranch(branch.id))) {
                     Image(systemName: "chevron.right")
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(.secondary)
+                        .flipsForRightToLeftLayoutDirection(true)
                 }
+                .buttonStyle(.plain)
             }
         }
     }
 
+    // MARK: - Quick actions
+
     private func quickActions(branch: Branch) -> some View {
-        sectionCard(icon: "bolt.fill", title: "manager.quick_actions") {
-            let cols = [GridItem(.flexible()), GridItem(.flexible())]
+        SectionCard("manager.quick_actions", icon: "bolt.fill") {
+            let cols = Array(repeating: GridItem(.flexible(), spacing: 8), count: 2)
             LazyVGrid(columns: cols, spacing: 8) {
-                quickAction(icon: "person.3.fill", label: "manager.edit_programs") {
+                quickAction(icon: "person.3.fill", labelKey: "manager.edit_programs") {
                     showingPrograms = true
                 }
-                quickAction(icon: "shippingbox.fill", label: "manager.update_inventory") {
+                quickAction(icon: "shippingbox.fill", labelKey: "manager.update_inventory") {
                     showingInventory = true
                 }
                 if let role = session.currentUser?.role,
                    PermissionMatrix.allowed(role: role, permission: .viewBranchFinancials) {
-                    quickAction(icon: "dollarsign.circle.fill", label: "manager.log_financials") {
+                    quickAction(icon: "dollarsign.circle.fill", labelKey: "manager.log_financials") {
                         showingFinancials = true
                     }
                 }
-                quickAction(icon: "megaphone.fill", label: "manager.compose_announcement") {
+                quickAction(icon: "megaphone.fill", labelKey: "manager.compose_announcement") {
                     showingAnnouncement = true
                 }
             }
         }
     }
 
-    private func quickAction(icon: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+    private func quickAction(icon: String, labelKey: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                Image(systemName: icon).foregroundStyle(.tint).frame(width: 22)
-                Text(label).font(.caption.bold()).lineLimit(2).multilineTextAlignment(.leading)
-                Spacer()
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.14))
+                    Image(systemName: icon)
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(.tint)
+                }
+                .frame(width: 34, height: 34)
+                Text(labelKey)
+                    .scaledFont(.caption, weight: .semibold)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 0)
             }
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
+            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
     }
 
+    // MARK: - Activity feed
+
     private var activityFeed: some View {
-        sectionCard(icon: "clock.arrow.circlepath", title: "manager.recent_activity") {
+        SectionCard("manager.recent_activity", icon: "clock.arrow.circlepath") {
             if auditEntries.isEmpty {
-                Text("manager.no_activity").font(.caption).foregroundStyle(.secondary)
+                EmptyStateCard(
+                    icon: "tray",
+                    titleKey: "manager.no_activity",
+                    messageKey: nil
+                )
             } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(auditEntries.prefix(10)) { e in
-                        HStack {
-                            Text(verbatim: e.action).font(.caption)
-                            Spacer()
-                            Text(e.at, style: .relative).font(.caption2).foregroundStyle(.secondary)
-                                .environment(\.layoutDirection, .leftToRight)
+                VStack(spacing: 8) {
+                    ForEach(auditEntries.prefix(8)) { e in
+                        activityRow(e)
+                        if e.id != auditEntries.prefix(8).last?.id {
+                            Divider().opacity(0.3)
                         }
                     }
                 }
@@ -304,22 +458,38 @@ public struct BranchManagerHomeView: View {
         }
     }
 
-    private func sectionCard<Content: View>(
-        icon: String, title: LocalizedStringKey,
-        @ViewBuilder _ content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.caption.bold()).foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 6))
-                Text(title).font(.subheadline.bold())
-                Spacer()
+    private func activityRow(_ entry: AuditEntry) -> some View {
+        let user = userLookup[entry.actorUserID]
+        return HStack(alignment: .top, spacing: 10) {
+            if let user {
+                Avatar(seed: user.avatarSeed, label: initials(user.fullName), size: 28)
+            } else {
+                Circle().fill(Color.secondary.opacity(0.18)).frame(width: 28, height: 28)
             }
-            content()
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(verbatim: user?.fullName ?? "—")
+                        .scaledFont(.caption, weight: .semibold)
+                        .lineLimit(1)
+                    Text(verbatim: entry.action)
+                        .scaledFont(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    Text(entry.at, format: .relative(presentation: .numeric))
+                        .scaledFont(.caption2)
+                        .foregroundStyle(.secondary)
+                        .environment(\.layoutDirection, .leftToRight)
+                }
+                Text(verbatim: entry.targetEntity)
+                    .scaledFont(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
-        .padding(12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.vertical, 2)
+    }
+
+    private func initials(_ name: String) -> String {
+        name.split(separator: " ").prefix(2).map { String($0.prefix(1)) }.joined().uppercased()
     }
 }

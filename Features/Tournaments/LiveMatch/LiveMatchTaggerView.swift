@@ -47,6 +47,7 @@ public struct LiveMatchTaggerView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.cancel") { dismiss() }
+                .bareToolbarButton()
             }
         }
         .task {
@@ -111,22 +112,22 @@ public struct LiveMatchTaggerView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: tournament?.name ?? String(localized: "match.practice"))
-                    .font(.subheadline.bold())
+                    .scaledFont(.subheadline, weight: .bold)
                 Text(verbatim: weightCategory.shortLabel)
-                    .font(.caption)
+                    .scaledFont(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
             VStack(spacing: 2) {
-                Text("match.round").font(.caption2).foregroundStyle(.secondary)
+                Text("match.round").scaledFont(.caption2).foregroundStyle(.secondary)
                 Text(verbatim: "\(store.currentRound) / \(store.match?.rounds ?? 3)")
-                    .font(.title3.bold().monospacedDigit())
+                    .scaledFont(.title3, weight: .bold, monospacedDigit: true)
                     .environment(\.layoutDirection, .leftToRight)
             }
             VStack(spacing: 2) {
-                Text("match.time_remaining").font(.caption2).foregroundStyle(.secondary)
+                Text("match.time_remaining").scaledFont(.caption2).foregroundStyle(.secondary)
                 Text(verbatim: store.formattedTime)
-                    .font(.system(size: 28, weight: .bold, design: .rounded).monospacedDigit())
+                    .scaledFont(size: 28, weight: .bold, design: .rounded, monospacedDigit: true)
                     .foregroundStyle(store.isTimerRunning ? Color.primary : Color.orange)
                     .environment(\.layoutDirection, .leftToRight)
             }
@@ -146,20 +147,20 @@ public struct LiveMatchTaggerView: View {
         VStack(spacing: 8) {
             VStack(spacing: 2) {
                 Text(side == .chung ? "match.chung" : "match.hong")
-                    .font(.caption.bold())
+                    .scaledFont(.caption, weight: .bold)
                     .foregroundStyle(color)
                 Text(verbatim: name)
-                    .font(.subheadline.bold())
+                    .scaledFont(.subheadline, weight: .bold)
                     .lineLimit(1)
                 if let nameAr {
                     Text(verbatim: nameAr)
-                        .font(.caption2)
+                        .scaledFont(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }
             Text(verbatim: "\(side == .chung ? store.match?.ourScore ?? 0 : store.match?.opponentScore ?? 0)")
-                .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                .scaledFont(size: 64, weight: .bold, design: .rounded, monospacedDigit: true)
                 .foregroundStyle(color)
                 .environment(\.layoutDirection, .leftToRight)
             actionGrid(store: store, side: side, color: color)
@@ -181,11 +182,11 @@ public struct LiveMatchTaggerView: View {
                     Task { await store.recordEvent(side: side, action: action) }
                 } label: {
                     VStack(spacing: 2) {
-                        Text(LocalizedStringKey(actionLabelKey(action)))
-                            .font(.caption.bold())
+                        Text(localizedKey: actionLabelKey(action))
+                            .scaledFont(.caption, weight: .bold)
                             .lineLimit(1)
                         Text(verbatim: "+\(action.points)")
-                            .font(.caption2.monospacedDigit())
+                            .scaledFont(.caption2, monospacedDigit: true)
                             .foregroundStyle(.secondary)
                             .environment(\.layoutDirection, .leftToRight)
                     }
@@ -218,25 +219,25 @@ public struct LiveMatchTaggerView: View {
 
     private func eventLog(store: LiveMatchStore) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("match.event_log").font(.caption.bold()).padding(.horizontal, 12).padding(.top, 8)
+            Text("match.event_log").scaledFont(.caption, weight: .bold).padding(.horizontal, 12).padding(.top, 8)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 4) {
                     let events = (store.match?.events ?? []).suffix(10).reversed()
                     ForEach(Array(events), id: \.id) { e in
                         HStack(spacing: 6) {
-                            Text(verbatim: "R\(e.round)").font(.caption2.monospacedDigit())
+                            Text(verbatim: "R\(e.round)").scaledFont(.caption2, monospacedDigit: true)
                                 .environment(\.layoutDirection, .leftToRight)
                             Text(verbatim: String(format: "%02d:%02d", e.atSecond / 60, e.atSecond % 60))
-                                .font(.caption2.monospacedDigit())
+                                .scaledFont(.caption2, monospacedDigit: true)
                                 .foregroundStyle(.secondary)
                                 .environment(\.layoutDirection, .leftToRight)
                             Text(e.side == .chung ? "match.chung" : "match.hong")
-                                .font(.caption2)
+                                .scaledFont(.caption2)
                                 .foregroundStyle(e.side == .chung ? .blue : .red)
-                            Text(LocalizedStringKey(actionLabelKey(e.action)))
-                                .font(.caption2)
+                            Text(localizedKey: actionLabelKey(e.action))
+                                .scaledFont(.caption2)
                             Spacer()
-                            Text(verbatim: "+\(e.action.points)").font(.caption2.monospacedDigit())
+                            Text(verbatim: "+\(e.action.points)").scaledFont(.caption2, monospacedDigit: true)
                                 .environment(\.layoutDirection, .leftToRight)
                         }
                         .padding(.horizontal, 12)
@@ -249,11 +250,11 @@ public struct LiveMatchTaggerView: View {
     private func winnerOverlay(side: MatchSide, store: LiveMatchStore) -> some View {
         VStack(spacing: 12) {
             Image(systemName: "trophy.fill")
-                .font(.system(size: 56))
+                .scaledFont(size: 56)
                 .foregroundStyle(.yellow)
-            Text("match.winner").font(.title3.bold())
+            Text("match.winner").scaledFont(.title3, weight: .bold)
             Text(verbatim: side == .chung ? athlete.fullName : opponentName)
-                .font(.title.bold())
+                .scaledFont(.title, weight: .bold)
             HStack(spacing: 12) {
                 if (store.match?.rounds ?? 3) > store.currentRound {
                     Button {

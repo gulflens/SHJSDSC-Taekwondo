@@ -35,16 +35,16 @@ public struct PhotoPickerView: View {
 
             switch status {
             case .idle:
-                Text("photo.idle").font(.caption).foregroundStyle(.secondary)
+                Text("photo.idle").scaledFont(.caption).foregroundStyle(.secondary)
             case .uploading:
                 ProgressView()
             case .ready(let url):
                 VStack(spacing: 4) {
                     Label("photo.uploaded", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                    Text(verbatim: url).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                    Text(verbatim: url).scaledFont(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 }
             case .failed(let message):
-                Text(verbatim: message).font(.caption).foregroundStyle(.red)
+                Text(verbatim: message).scaledFont(.caption).foregroundStyle(.red)
             }
         }
         .onChange(of: selectedItem) { _, newItem in

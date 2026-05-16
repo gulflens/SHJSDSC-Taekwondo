@@ -39,12 +39,12 @@ public struct GradingScoreEntryView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: athlete.fullName)
                         HStack(spacing: 4) {
-                            Text(LocalizedStringKey(athlete.currentBelt.label))
-                                .font(.caption2)
+                            Text(localizedKey: athlete.currentBelt.label)
+                                .scaledFont(.caption2)
                                 .foregroundStyle(.secondary)
                             Text(verbatim: "→")
-                            Text(LocalizedStringKey(GradingEngine.nextBelt(after: athlete.currentBelt).label))
-                                .font(.caption2)
+                            Text(localizedKey: GradingEngine.nextBelt(after: athlete.currentBelt).label)
+                                .scaledFont(.caption2)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -59,14 +59,14 @@ public struct GradingScoreEntryView: View {
                 HStack {
                     Spacer()
                     Text(verbatim: "Total: \(total)/100")
-                        .font(.callout.bold().monospacedDigit())
+                        .scaledFont(.callout, weight: .bold, monospacedDigit: true)
                         .environment(\.layoutDirection, .leftToRight)
                 }
             }
             Section(header: Text("grading.decision")) {
                 Picker(selection: $decision) {
                     ForEach(GradingDecision.allCases, id: \.self) { d in
-                        Text(LocalizedStringKey(d.labelKey)).tag(d)
+                        Text(localizedKey: d.labelKey).tag(d)
                     }
                 } label: { EmptyView() }
                 .pickerStyle(.segmented)
@@ -120,7 +120,7 @@ public struct GradingScoreEntryView: View {
                 Text(title)
                 Spacer()
                 Text(verbatim: "\(Int(value.wrappedValue.rounded()))")
-                    .font(.callout.monospacedDigit())
+                    .scaledFont(.callout, monospacedDigit: true)
                     .foregroundStyle(.secondary)
                     .environment(\.layoutDirection, .leftToRight)
             }

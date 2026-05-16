@@ -32,16 +32,16 @@ public struct GradingSessionView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(g.scheduledAt, style: .date).font(.subheadline.bold())
+                    Text(g.scheduledAt, style: .date).scaledFont(.subheadline, weight: .bold)
                     if let branch {
-                        Text(verbatim: branch.name).font(.caption).foregroundStyle(.secondary)
+                        Text(verbatim: branch.name).scaledFont(.caption).foregroundStyle(.secondary)
                     }
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle")
                         Text(verbatim: "\(scoresByAthlete.count) / \(g.candidateAthleteIDs.count)")
-                            .font(.caption.monospacedDigit())
+                            .scaledFont(.caption, monospacedDigit: true)
                             .environment(\.layoutDirection, .leftToRight)
-                        Text("grading.scored").font(.caption).foregroundStyle(.secondary)
+                        Text("grading.scored").scaledFont(.caption).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -70,18 +70,18 @@ public struct GradingSessionView: View {
             Avatar(seed: a.avatarSeed, label: a.initials, size: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: a.fullName)
-                Text(LocalizedStringKey(a.currentBelt.label))
-                    .font(.caption2)
+                Text(localizedKey: a.currentBelt.label)
+                    .scaledFont(.caption2)
                     .foregroundStyle(.secondary)
             }
             Spacer()
             if let score {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(verbatim: "\(score.total)")
-                        .font(.callout.bold().monospacedDigit())
+                        .scaledFont(.callout, weight: .bold, monospacedDigit: true)
                         .environment(\.layoutDirection, .leftToRight)
-                    Text(LocalizedStringKey(score.decision.labelKey))
-                        .font(.caption2)
+                    Text(localizedKey: score.decision.labelKey)
+                        .scaledFont(.caption2)
                         .foregroundStyle(decisionColor(score.decision))
                 }
             } else {

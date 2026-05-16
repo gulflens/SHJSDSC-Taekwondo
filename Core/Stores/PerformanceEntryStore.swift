@@ -15,8 +15,8 @@ public struct TrendPoint: Identifiable, Hashable, Sendable {
 
 @Observable @MainActor
 public final class PerformanceEntryStore {
-    public private(set) var physicalTests: [PhysicalTest] = []
-    public private(set) var assessments: [TechnicalAssessment] = []
+    public private(set) var physicalMetrics: [PhysicalMetric] = []
+    public private(set) var technicalSkills: [TechnicalSkill] = []
     public private(set) var wellness: [WellnessEntry] = []
     public private(set) var isLoading = false
 
@@ -31,29 +31,47 @@ public final class PerformanceEntryStore {
         defer { isLoading = false }
         let since = Date().addingTimeInterval(-Double(windowDays) * 24 * 3600)
         do {
-            physicalTests = try await repository.physicalTests(athleteID: athleteID)
-            assessments = try await repository.assessments(athleteID: athleteID)
+            physicalMetrics = try await repository.physicalMetrics(athleteID: athleteID)
+            technicalSkills = try await repository.technicalSkills(athleteID: athleteID)
             wellness = try await repository.wellness(athleteID: athleteID, since: since)
         } catch {
             print("PerformanceEntryStore.load:", error)
         }
     }
 
-    public func save(physicalTest: PhysicalTest) async {
+    public func save(metric: PhysicalMetric) async {
         do {
-            try await repository.upsert(physicalTest: physicalTest)
-            await load(athleteID: physicalTest.athleteID)
+            try await repository.upsert(metric: metric)
+            await load(athleteID: metric.athleteID)
         } catch {
-            print("PerformanceEntryStore.save physical:", error)
+            print("PerformanceEntryStore.save metric:", error)
         }
     }
 
-    public func save(assessment: TechnicalAssessment) async {
+    public func deleteMetric(id: EntityID, athleteID: EntityID) async {
         do {
-            try await repository.upsert(assessment: assessment)
-            await load(athleteID: assessment.athleteID)
+            try await repository.deletePhysicalMetric(id: id)
+            await load(athleteID: athleteID)
         } catch {
-            print("PerformanceEntryStore.save assessment:", error)
+            print("PerformanceEntryStore.delete metric:", error)
+        }
+    }
+
+    public func save(skill: TechnicalSkill) async {
+        do {
+            try await repository.upsert(skill: skill)
+            await load(athleteID: skill.athleteID)
+        } catch {
+            print("PerformanceEntryStore.save skill:", error)
+        }
+    }
+
+    public func deleteSkill(id: EntityID, athleteID: EntityID) async {
+        do {
+            try await repository.deleteTechnicalSkill(id: id)
+            await load(athleteID: athleteID)
+        } catch {
+            print("PerformanceEntryStore.delete skill:", error)
         }
     }
 
@@ -66,24 +84,40 @@ public final class PerformanceEntryStore {
         }
     }
 
-    /// Latest physical composite (0..100) per recorded date, last `days` days.
+    /// Bucket physical metrics by recording day and emit a 0..100 composite per
+    /// day (last `days` days). Days with no measurements do not produce points.
     public func physicalTrend(days: Int = 90) -> [TrendPoint] {
         let cutoff = Date().addingTimeInterval(-Double(days) * 24 * 3600)
-        return physicalTests
-            .filter { $0.recordedAt >= cutoff }
-            .sorted { $0.recordedAt < $1.recordedAt }
-            .map { TrendPoint(id: $0.id, date: $0.recordedAt, value: GradingEngine.physicalCompositeScore($0)) }
+        let cal = Calendar.current
+        let recent = physicalMetrics.filter { $0.recordedAt >= cutoff }
+        let byDay = Dictionary(grouping: recent) { cal.startOfDay(for: $0.recordedAt) }
+        return byDay
+            .map { day, metrics in
+                TrendPoint(date: day, value: GradingEngine.physicalCompositeScore(metrics))
+            }
+            .sorted { $0.date < $1.date }
     }
 
+    /// Bucket technical skills by recording day; emit average (form+app)/2 × 10
+    /// per day (last `days` days) so the trend line lives on the same 0..100
+    /// scale as the physical composite.
     public func technicalTrend(days: Int = 90) -> [TrendPoint] {
         let cutoff = Date().addingTimeInterval(-Double(days) * 24 * 3600)
-        return assessments
-            .filter { $0.recordedAt >= cutoff }
-            .sorted { $0.recordedAt < $1.recordedAt }
-            .map { TrendPoint(id: $0.id, date: $0.recordedAt, value: $0.average * 10) }
+        let cal = Calendar.current
+        let recent = technicalSkills.filter { $0.recordedAt >= cutoff }
+        let byDay = Dictionary(grouping: recent) { cal.startOfDay(for: $0.recordedAt) }
+        return byDay
+            .map { day, skills in
+                let avg = skills.map(\.averageScore).reduce(0, +) / Double(skills.count)
+                return TrendPoint(date: day, value: avg * 10)
+            }
+            .sorted { $0.date < $1.date }
     }
 
-    /// Wellness composite: combine sleep, mood, soreness (inverted), RPE (inverted) → 0..100.
+    /// Wellness composite (0..100). Combines six signals on a 1..10 scale —
+    /// sleep, mood, motivation are higher-is-better; soreness, stress, RPE
+    /// are inverted (higher = worse). Sleep is mapped from hours to 0..1
+    /// against a 9-hour benchmark.
     public func wellnessTrend(days: Int = 90) -> [TrendPoint] {
         let cutoff = Date().addingTimeInterval(-Double(days) * 24 * 3600)
         return wellness
@@ -91,10 +125,12 @@ public final class PerformanceEntryStore {
             .sorted { $0.recordedAt < $1.recordedAt }
             .map { entry in
                 let sleep = min(1.0, entry.sleepHours / 9.0)
-                let mood = Double(entry.mood) / 5.0
-                let soreness = 1.0 - Double(entry.soreness - 1) / 4.0
+                let mood = Double(entry.mood) / 10.0
+                let motivation = Double(entry.motivation) / 10.0
+                let soreness = 1.0 - Double(entry.soreness - 1) / 9.0
+                let stress = 1.0 - Double(entry.stress - 1) / 9.0
                 let rpe = 1.0 - Double(entry.rpePreviousSession - 1) / 9.0
-                let value = (sleep + mood + soreness + rpe) / 4.0 * 100
+                let value = (sleep + mood + motivation + soreness + stress + rpe) / 6.0 * 100
                 return TrendPoint(id: entry.id, date: entry.recordedAt, value: value)
             }
     }

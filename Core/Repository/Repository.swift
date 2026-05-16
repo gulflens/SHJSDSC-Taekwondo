@@ -7,6 +7,7 @@ public protocol UserRepository: Sendable {
     func user(id: EntityID) async throws -> User?
     func users(role: Role?) async throws -> [User]
     func createAccount(email: String, password: String, fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws
+    func updateUser(_ user: User) async throws
     func linkChild(userID: EntityID, athleteID: EntityID) async throws
     func unlinkChild(userID: EntityID, athleteID: EntityID) async throws
 }
@@ -14,6 +15,7 @@ public protocol UserRepository: Sendable {
 public protocol BranchRepository: Sendable {
     func branches() async throws -> [Branch]
     func branch(id: EntityID) async throws -> Branch?
+    func upsert(_ branch: Branch) async throws
 }
 
 public protocol AthleteRepository: Sendable {
@@ -37,6 +39,8 @@ public protocol ScheduleRepository: Sendable {
     func sessions(branchID: EntityID, on day: Date) async throws -> [ClassSession]
     func sessions(coachID: EntityID, on day: Date) async throws -> [ClassSession]
     func session(id: EntityID) async throws -> ClassSession?
+    func upsert(_ session: ClassSession) async throws
+    func deleteSession(id: EntityID) async throws
 }
 
 public protocol AttendanceRepository: Sendable {
@@ -61,12 +65,48 @@ public protocol MatchRepository: Sendable {
 }
 
 public protocol PerformanceEntryRepository: Sendable {
-    func physicalTests(athleteID: EntityID) async throws -> [PhysicalTest]
-    func assessments(athleteID: EntityID) async throws -> [TechnicalAssessment]
+    func physicalMetrics(athleteID: EntityID) async throws -> [PhysicalMetric]
+    func technicalSkills(athleteID: EntityID) async throws -> [TechnicalSkill]
+    func poomsaeAssessments(athleteID: EntityID) async throws -> [PoomsaeAssessment]
     func wellness(athleteID: EntityID, since: Date) async throws -> [WellnessEntry]
-    func upsert(physicalTest: PhysicalTest) async throws
-    func upsert(assessment: TechnicalAssessment) async throws
+    func upsert(metric: PhysicalMetric) async throws
+    func upsert(skill: TechnicalSkill) async throws
+    func upsert(poomsae: PoomsaeAssessment) async throws
     func upsert(wellness entry: WellnessEntry) async throws
+    func deletePhysicalMetric(id: EntityID) async throws
+    func deleteTechnicalSkill(id: EntityID) async throws
+    func deletePoomsaeAssessment(id: EntityID) async throws
+}
+
+public protocol GoalRepository: Sendable {
+    func goals(athleteID: EntityID) async throws -> [Goal]
+    func upsert(goal: Goal) async throws
+    func deleteGoal(id: EntityID) async throws
+}
+
+public protocol TrainingLoadRepository: Sendable {
+    func trainingLoad(athleteID: EntityID, since: Date) async throws -> [TrainingLoadEntry]
+    func upsert(load: TrainingLoadEntry) async throws
+    func deleteTrainingLoad(id: EntityID) async throws
+}
+
+public protocol ImprovementPlanRepository: Sendable {
+    func drills() async throws -> [DrillLibraryEntry]
+    func upsert(drill: DrillLibraryEntry) async throws
+    func deleteDrill(id: EntityID) async throws
+    func improvementPlans(athleteID: EntityID) async throws -> [ImprovementPlan]
+    func upsert(plan: ImprovementPlan) async throws
+    func deletePlan(id: EntityID) async throws
+}
+
+public protocol PeerBenchmarkRepository: Sendable {
+    /// Returns all benchmarks. Callers filter via `[PeerBenchmark].best(for:metricKey:)`.
+    func peerBenchmarks() async throws -> [PeerBenchmark]
+    func upsertBenchmarks(_ benchmarks: [PeerBenchmark]) async throws
+    /// Wipe and recompute from current athlete + metric data. Returns the
+    /// freshly computed set so callers can refresh in-memory caches.
+    @discardableResult
+    func recomputeBenchmarks() async throws -> [PeerBenchmark]
 }
 
 public protocol GradingRepository: Sendable {
@@ -137,6 +177,11 @@ public protocol StorageRepository: Sendable {
     /// Uploads athlete photo bytes and returns a publicly-resolvable URL string
     /// the Avatar view can render via AsyncImage.
     func uploadAthletePhoto(athleteID: EntityID, data: Data, contentType: String) async throws -> String
+
+    /// Uploads a user account avatar and returns a publicly-resolvable URL.
+    /// Used by the "Edit My Account" sheet for non-athlete/coach roles whose
+    /// avatar lives on the `User` record rather than an Athlete/Coach dossier.
+    func uploadUserAvatar(userID: EntityID, data: Data, contentType: String) async throws -> String
 }
 
 public protocol BranchProfileRepository: Sendable {
@@ -174,6 +219,13 @@ public protocol BranchProfileRepository: Sendable {
     func upsert(_ milestone: BranchMilestone) async throws
 }
 
+public protocol AthleteGroupRepository: Sendable {
+    func athleteGroups() async throws -> [AthleteGroup]
+    func athleteGroup(id: EntityID) async throws -> AthleteGroup?
+    func upsert(_ group: AthleteGroup) async throws
+    func deleteAthleteGroup(id: EntityID) async throws
+}
+
 public protocol Repository:
     UserRepository,
     BranchRepository,
@@ -184,6 +236,10 @@ public protocol Repository:
     PerformanceRepository,
     MatchRepository,
     PerformanceEntryRepository,
+    GoalRepository,
+    TrainingLoadRepository,
+    ImprovementPlanRepository,
+    PeerBenchmarkRepository,
     GradingRepository,
     TournamentRepository,
     LiveMatchRepository,
@@ -191,4 +247,5 @@ public protocol Repository:
     AuditRepository,
     StorageRepository,
     BranchProfileRepository,
+    AthleteGroupRepository,
     Sendable {}

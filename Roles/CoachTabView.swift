@@ -6,27 +6,30 @@ public struct CoachTabView: View {
     public init() {}
 
     public var body: some View {
-        TabView {
-            CoachHomeView()
-                .tabItem { Label("tab.home", systemImage: "house.fill") }
-
-            NavigationStack {
-                AttendanceListView()
+        AdaptiveNavigationShell(
+            appTitle: "tab.home",
+            items: [
+                SidebarItem("home",            titleKey: "tab.home",               icon: "house.fill"),
+                SidebarItem("classes",         titleKey: "tab.classes",            icon: "list.clipboard.fill"),
+                SidebarItem("athletes",        titleKey: "tab.athletes",           icon: "person.3.fill"),
+                SidebarItem("announcements",   titleKey: "tab.announcements",      icon: "megaphone.fill"),
+                SidebarItem("drills",          titleKey: "drills.tab.title",       icon: "list.clipboard.fill"),
+                SidebarItem("certifications",  titleKey: "tab.certifications",     icon: "checkmark.shield.fill"),
+                SidebarItem("settings",        titleKey: "settings.title",         icon: "gearshape.fill")
+            ],
+            profileItem: SidebarItem("profile", titleKey: "tab.profile", icon: "person.crop.circle.fill")
+        ) { id in
+            switch id {
+            case "home":           CoachHomeView()
+            case "classes":        AttendanceListView()
+            case "athletes":       AthleteListView(scope: .myAthletes(coachID: session.currentUser?.id ?? UUID()))
+            case "announcements":  AnnouncementsView()
+            case "drills":         DrillsAndTimerView()
+            case "certifications": CertificationsListView()
+            case "settings":       MoreView()
+            case "profile":        MyProfileView()
+            default:               EmptyView()
             }
-            .tabItem { Label("tab.classes", systemImage: "list.clipboard.fill") }
-
-            NavigationStack {
-                AthleteListView(scope: .myAthletes(coachID: session.currentUser?.id ?? UUID()))
-            }
-            .tabItem { Label("tab.athletes", systemImage: "person.3.fill") }
-
-            NavigationStack {
-                AnnouncementsView()
-            }
-            .tabItem { Label("tab.announcements", systemImage: "megaphone") }
-
-            MoreView()
-                .tabItem { Label("tab.more", systemImage: "ellipsis.circle.fill") }
         }
     }
 }

@@ -33,12 +33,14 @@ public struct MatchSummaryView: View {
             }
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.cancel") { onClose() }
+                .bareToolbarButton()
             }
         }
         #else
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.cancel") { onClose() }
+                .bareToolbarButton()
             }
         }
         #endif
@@ -47,22 +49,22 @@ public struct MatchSummaryView: View {
 
     private var summaryCard: some View {
         VStack(spacing: 8) {
-            Text(verbatim: match.tournamentName).font(.headline)
+            Text(verbatim: match.tournamentName).scaledFont(.headline)
             HStack(spacing: 24) {
                 VStack(spacing: 2) {
-                    Text("match.chung").font(.caption).foregroundStyle(.blue)
-                    Text(verbatim: ourAthlete?.fullName ?? "—").font(.subheadline.bold())
+                    Text("match.chung").scaledFont(.caption).foregroundStyle(.blue)
+                    Text(verbatim: ourAthlete?.fullName ?? "—").scaledFont(.subheadline, weight: .bold)
                     Text(verbatim: "\(match.ourScore)")
-                        .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
+                        .scaledFont(size: 44, weight: .bold, design: .rounded, monospacedDigit: true)
                         .foregroundStyle(.blue)
                         .environment(\.layoutDirection, .leftToRight)
                 }
-                Text(verbatim: "—").font(.title2).foregroundStyle(.secondary)
+                Text(verbatim: "—").scaledFont(.title2).foregroundStyle(.secondary)
                 VStack(spacing: 2) {
-                    Text("match.hong").font(.caption).foregroundStyle(.red)
-                    Text(verbatim: match.opponentName ?? "—").font(.subheadline.bold())
+                    Text("match.hong").scaledFont(.caption).foregroundStyle(.red)
+                    Text(verbatim: match.opponentName ?? "—").scaledFont(.subheadline, weight: .bold)
                     Text(verbatim: "\(match.opponentScore)")
-                        .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
+                        .scaledFont(size: 44, weight: .bold, design: .rounded, monospacedDigit: true)
                         .foregroundStyle(.red)
                         .environment(\.layoutDirection, .leftToRight)
                 }
@@ -70,11 +72,11 @@ public struct MatchSummaryView: View {
             HStack {
                 if match.medal != .none {
                     Image(systemName: "medal.fill").foregroundStyle(.yellow)
-                    Text(LocalizedStringKey(match.medal.labelKey))
-                        .font(.subheadline.bold())
+                    Text(localizedKey: match.medal.labelKey)
+                        .scaledFont(.subheadline, weight: .bold)
                 }
                 Spacer()
-                Text(match.date, style: .date).font(.caption).foregroundStyle(.secondary)
+                Text(match.date, style: .date).scaledFont(.caption).foregroundStyle(.secondary)
             }
         }
         .padding()
@@ -86,7 +88,7 @@ public struct MatchSummaryView: View {
         let chungEvents = match.events.filter { $0.side == .chung }
         let hongEvents = match.events.filter { $0.side == .hong }
         return VStack(alignment: .leading, spacing: 6) {
-            Text("match.summary").font(.headline)
+            Text("match.summary").scaledFont(.headline)
             HStack(alignment: .top) {
                 breakdownColumn(label: "match.chung", events: chungEvents, color: .blue)
                 breakdownColumn(label: "match.hong", events: hongEvents, color: .red)
@@ -101,16 +103,16 @@ public struct MatchSummaryView: View {
         let counts = Dictionary(grouping: events, by: { $0.action }).mapValues { $0.count }
         let actions: [ScoreAction] = [.headKick, .bodyKick, .turnBodyKick, .turnHeadKick, .punch, .penalty]
         return VStack(alignment: .leading, spacing: 4) {
-            Text(label).font(.caption.bold()).foregroundStyle(color)
+            Text(label).scaledFont(.caption, weight: .bold).foregroundStyle(color)
             ForEach(actions, id: \.self) { action in
                 let count = counts[action] ?? 0
                 if count > 0 {
                     HStack {
-                        Text(LocalizedStringKey(actionLabel(action)))
-                            .font(.caption)
+                        Text(localizedKey: actionLabel(action))
+                            .scaledFont(.caption)
                         Spacer()
                         Text(verbatim: "\(count)")
-                            .font(.caption.monospacedDigit())
+                            .scaledFont(.caption, monospacedDigit: true)
                             .foregroundStyle(.secondary)
                             .environment(\.layoutDirection, .leftToRight)
                     }
@@ -122,23 +124,23 @@ public struct MatchSummaryView: View {
 
     private var eventsTimeline: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("match.event_log").font(.headline)
+            Text("match.event_log").scaledFont(.headline)
             if match.events.isEmpty {
                 Text("empty.no_data").foregroundStyle(.secondary)
             } else {
                 ForEach(match.events, id: \.id) { e in
                     HStack(spacing: 8) {
-                        Text(verbatim: "R\(e.round)").font(.caption2.monospacedDigit())
+                        Text(verbatim: "R\(e.round)").scaledFont(.caption2, monospacedDigit: true)
                             .environment(\.layoutDirection, .leftToRight)
                         Text(verbatim: String(format: "%02d:%02d", e.atSecond / 60, e.atSecond % 60))
-                            .font(.caption2.monospacedDigit())
+                            .scaledFont(.caption2, monospacedDigit: true)
                             .foregroundStyle(.secondary)
                             .environment(\.layoutDirection, .leftToRight)
                         Circle().fill(e.side == .chung ? Color.blue : Color.red).frame(width: 6, height: 6)
-                        Text(LocalizedStringKey(actionLabel(e.action)))
-                            .font(.caption)
+                        Text(localizedKey: actionLabel(e.action))
+                            .scaledFont(.caption)
                         Spacer()
-                        Text(verbatim: "+\(e.action.points)").font(.caption.monospacedDigit())
+                        Text(verbatim: "+\(e.action.points)").scaledFont(.caption, monospacedDigit: true)
                             .environment(\.layoutDirection, .leftToRight)
                     }
                 }

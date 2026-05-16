@@ -5,7 +5,7 @@ public enum Gender: String, Codable, CaseIterable, Sendable, Hashable {
 }
 
 public enum AgeGroup: String, Codable, CaseIterable, Sendable, Hashable {
-    case cubs, kids, cadets, juniors, seniors
+    case cubs, kids, cadets, juniors, seniors, masters
 
     public var labelKey: String { "age.\(rawValue)" }
 
@@ -15,7 +15,8 @@ public enum AgeGroup: String, Codable, CaseIterable, Sendable, Hashable {
         case 10...11: .kids
         case 12...14: .cadets
         case 15...17: .juniors
-        default: .seniors
+        case 18...39: .seniors
+        default: .masters
         }
     }
 }
@@ -49,6 +50,9 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
     public var passportNumber: String?
     public var bloodType: BloodType?
     public var federationLicenceNumber: String?
+    /// World Taekwondo Federation athlete ID (GAL system). Distinct from the
+    /// UAE federation licence number above.
+    public var worldTaekwondoID: String?
 
     // === Family / consent ===
     public var parentUserIDs: [EntityID]
@@ -70,10 +74,37 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
 
     // === Technical ===
     public var weightClass: WeightCategory?
+    public var dominantLeg: DominantLeg?
     public var dominantStance: Stance?
+    public var specialty: Specialty?
+    public var yearsTraining: Int?
     public var poomsaeSyllabus: String?
     public var kyorugiTier: KyorugiTier?
     public var trainingGroupID: EntityID?
+
+    /// Repertoire — forms the athlete can perform. Mastery scores live on
+    /// `PoomsaeAssessment`; this set tracks which forms are in the repertoire
+    /// independent of how well they're performed.
+    public var poomsaeKnown: Set<PoomsaeForm>
+
+    // === Grading (Pillar 9) ===
+    /// 1...5 — coach's subjective readiness rating for the next grading.
+    public var gradingReadiness: Int?
+    /// Planned date for the athlete's next belt-test.
+    public var nextGradingTargetDate: Date?
+
+    // === Profile dossier (Pillar 10) ===
+    /// Threaded coach notes. Newest first by convention; the view layer sorts
+    /// defensively anyway. Empty in the standard demo seed; populated for the
+    /// "showcase" athletes in `SeedData.build()`.
+    public var coachNotes: [CoachNote]
+    /// Identity / consent / medical documents. Status is computed from the
+    /// expiry date at render-time via `derivedStatus(asOf:)`.
+    public var documents: [AthleteDocument]
+    /// Latest ranking snapshot across club / UAE / WT / Olympic systems.
+    /// Nil for non-competitive athletes — the Overview tab hides the
+    /// Current Rankings card when this is nil.
+    public var ranking: AthleteRanking?
 
     public init(
         id: EntityID = UUID(),
@@ -81,7 +112,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         fullName: String,
         fullNameAr: String,
         dateOfBirth: Date,
-        gender: Gender,
+        gender: Gender = .male,
         nationality: String = "AE",
         emiratesID: String? = nil,
         branchID: EntityID,
@@ -96,6 +127,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         passportNumber: String? = nil,
         bloodType: BloodType? = nil,
         federationLicenceNumber: String? = nil,
+        worldTaekwondoID: String? = nil,
         parentUserIDs: [EntityID] = [],
         emergencyContacts: [EmergencyContact] = [],
         school: String? = nil,
@@ -111,10 +143,19 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         fitToTrain: Bool = true,
         injuries: [InjuryEntry] = [],
         weightClass: WeightCategory? = nil,
+        dominantLeg: DominantLeg? = nil,
         dominantStance: Stance? = nil,
+        specialty: Specialty? = nil,
+        yearsTraining: Int? = nil,
         poomsaeSyllabus: String? = nil,
         kyorugiTier: KyorugiTier? = nil,
-        trainingGroupID: EntityID? = nil
+        trainingGroupID: EntityID? = nil,
+        poomsaeKnown: Set<PoomsaeForm> = [],
+        gradingReadiness: Int? = nil,
+        nextGradingTargetDate: Date? = nil,
+        coachNotes: [CoachNote] = [],
+        documents: [AthleteDocument] = [],
+        ranking: AthleteRanking? = nil
     ) {
         self.id = id
         self.memberNumber = memberNumber
@@ -136,6 +177,7 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         self.passportNumber = passportNumber
         self.bloodType = bloodType
         self.federationLicenceNumber = federationLicenceNumber
+        self.worldTaekwondoID = worldTaekwondoID
         self.parentUserIDs = parentUserIDs
         self.emergencyContacts = emergencyContacts
         self.school = school
@@ -151,10 +193,24 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
         self.fitToTrain = fitToTrain
         self.injuries = injuries
         self.weightClass = weightClass
+        self.dominantLeg = dominantLeg
         self.dominantStance = dominantStance
+        self.specialty = specialty
+        self.yearsTraining = yearsTraining
         self.poomsaeSyllabus = poomsaeSyllabus
         self.kyorugiTier = kyorugiTier
         self.trainingGroupID = trainingGroupID
+        self.poomsaeKnown = poomsaeKnown
+        self.gradingReadiness = gradingReadiness.map { max(1, min(5, $0)) }
+        self.nextGradingTargetDate = nextGradingTargetDate
+        self.coachNotes = coachNotes
+        self.documents = documents
+        self.ranking = ranking
+    }
+
+    /// Whole months between when the current belt was awarded and now.
+    public var monthsAtCurrentRank: Int {
+        Calendar.current.dateComponents([.month], from: currentBelt.awardedAt, to: Date()).month ?? 0
     }
 
     public var age: Int {

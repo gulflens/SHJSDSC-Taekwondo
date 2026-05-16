@@ -55,7 +55,7 @@ public struct ParentSignUpView: View {
 
                 if let error {
                     Section {
-                        Text(verbatim: error).foregroundStyle(.red).font(.caption)
+                        Text(verbatim: error).foregroundStyle(.red).scaledFont(.caption)
                     }
                 }
             }
@@ -66,12 +66,14 @@ public struct ParentSignUpView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel") { dismiss() }
+                    .bareToolbarButton()
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("auth.create_account") {
                         Task { await handleSignUp() }
                     }
                     .disabled(saving || !isValid)
+                    .bareToolbarButton()
                 }
             }
         }

@@ -26,8 +26,8 @@ public enum GradingEngine {
     public static func evaluateEligibility(
         athlete: Athlete,
         attendance: [AttendanceRecord],
-        technical: [TechnicalAssessment],
-        physical: [PhysicalTest]
+        technical: [TechnicalSkill],
+        physical: [PhysicalMetric]
     ) -> GradingEligibility {
         let target = nextBelt(after: athlete.currentBelt)
         let cal = Calendar.current
@@ -38,11 +38,9 @@ public enum GradingEngine {
         let attended = recent.filter { $0.state == .present || $0.state == .late }.count
         let attendancePct = recent.isEmpty ? 0 : Double(attended) / Double(recent.count)
 
-        let latestTechnical = technical.max(by: { $0.recordedAt < $1.recordedAt })
-        let technicalAvg = latestTechnical?.average ?? 0
+        let technicalAvg = technical.latestAverageScore
 
-        let latestPhysical = physical.max(by: { $0.recordedAt < $1.recordedAt })
-        let physicalComposite = latestPhysical.map { physicalCompositeScore($0) } ?? 0
+        let physicalComposite = physicalCompositeScore(physical)
 
         let requiredMonths = athlete.currentBelt.kind == .gup ? 3 : 6
         var blocking: [String] = []
@@ -64,15 +62,20 @@ public enum GradingEngine {
         )
     }
 
-    /// Combine 5 physical metrics into a 0..100 composite.
-    /// Each metric is normalised to its sensible range (lower-is-better metrics inverted).
-    public static func physicalCompositeScore(_ test: PhysicalTest) -> Double {
-        let beep = (test.beepTestStage / 13.0) * 100
-        let jump = (test.verticalJumpCm / 60.0) * 100
-        let sprint = max(0, (10.0 - test.sprint30mSec) / 7.0) * 100
-        let agility = max(0, (20.0 - test.agility4x10Sec) / 12.0) * 100
-        let push = min(100, Double(test.pushUps1Min) * 2)
-        return (beep + jump + sprint + agility + push) / 5.0
+    /// 0..100 composite from the latest measurement of each captured kind.
+    /// Each metric self-normalises against its `inputRange`. Categories that
+    /// have any captured kind contribute their average; missing categories are
+    /// not penalised so an athlete with only flexibility data still scores.
+    public static func physicalCompositeScore(_ metrics: [PhysicalMetric]) -> Double {
+        guard !metrics.isEmpty else { return 0 }
+        let latest = metrics.latestPerKind()
+        let byCategory = Dictionary(grouping: latest) { $0.kind.category }
+        let categoryScores = byCategory.values.map { entries -> Double in
+            let normalised = entries.map { $0.kind.normalized($0.value) }
+            return normalised.reduce(0, +) / Double(normalised.count)
+        }
+        guard !categoryScores.isEmpty else { return 0 }
+        return (categoryScores.reduce(0, +) / Double(categoryScores.count)) * 100
     }
 
     public static func decideOutcome(score: GradingScore) -> GradingDecision {

@@ -18,7 +18,7 @@ public struct RoleClaimView: View {
         NavigationStack {
             Form {
                 Section(header: Text("auth.role_claim_intro")) {
-                    Text("auth.role_claim_help").font(.caption).foregroundStyle(.secondary)
+                    Text("auth.role_claim_help").scaledFont(.caption).foregroundStyle(.secondary)
                 }
                 Section(header: Text("auth.full_name")) {
                     TextField("auth.full_name", text: $fullName)
@@ -27,7 +27,7 @@ public struct RoleClaimView: View {
                 Section(header: Text("settings.role")) {
                     Picker(selection: $role) {
                         ForEach(Role.allCases, id: \.self) { r in
-                            Text(LocalizedStringKey(r.label)).tag(r)
+                            Text(localizedKey: r.label).tag(r)
                         }
                     } label: {
                         Text("settings.role")
@@ -44,7 +44,7 @@ public struct RoleClaimView: View {
                     }
                 }
                 if let error {
-                    Section { Text(verbatim: error).foregroundStyle(.red).font(.caption) }
+                    Section { Text(verbatim: error).foregroundStyle(.red).scaledFont(.caption) }
                 }
                 Section {
                     Button {

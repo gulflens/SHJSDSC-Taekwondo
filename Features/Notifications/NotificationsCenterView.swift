@@ -13,7 +13,7 @@ public struct NotificationsCenterView: View {
             Section(header: Text("notif.history")) {
                 Text("notif.history_empty")
                     .foregroundStyle(.secondary)
-                    .font(.caption)
+                    .scaledFont(.caption)
             }
         }
         .navigationTitle(Text("settings.notifications"))

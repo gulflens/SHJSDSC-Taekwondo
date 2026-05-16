@@ -83,6 +83,23 @@ public enum HostingFederation: String, Codable, CaseIterable, Sendable, Hashable
     public var labelKey: String { "federation.\(rawValue)" }
 }
 
+/// Geographic / political reach of an event (Pillar 7).
+public enum EventLevel: String, Codable, CaseIterable, Sendable, Hashable {
+    case local, national, regional, international
+
+    public var labelKey: String { "event_level.\(rawValue)" }
+
+    /// Color used for level pills in the UI — escalates with reach.
+    public var rank: Int {
+        switch self {
+        case .local: 1
+        case .national: 2
+        case .regional: 3
+        case .international: 4
+        }
+    }
+}
+
 public struct Tournament: Codable, Identifiable, Hashable, Sendable {
     public let id: EntityID
     public var name: String
@@ -95,6 +112,12 @@ public struct Tournament: Codable, Identifiable, Hashable, Sendable {
     public var isOfficial: Bool
     public var weightCategoriesOffered: [WeightCategory]
 
+    /// Reach — local / national / regional / international (Pillar 7).
+    public var level: EventLevel?
+    /// Free-form name of the body sanctioning the event when more granular
+    /// than `hostingFederation` (e.g. "UAE TKD Federation", "WT", "Asian TKD").
+    public var sanctioningBody: String?
+
     public init(
         id: EntityID = UUID(),
         name: String,
@@ -105,7 +128,9 @@ public struct Tournament: Codable, Identifiable, Hashable, Sendable {
         location: String,
         locationAr: String? = nil,
         isOfficial: Bool,
-        weightCategoriesOffered: [WeightCategory]
+        weightCategoriesOffered: [WeightCategory],
+        level: EventLevel? = nil,
+        sanctioningBody: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -117,6 +142,8 @@ public struct Tournament: Codable, Identifiable, Hashable, Sendable {
         self.locationAr = locationAr
         self.isOfficial = isOfficial
         self.weightCategoriesOffered = weightCategoriesOffered
+        self.level = level
+        self.sanctioningBody = sanctioningBody
     }
 }
 
@@ -135,6 +162,12 @@ public struct TournamentRegistration: Codable, Identifiable, Hashable, Sendable 
     public var registeredAt: Date
     public var status: RegistrationStatus
 
+    // === Pillar 7: per-event result ===
+    public var ageDivisionEntered: AgeGroup?
+    public var bracketSize: Int?
+    public var finalPosition: Int?
+    public var medal: MedalType?
+
     public init(
         id: EntityID = UUID(),
         tournamentID: EntityID,
@@ -142,7 +175,11 @@ public struct TournamentRegistration: Codable, Identifiable, Hashable, Sendable 
         weightCategory: WeightCategory,
         seedRank: Int? = nil,
         registeredAt: Date = Date(),
-        status: RegistrationStatus = .registered
+        status: RegistrationStatus = .registered,
+        ageDivisionEntered: AgeGroup? = nil,
+        bracketSize: Int? = nil,
+        finalPosition: Int? = nil,
+        medal: MedalType? = nil
     ) {
         self.id = id
         self.tournamentID = tournamentID
@@ -151,6 +188,10 @@ public struct TournamentRegistration: Codable, Identifiable, Hashable, Sendable 
         self.seedRank = seedRank
         self.registeredAt = registeredAt
         self.status = status
+        self.ageDivisionEntered = ageDivisionEntered
+        self.bracketSize = bracketSize
+        self.finalPosition = finalPosition
+        self.medal = medal
     }
 }
 

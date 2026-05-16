@@ -71,7 +71,7 @@ public struct ScheduleGradingView: View {
                                     Text(verbatim: a.fullName)
                                     if let elig = eligibility[a.id] {
                                         Text(elig.isEligible ? "grading.eligible" : "grading.not_eligible")
-                                            .font(.caption2)
+                                            .scaledFont(.caption2)
                                             .foregroundStyle(elig.isEligible ? .green : .orange)
                                     }
                                 }
@@ -100,6 +100,7 @@ public struct ScheduleGradingView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.cancel") { dismiss() }
+                .bareToolbarButton()
             }
         }
         .task { await loadBranches() }

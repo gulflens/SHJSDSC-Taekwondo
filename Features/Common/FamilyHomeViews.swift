@@ -2,70 +2,141 @@ import SwiftUI
 
 public struct AthleteHomeView: View {
     @Environment(AppSession.self) private var session
+    @State private var athlete: Athlete?
     @State private var nextSession: ClassSession?
+    @State private var todaySessions: [ClassSession] = []
     @State private var showingFindBranch = false
 
     public init() {}
 
     public var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    if let user = session.currentUser {
-                        Text("greeting.morning").font(.title3).foregroundStyle(.secondary)
-                        Text(verbatim: user.fullName).font(.largeTitle.bold())
+        ScrollView {
+            VStack(spacing: 14) {
+                if let user = session.currentUser {
+                    GreetingHero(
+                        fullName: user.fullName,
+                        fullNameAr: user.fullNameAr,
+                        roleLabel: NSLocalizedString("role.\(user.role.rawValue)", comment: ""),
+                        subtitleKey: "athlete.home.subtitle"
+                    )
+                }
+                if let athlete {
+                    athleteSummaryCard(athlete)
+                }
+                nextClassCard
+                findBranchCard
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
+        }
+        .background(Color.appBackground.ignoresSafeArea())
+        .demoRoleSwitcher()
+        .sheet(isPresented: $showingFindBranch) {
+            NavigationStack { BranchListView() }
+        }
+        .task { await load() }
+    }
+
+    private func athleteSummaryCard(_ athlete: Athlete) -> some View {
+        SectionCard("athlete.home.your_profile", icon: "person.text.rectangle.fill") {
+            HStack(spacing: 14) {
+                Avatar(seed: athlete.avatarSeed, label: athlete.initials, size: 56, urlString: athlete.avatarURL)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(verbatim: athlete.fullName)
+                        .scaledFont(.subheadline, weight: .semibold)
+                    HStack(spacing: 6) {
+                        CategoryBadge(
+                            value: NSLocalizedString(athlete.currentBelt.color.labelKey, comment: ""),
+                            tone: athlete.currentBelt.color == .black ? .dark : .neutral,
+                            icon: "circle.hexagongrid.fill"
+                        )
+                        StatusPill(status: athlete.status)
                     }
-                    findBranchCard
-                    GroupBox {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Image(systemName: "calendar.badge.clock")
-                                Text("heading.next_class").font(.subheadline.bold())
-                                Spacer()
-                            }
-                            if let s = nextSession {
-                                Text(verbatim: s.title)
-                                HStack {
-                                    Text(s.startsAt, style: .time)
-                                    Text("→")
-                                    Text(s.endsAt, style: .time)
-                                }
-                                .foregroundStyle(.secondary)
-                                .font(.caption)
-                            } else {
-                                Text("empty.no_classes_today").foregroundStyle(.secondary)
-                            }
+                }
+                Spacer(minLength: 0)
+                NavigationLink {
+                    AthleteDetailView(athlete: athlete)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(.secondary)
+                        .flipsForRightToLeftLayoutDirection(true)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var nextClassCard: some View {
+        SectionCard("heading.next_class", icon: "calendar.badge.clock") {
+            if let s = nextSession {
+                HStack(spacing: 12) {
+                    VStack(spacing: 0) {
+                        Text(s.startsAt, format: .dateTime.hour())
+                            .scaledFont(.title3, weight: .bold, monospacedDigit: true)
+                            .environment(\.layoutDirection, .leftToRight)
+                        Text(s.startsAt, format: .dateTime.minute())
+                            .scaledFont(.caption2, monospacedDigit: true)
+                            .foregroundStyle(.secondary)
+                            .environment(\.layoutDirection, .leftToRight)
+                    }
+                    .frame(width: 54)
+                    .padding(.vertical, 6)
+                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(verbatim: s.title)
+                            .scaledFont(.subheadline, weight: .semibold)
+                            .lineLimit(1)
+                        HStack(spacing: 6) {
+                            Text(localizedKey: s.discipline.labelKey)
+                            Text(verbatim: "·")
+                            Text(s.startsAt, format: .dateTime.weekday(.wide).day().month(.abbreviated))
+                                .environment(\.layoutDirection, .leftToRight)
                         }
+                        .scaledFont(.caption2)
+                        .foregroundStyle(.secondary)
                     }
                     Spacer(minLength: 0)
                 }
-                .padding()
-            }
-            .navigationTitle(Text("tab.home"))
-            .demoRoleSwitcher()
-            .sheet(isPresented: $showingFindBranch) {
-                NavigationStack { BranchListView() }
+            } else {
+                EmptyStateCard(
+                    icon: "calendar",
+                    titleKey: "empty.no_classes_today",
+                    messageKey: "athlete.home.no_class.message"
+                )
             }
         }
-        .task { await load() }
     }
 
     private var findBranchCard: some View {
         Button {
             showingFindBranch = true
         } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "mappin.and.ellipse")
-                    .font(.title2).foregroundStyle(.tint)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("find_branch.title").font(.subheadline.bold())
-                    Text("find_branch.subtitle").font(.caption).foregroundStyle(.secondary)
+            SectionCard {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.14))
+                        Image(systemName: "mappin.and.ellipse")
+                            .scaledFont(.title3)
+                            .foregroundStyle(.tint)
+                    }
+                    .frame(width: 44, height: 44)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("find_branch.title")
+                            .scaledFont(.subheadline, weight: .semibold)
+                        Text("find_branch.subtitle")
+                            .scaledFont(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .scaledFont(.caption, weight: .semibold)
+                        .foregroundStyle(.secondary)
+                        .flipsForRightToLeftLayoutDirection(true)
                 }
-                Spacer()
-                Image(systemName: "chevron.right").foregroundStyle(.secondary)
             }
-            .padding(12)
-            .background(Color.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
     }
@@ -74,7 +145,9 @@ public struct AthleteHomeView: View {
         guard let userID = session.currentUser?.id else { return }
         do {
             if let athlete = try await session.repository.athlete(id: userID) {
+                self.athlete = athlete
                 let sessions = try await session.repository.sessions(branchID: athlete.branchID, on: Date())
+                todaySessions = sessions
                 nextSession = sessions.first { $0.startsAt > Date() } ?? sessions.first
             }
         } catch {
@@ -91,58 +164,112 @@ public struct ParentHomeView: View {
     public init() {}
 
     public var body: some View {
-        NavigationStack {
-            List {
+        ScrollView {
+            VStack(spacing: 14) {
                 if let user = session.currentUser {
-                    Section {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("greeting.morning").font(.title3).foregroundStyle(.secondary)
-                            Text(verbatim: user.fullName).font(.title2.bold())
-                        }
-                    }
+                    GreetingHero(
+                        fullName: user.fullName,
+                        fullNameAr: user.fullNameAr,
+                        roleLabel: NSLocalizedString("role.\(user.role.rawValue)", comment: ""),
+                        subtitleKey: "parent.home.subtitle"
+                    )
                 }
-                Section {
-                    Button {
-                        showingFindBranch = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "mappin.and.ellipse").font(.title3).foregroundStyle(.tint)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("find_branch.title").font(.subheadline.bold())
-                                Text("find_branch.subtitle").font(.caption).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right").foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                Section(header: Text("heading.athletes")) {
-                    if children.isEmpty {
-                        Text("empty.no_linked_athletes").foregroundStyle(.secondary)
-                    } else {
-                        ForEach(children) { c in
-                            NavigationLink(destination: AthleteDetailView(athlete: c)) {
-                                HStack(spacing: 12) {
-                                    Avatar(seed: c.avatarSeed, label: c.initials)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(verbatim: c.fullName)
-                                        Text(LocalizedStringKey(c.currentBelt.label))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                childrenCard
+                findBranchCard
             }
-            .navigationTitle(Text("tab.home"))
-            .demoRoleSwitcher()
-            .sheet(isPresented: $showingFindBranch) {
-                NavigationStack { BranchListView() }
-            }
+            .padding(.horizontal, 14)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
+        }
+        .background(Color.appBackground.ignoresSafeArea())
+        .demoRoleSwitcher()
+        .sheet(isPresented: $showingFindBranch) {
+            NavigationStack { BranchListView() }
         }
         .task { await load() }
+    }
+
+    private var childrenCard: some View {
+        SectionCard("heading.athletes", icon: "person.2.fill") {
+            if children.isEmpty {
+                EmptyStateCard(
+                    icon: "person.crop.circle.badge.questionmark",
+                    titleKey: "empty.no_linked_athletes",
+                    messageKey: "parent.home.empty.message"
+                )
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(children) { child in
+                        NavigationLink(destination: AthleteDetailView(athlete: child)) {
+                            childRow(child)
+                        }
+                        .buttonStyle(.plain)
+                        if child.id != children.last?.id {
+                            Divider().opacity(0.3)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func childRow(_ athlete: Athlete) -> some View {
+        HStack(spacing: 12) {
+            Avatar(seed: athlete.avatarSeed, label: athlete.initials, size: 44, urlString: athlete.avatarURL)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(verbatim: athlete.fullName)
+                    .scaledFont(.subheadline, weight: .semibold)
+                HStack(spacing: 6) {
+                    Text(localizedKey: athlete.currentBelt.color.labelKey)
+                        .scaledFont(.caption2)
+                    Text(verbatim: "·")
+                        .scaledFont(.caption2)
+                    Text(localizedKey: athlete.ageGroup.labelKey)
+                        .scaledFont(.caption2)
+                }
+                .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            StatusPill(status: athlete.status)
+            Image(systemName: "chevron.right")
+                .scaledFont(.caption, weight: .semibold)
+                .foregroundStyle(.secondary)
+                .flipsForRightToLeftLayoutDirection(true)
+        }
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
+    }
+
+    private var findBranchCard: some View {
+        Button {
+            showingFindBranch = true
+        } label: {
+            SectionCard {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.14))
+                        Image(systemName: "mappin.and.ellipse")
+                            .scaledFont(.title3)
+                            .foregroundStyle(.tint)
+                    }
+                    .frame(width: 44, height: 44)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("find_branch.title")
+                            .scaledFont(.subheadline, weight: .semibold)
+                        Text("find_branch.subtitle")
+                            .scaledFont(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .scaledFont(.caption, weight: .semibold)
+                        .foregroundStyle(.secondary)
+                        .flipsForRightToLeftLayoutDirection(true)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private func load() async {
@@ -170,24 +297,23 @@ public struct MyScheduleView: View {
                 } else {
                     ForEach(sessions) { s in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: s.title).font(.headline)
+                            Text(verbatim: s.title).scaledFont(.headline)
                             HStack(spacing: 6) {
                                 Text(s.startsAt, style: .time)
                                 Text(verbatim: "→")
                                 Text(s.endsAt, style: .time)
                                 Spacer()
-                                Text(LocalizedStringKey(s.discipline.labelKey))
-                                    .font(.caption)
+                                Text(localizedKey: s.discipline.labelKey)
+                                    .scaledFont(.caption)
                                     .foregroundStyle(.secondary)
                             }
                             if let branch = branches[s.branchID] {
-                                Text(verbatim: branch.name).font(.caption2).foregroundStyle(.secondary)
+                                Text(verbatim: branch.name).scaledFont(.caption2).foregroundStyle(.secondary)
                             }
                         }
                     }
                 }
             }
-            .navigationTitle(Text("tab.schedule"))
         }
         .task { await load() }
     }
@@ -210,195 +336,3 @@ public struct MyScheduleView: View {
     }
 }
 
-public struct MoreView: View {
-    @Environment(AppSession.self) private var session
-    @Environment(\.notificationScheduler) private var notificationScheduler
-    @AppStorage("appLanguage") private var appLanguage: String = "system"
-    @State private var exportShareURL: URL?
-    @State private var firingTest = false
-
-    public init() {}
-
-    public var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("settings.language")) {
-                    Picker(selection: $appLanguage) {
-                        Text("language.system").tag("system")
-                        Text("language.english").tag("en")
-                        Text("language.arabic").tag("ar")
-                    } label: {
-                        Text("settings.language")
-                    }
-                }
-                Section {
-                    NavigationLink(destination: NotificationsCenterView()) {
-                        Label("settings.notifications", systemImage: "bell")
-                    }
-                    Button {
-                        Task { await fireTestDigest() }
-                    } label: {
-                        if firingTest {
-                            HStack { ProgressView(); Text("settings.fire_test") }
-                        } else {
-                            Label("settings.fire_test", systemImage: "bolt.badge.clock")
-                        }
-                    }
-                }
-                if let role = session.currentUser?.role {
-                    if role == .developer || role == .admin || role == .technicalDirector {
-                        Section(header: Text("admin.accounts")) {
-                            NavigationLink(destination: AdminCreateAccountView()) {
-                                Label("admin.create_account", systemImage: "person.badge.plus")
-                            }
-                        }
-                        Section(header: Text("settings.manage")) {
-                            NavigationLink(destination: AnnouncementsView()) {
-                                Label("tab.announcements", systemImage: "megaphone")
-                            }
-                            NavigationLink(destination: CoachListView()) {
-                                Label("tab.coaches", systemImage: "person.crop.rectangle.stack.fill")
-                            }
-                            NavigationLink(destination: GradingDashboardView()) {
-                                Label("tab.grading", systemImage: "medal")
-                            }
-                        }
-                    }
-                    if PermissionMatrix.allowed(role: role, permission: .viewAuditLog) {
-                        Section {
-                            NavigationLink(destination: AuditLogView()) {
-                                Label("audit.title", systemImage: "list.bullet.rectangle")
-                            }
-                        }
-                    }
-                    Section {
-                        NavigationLink(destination: CertificationsListView()) {
-                            Label("tab.certifications", systemImage: "checkmark.shield")
-                        }
-                    }
-                }
-                Section(header: Text("settings.privacy")) {
-                    Link(destination: URL(string: "https://gulflens.studio/privacy")!) {
-                        Label("settings.privacy", systemImage: "hand.raised")
-                    }
-                }
-                Section(header: Text("settings.about")) {
-                    HStack {
-                        Text("settings.about")
-                        Spacer()
-                        Text(verbatim: "SHJSDSC v1.0 · gulflens.studio").foregroundStyle(.secondary).font(.caption)
-                    }
-                }
-                Section {
-                    Button {
-                        Task { await exportMyData() }
-                    } label: {
-                        Label("settings.export_data", systemImage: "square.and.arrow.down.on.square")
-                    }
-                    if let url = exportShareURL {
-                        ShareLink(item: url) {
-                            Label("export.share", systemImage: "square.and.arrow.up")
-                        }
-                    }
-                    Button(role: .destructive) {
-                        Task { await session.signOut() }
-                    } label: {
-                        Label("settings.sign_out", systemImage: "rectangle.portrait.and.arrow.right")
-                    }
-                }
-                if session.currentUser?.role == .developer {
-                    Section(header: Text("settings.developer")) {
-                        Toggle("settings.use_demo_data", isOn: Binding(
-                            get: {
-                                let hasSet = UserDefaults.standard.object(forKey: "useDemoData") != nil
-                                return hasSet ? UserDefaults.standard.bool(forKey: "useDemoData") : true
-                            },
-                            set: { newValue in
-                                UserDefaults.standard.set(newValue, forKey: "useDemoData")
-                                Task { await wipeLocalState() }
-                            }
-                        ))
-                        Text("settings.use_demo_data_help").font(.caption2).foregroundStyle(.secondary)
-
-                        Button(role: .destructive) {
-                            Task { await wipeLocalState() }
-                        } label: {
-                            Label("settings.wipe_local", systemImage: "trash")
-                        }
-                        Text("settings.wipe_local_help").font(.caption2).foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .navigationTitle(Text("settings.title"))
-        }
-    }
-
-    private func fireTestDigest() async {
-        firingTest = true
-        defer { firingTest = false }
-        do {
-            let title = String(localized: "notif.sunday_digest.title")
-            let body = String(localized: "notif.sunday_digest.body_test")
-            try await notificationScheduler.scheduleLocal(
-                id: "sunday-digest-test",
-                title: title,
-                body: body,
-                fireAt: Date().addingTimeInterval(5)
-            )
-        } catch {
-            print("MoreView.fireTestDigest:", error)
-        }
-    }
-
-    private func exportMyData() async {
-        guard let user = session.currentUser else { return }
-        do {
-            let athlete = try? await session.repository.athlete(id: user.id)
-            let registrations = try await session.repository.registrations(athleteID: user.id)
-            let matches = try await session.repository.matches(athleteID: user.id)
-            let exporter = CSVReportExporter()
-            let data = exporter.exportMyData(
-                user: user,
-                athlete: athlete,
-                registrations: registrations,
-                matches: matches
-            )
-            let url = FileManager.default.temporaryDirectory.appendingPathComponent("my-data.json")
-            try data.write(to: url)
-            exportShareURL = url
-        } catch {
-            print("MoreView.exportMyData:", error)
-        }
-    }
-
-    /// Resets local-only state without touching the backend:
-    /// • Cancels every queued local notification (Sunday digest, cert
-    ///   expiries, test fires) so old data doesn't keep firing alerts.
-    /// • Forgets the remembered user id so the next launch lands on
-    ///   SignInView instead of auto-restoring the previous identity.
-    /// • Signs out of the current session.
-    /// • Wipes the documents/athletePhotos cache so demo-mode photos
-    ///   don't leak across resets.
-    /// The new repository (DemoRepository or SupabaseRepository) is
-    /// chosen at the next app launch — force-quit and reopen for the
-    /// "Use demo data" toggle to actually swap backends.
-    private func wipeLocalState() async {
-        for kind in NotificationKind.allCases {
-            await notificationScheduler.cancel(id: kind.rawValue)
-        }
-        await notificationScheduler.cancel(id: "sunday-digest")
-        await notificationScheduler.cancel(id: "sunday-digest-test")
-
-        UserDefaults.standard.removeObject(forKey: "rememberedUserID")
-        UserDefaults.standard.removeObject(forKey: "hasRequestedNotifAuth")
-
-        if let documents = try? FileManager.default.url(
-            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
-        ) {
-            let photosDir = documents.appendingPathComponent("athletePhotos", isDirectory: true)
-            try? FileManager.default.removeItem(at: photosDir)
-        }
-
-        await session.signOut()
-    }
-}

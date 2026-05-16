@@ -56,17 +56,38 @@ public struct AttendanceRecord: Codable, Identifiable, Hashable, Sendable {
     public var state: AttendanceState
     public var recordedAt: Date
 
+    // === Pillar 5: per-session coach engagement (each 1...5, optional). ===
+    public var warmupRating: Int?
+    public var listeningRating: Int?
+    public var effortRating: Int?
+    public var respectRating: Int?
+
     public init(
         id: EntityID = UUID(),
         sessionID: EntityID,
         athleteID: EntityID,
         state: AttendanceState,
-        recordedAt: Date = Date()
+        recordedAt: Date = Date(),
+        warmupRating: Int? = nil,
+        listeningRating: Int? = nil,
+        effortRating: Int? = nil,
+        respectRating: Int? = nil
     ) {
         self.id = id
         self.sessionID = sessionID
         self.athleteID = athleteID
         self.state = state
         self.recordedAt = recordedAt
+        self.warmupRating = warmupRating.map { max(1, min(5, $0)) }
+        self.listeningRating = listeningRating.map { max(1, min(5, $0)) }
+        self.effortRating = effortRating.map { max(1, min(5, $0)) }
+        self.respectRating = respectRating.map { max(1, min(5, $0)) }
+    }
+
+    /// Average of the 4 sub-ratings (1...5), nil if none captured.
+    public var engagementAverage: Double? {
+        let scores = [warmupRating, listeningRating, effortRating, respectRating].compactMap { $0 }
+        guard !scores.isEmpty else { return nil }
+        return Double(scores.reduce(0, +)) / Double(scores.count)
     }
 }

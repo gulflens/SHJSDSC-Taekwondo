@@ -12,15 +12,29 @@ public struct RoleRouter: View {
             } else if session.needsRoleClaim {
                 RoleClaimView()
             } else {
+                // Each role maps to one of the 8 base experiences. Roles in
+                // the same group share an experience and are differentiated
+                // by capabilities (Phase 2), not by bespoke screens.
                 switch session.currentUser?.role {
-                case .developer: DeveloperTabView()
-                case .admin: AdminTabView()
-                case .technicalDirector: TechnicalDirectorTabView()
-                case .branchManager: BranchManagerTabView()
-                case .coach: CoachTabView()
-                case .athlete: AthleteTabView()
-                case .parent: ParentTabView()
-                case .analyst: AnalystTabView()
+                case .developer:
+                    DeveloperTabView()
+                case .admin, .itSupport, .operationsManager, .tournamentAdmin,
+                     .competitionCoordinator, .registrar, .frontDesk, .finance, .hrManager:
+                    AdminTabView()
+                case .technicalDirector, .gradingExaminer:
+                    TechnicalDirectorTabView()
+                case .branchManager:
+                    BranchManagerTabView()
+                case .coach, .headCoach, .assistantCoach, .sparringCoach, .poomsaeCoach,
+                     .conditioningCoach, .demoTeamCoach, .teamPhysician, .physiotherapist,
+                     .sportsPsychologist, .nutritionist, .referee, .scorekeeper:
+                    CoachTabView()
+                case .analyst:
+                    AnalystTabView()
+                case .athlete, .alumni, .federationViewer, .sponsor:
+                    AthleteTabView()
+                case .parent:
+                    ParentTabView()
                 case nil:
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -50,7 +64,7 @@ public struct DemoRolePickerView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(verbatim: user.fullName)
                                 .font(.body)
-                            Text(user.role.label)
+                            Text(localizedKey: user.role.label)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -70,6 +84,7 @@ public struct DemoRolePickerView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel") { dismiss() }
+                    .bareToolbarButton()
                 }
             }
         }
@@ -96,6 +111,8 @@ public struct DemoRoleSwitcherModifier: ViewModifier {
                         Image(systemName: "person.2.crop.square.stack")
                     }
                     .accessibilityLabel(Text("settings.role"))
+                    .buttonStyle(.plain)
+                    .bareToolbarButton()
                 }
             }
             .sheet(isPresented: $showing) {

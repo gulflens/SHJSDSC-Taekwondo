@@ -13,7 +13,7 @@ public struct PerformanceTrendView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("heading.performance_trend").font(.headline)
+                Text("heading.performance_trend").scaledFont(.headline)
                 Spacer()
                 Picker(selection: $window) {
                     Text("trend.30").tag(TrendWindow.thirty)
@@ -50,9 +50,9 @@ public struct PerformanceTrendView: View {
 
     private func chartCard(title: LocalizedStringKey, points: [TrendPoint], color: Color) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.subheadline.bold())
+            Text(title).scaledFont(.subheadline, weight: .bold)
             if points.isEmpty {
-                Text("empty.no_data").font(.caption).foregroundStyle(.secondary)
+                Text("empty.no_data").scaledFont(.caption).foregroundStyle(.secondary)
             } else {
                 Chart {
                     ForEach(points) { p in

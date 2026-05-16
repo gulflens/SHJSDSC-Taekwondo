@@ -62,10 +62,10 @@ public struct DropdownDatePicker: View {
     private func dropdownLabel(_ text: String) -> some View {
         HStack(spacing: 3) {
             Text(verbatim: text)
-                .font(.callout.monospacedDigit())
+                .scaledFont(.callout, monospacedDigit: true)
                 .foregroundStyle(.primary)
             Image(systemName: "chevron.down")
-                .font(.system(size: 7, weight: .bold))
+                .scaledFont(size: 7, weight: .bold)
                 .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 8)

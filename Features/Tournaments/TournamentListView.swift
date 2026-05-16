@@ -4,6 +4,7 @@ public struct TournamentListView: View {
     @Environment(AppSession.self) private var session
     @State private var store: TournamentsStore?
     @State private var scope: Scope = .upcoming
+    @State private var showingAdd = false
 
     public enum Scope: Hashable { case upcoming, past }
 
@@ -17,11 +18,35 @@ public struct TournamentListView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(Text("tab.tournaments"))
+        .toolbar {
+            if canCreate {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingAdd = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel(Text("tournament.add"))
+                    .bareToolbarButton()
+                }
+            }
+        }
+        .sheet(isPresented: $showingAdd) {
+            NavigationStack {
+                AddTournamentView { _ in
+                    Task { await store?.loadTournaments() }
+                }
+            }
+        }
         .task {
             if store == nil { store = TournamentsStore(repository: session.repository) }
             await store?.loadTournaments()
         }
+    }
+
+    private var canCreate: Bool {
+        guard let role = session.currentUser?.role else { return false }
+        return PermissionMatrix.allowed(role: role, permission: .createTournament)
     }
 
     @ViewBuilder
@@ -54,7 +79,7 @@ public struct TournamentListView: View {
     private func row(tournament t: Tournament) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(verbatim: t.name).font(.headline)
+                Text(verbatim: t.name).scaledFont(.headline)
                 Spacer()
                 if t.isOfficial {
                     Image(systemName: "checkmark.seal.fill")
@@ -63,14 +88,14 @@ public struct TournamentListView: View {
                 }
             }
             if let nameAr = t.nameAr {
-                Text(verbatim: nameAr).font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: nameAr).scaledFont(.caption).foregroundStyle(.secondary)
             }
             HStack(spacing: 6) {
                 Image(systemName: "calendar")
-                    .font(.caption2)
-                Text(t.startsAt, style: .date).font(.caption).foregroundStyle(.secondary)
+                    .scaledFont(.caption2)
+                Text(t.startsAt, style: .date).scaledFont(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text(verbatim: t.location).font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: t.location).scaledFont(.caption).foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 2)

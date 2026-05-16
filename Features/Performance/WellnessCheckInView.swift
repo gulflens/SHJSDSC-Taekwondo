@@ -7,8 +7,10 @@ public struct WellnessCheckInView: View {
     public let athlete: Athlete
 
     @State private var sleepHours: Double = 8
-    @State private var mood: Int = 4
-    @State private var soreness: Int = 2
+    @State private var mood: Int = 7
+    @State private var soreness: Int = 3
+    @State private var motivation: Int = 7
+    @State private var stress: Int = 4
     @State private var rpe: Int = 6
     @State private var notes: String = ""
     @State private var saving = false
@@ -30,8 +32,10 @@ public struct WellnessCheckInView: View {
                     }
                     Slider(value: $sleepHours, in: 0...12, step: 0.5)
                 }
-                stepper("wellness.mood", value: $mood, range: 1...5)
-                stepper("wellness.soreness", value: $soreness, range: 1...5)
+                stepper("wellness.mood", value: $mood, range: 1...10)
+                stepper("wellness.motivation", value: $motivation, range: 1...10)
+                stepper("wellness.soreness", value: $soreness, range: 1...10)
+                stepper("wellness.stress", value: $stress, range: 1...10)
                 stepper("wellness.rpe", value: $rpe, range: 1...10)
             }
             Section(header: Text("physical.notes")) {
@@ -45,7 +49,7 @@ public struct WellnessCheckInView: View {
                         Text("wellness.streak")
                         Spacer()
                         Text(verbatim: "\(streak)")
-                            .font(.title3.bold())
+                            .scaledFont(.title3, weight: .bold)
                             .environment(\.layoutDirection, .leftToRight)
                     }
                 }
@@ -91,6 +95,8 @@ public struct WellnessCheckInView: View {
             sleepHours: sleepHours,
             mood: mood,
             soreness: soreness,
+            motivation: motivation,
+            stress: stress,
             rpePreviousSession: rpe,
             notes: notes.isEmpty ? nil : notes
         )

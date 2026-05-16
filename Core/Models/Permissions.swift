@@ -29,12 +29,13 @@ public enum PermissionMatrix {
         case .developer:
             return true
 
-        case .admin:
-            return true
+        case .admin, .operationsManager:
+            // Audit log is Developer-only — even full admins are excluded.
+            return permission != .viewAuditLog
 
         case .technicalDirector:
             switch permission {
-            case .viewBilling, .manageStaff: return false
+            case .viewBilling, .manageStaff, .viewAuditLog: return false
             default: return true
             }
 
@@ -48,7 +49,6 @@ public enum PermissionMatrix {
                  .scheduleSession,
                  .publishAnnouncement,
                  .exportReports,
-                 .viewAuditLog,
                  .createTournament,
                  .editBranchProfile,
                  .editBranchInventory,
@@ -58,7 +58,8 @@ public enum PermissionMatrix {
             default: return false
             }
 
-        case .coach:
+        case .coach, .headCoach, .assistantCoach, .sparringCoach,
+             .poomsaeCoach, .conditioningCoach, .demoTeamCoach:
             switch permission {
             case .editAthlete,
                  .recordAttendance,
@@ -69,13 +70,64 @@ public enum PermissionMatrix {
             default: return false
             }
 
-        case .analyst:
+        // Medical & athlete-support staff — read athletes and edit their
+        // records, but no coaching/scoring authority.
+        case .teamPhysician, .physiotherapist, .sportsPsychologist, .nutritionist:
+            switch permission {
+            case .viewAllAthletes, .editAthlete: return true
+            default: return false
+            }
+
+        case .analyst, .federationViewer:
             switch permission {
             case .viewAllAthletes, .exportReports: return true
             default: return false
             }
 
-        case .athlete, .parent:
+        case .gradingExaminer:
+            switch permission {
+            case .viewAllAthletes, .scoreGrading: return true
+            default: return false
+            }
+
+        case .tournamentAdmin, .competitionCoordinator:
+            switch permission {
+            case .createTournament, .scoreLiveMatch, .exportReports: return true
+            default: return false
+            }
+
+        case .referee, .scorekeeper:
+            switch permission {
+            case .scoreLiveMatch: return true
+            default: return false
+            }
+
+        case .registrar, .frontDesk:
+            switch permission {
+            case .viewAllAthletes: return true
+            default: return false
+            }
+
+        case .finance:
+            switch permission {
+            case .viewBilling, .viewBranchFinancials, .editBranchFinancials, .exportReports:
+                return true
+            default: return false
+            }
+
+        case .hrManager:
+            switch permission {
+            case .manageStaff, .editCoach: return true
+            default: return false
+            }
+
+        case .itSupport:
+            switch permission {
+            case .manageStaff: return true
+            default: return false
+            }
+
+        case .athlete, .parent, .alumni, .sponsor:
             return false
         }
     }

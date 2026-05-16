@@ -5,6 +5,7 @@ public struct SignInView: View {
 
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var passwordVisible: Bool = false
     @State private var showParentSignUp = false
     @State private var error: String?
     @State private var signing: Bool = false
@@ -23,15 +24,15 @@ public struct SignInView: View {
                                 .fill(.tint.opacity(0.12))
                                 .frame(width: 96, height: 96)
                             Image(systemName: "figure.taekwondo")
-                                .font(.system(size: 44, weight: .medium))
+                                .scaledFont(size: 44, weight: .medium)
                                 .foregroundStyle(.tint)
                         }
 
                         Text("auth.welcome")
-                            .font(.title.bold())
+                            .scaledFont(.title, weight: .bold)
 
                         Text("auth.subtitle")
-                            .font(.subheadline)
+                            .scaledFont(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
@@ -56,7 +57,26 @@ public struct SignInView: View {
                                 Image(systemName: "lock")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 20)
-                                SecureField("auth.password", text: $password)
+                                Group {
+                                    if passwordVisible {
+                                        TextField("auth.password", text: $password)
+                                            #if os(iOS)
+                                            .textInputAutocapitalization(.never)
+                                            .autocorrectionDisabled()
+                                            #endif
+                                    } else {
+                                        SecureField("auth.password", text: $password)
+                                    }
+                                }
+                                Button {
+                                    passwordVisible.toggle()
+                                } label: {
+                                    Image(systemName: passwordVisible ? "eye.slash" : "eye")
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 20)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(Text(passwordVisible ? "auth.password.hide" : "auth.password.show"))
                             }
                             .padding(12)
                             .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
@@ -76,7 +96,7 @@ public struct SignInView: View {
                                     Text("auth.sign_in")
                                 }
                             }
-                            .font(.headline)
+                            .scaledFont(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                         }
@@ -86,7 +106,7 @@ public struct SignInView: View {
 
                         if let error {
                             Text(verbatim: error)
-                                .font(.caption)
+                                .scaledFont(.caption)
                                 .foregroundStyle(.red)
                                 .multilineTextAlignment(.center)
                         }
@@ -97,13 +117,13 @@ public struct SignInView: View {
                     VStack(spacing: 16) {
                         VStack(spacing: 4) {
                             Text("auth.parent_prompt")
-                                .font(.footnote)
+                                .scaledFont(.footnote)
                                 .foregroundStyle(.secondary)
                             Button {
                                 showParentSignUp = true
                             } label: {
                                 Text("auth.parent_sign_up")
-                                    .font(.callout.weight(.medium))
+                                    .scaledFont(.callout, weight: .medium)
                             }
                         }
 
@@ -111,7 +131,7 @@ public struct SignInView: View {
                             Task { await session.signInDemoFallback() }
                         } label: {
                             Text("auth.use_demo_session")
-                                .font(.caption)
+                                .scaledFont(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -132,7 +152,7 @@ public struct SignInView: View {
         signing = true
         defer { signing = false }
         do {
-            try await session.signInWithEmail(email: email, password: password)
+            try await session.signInWithEmail(email: email, password: password, rememberMe: true)
         } catch {
             self.error = error.localizedDescription
         }

@@ -18,7 +18,6 @@ public struct GradingDashboardView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(Text("grading.dashboard"))
         .toolbar {
             if let role = session.currentUser?.role,
                PermissionMatrix.allowed(role: role, permission: .scheduleSession) {
@@ -26,8 +25,10 @@ public struct GradingDashboardView: View {
                     Button {
                         showSchedule = true
                     } label: {
-                        Label("grading.schedule", systemImage: "plus.circle")
+                        Image(systemName: "plus.circle")
                     }
+                    .accessibilityLabel(Text("grading.schedule"))
+                    .bareToolbarButton()
                 }
             }
         }
@@ -77,19 +78,19 @@ public struct GradingDashboardView: View {
         let progress = store.progress(for: s.id)
         return VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(s.scheduledAt, style: .date).font(.subheadline.bold())
+                Text(s.scheduledAt, style: .date).scaledFont(.subheadline, weight: .bold)
                 Spacer()
-                Text(LocalizedStringKey(s.status.labelKey))
-                    .font(.caption)
+                Text(localizedKey: s.status.labelKey)
+                    .scaledFont(.caption)
                     .foregroundStyle(.secondary)
             }
             if let branch = branchLookup[s.branchID] {
-                Text(verbatim: branch.name).font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: branch.name).scaledFont(.caption).foregroundStyle(.secondary)
             }
             HStack(spacing: 6) {
-                Image(systemName: "person.3.fill").font(.caption2)
+                Image(systemName: "person.3.fill").scaledFont(.caption2)
                 Text(verbatim: "\(progress.scored) / \(progress.total)")
-                    .font(.caption2)
+                    .scaledFont(.caption2)
                     .foregroundStyle(.secondary)
                     .environment(\.layoutDirection, .leftToRight)
             }
@@ -103,12 +104,12 @@ public struct GradingDashboardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: item.athlete.fullName)
                 HStack(spacing: 4) {
-                    Text(LocalizedStringKey(item.eligibility.currentBelt.label))
-                        .font(.caption2)
+                    Text(localizedKey: item.eligibility.currentBelt.label)
+                        .scaledFont(.caption2)
                         .foregroundStyle(.secondary)
                     Text(verbatim: "→")
-                    Text(LocalizedStringKey(item.eligibility.targetBelt.label))
-                        .font(.caption2)
+                    Text(localizedKey: item.eligibility.targetBelt.label)
+                        .scaledFont(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }

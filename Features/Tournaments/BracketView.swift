@@ -16,7 +16,7 @@ public struct BracketView: View {
         ScrollView([.horizontal, .vertical]) {
             VStack(alignment: .leading, spacing: 8) {
                 if let bracket {
-                    Text(verbatim: bracket.weightCategory.shortLabel).font(.headline).padding(.horizontal)
+                    Text(verbatim: bracket.weightCategory.shortLabel).scaledFont(.headline).padding(.horizontal)
                 }
                 bracketDiagram
                     .padding()
@@ -89,13 +89,13 @@ public struct BracketView: View {
     private func participantRow(name: String?, isWinner: Bool) -> some View {
         HStack {
             Text(verbatim: name ?? "—")
-                .font(.caption)
+                .scaledFont(.caption)
                 .foregroundStyle(name == nil ? .secondary : .primary)
                 .lineLimit(1)
             Spacer()
             if isWinner {
                 Image(systemName: "trophy.fill")
-                    .font(.caption2)
+                    .scaledFont(.caption2)
                     .foregroundStyle(.yellow)
             }
         }

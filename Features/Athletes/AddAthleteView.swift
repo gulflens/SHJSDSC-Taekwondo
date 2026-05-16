@@ -16,12 +16,12 @@ public struct AddAthleteView: View {
     @State private var fullName: String = ""
     @State private var fullNameAr: String = ""
     @State private var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -12, to: Date()) ?? Date()
-    @State private var gender: Gender = .male
     @State private var nationality: String = "AE"
     @State private var emiratesID: String = ""
     @State private var passportNumber: String = ""
     @State private var bloodType: BloodType = .unknown
     @State private var federationLicenceNumber: String = ""
+    @State private var worldTaekwondoID: String = ""
     @State private var branchID: EntityID?
     @State private var joinedAt: Date = Date()
 
@@ -45,7 +45,10 @@ public struct AddAthleteView: View {
     @State private var beltNumber: Int = 10
     @State private var status: AthleteStatus = .active
     @State private var weightClass: WeightCategory?
-    @State private var dominantStance: Stance = .orthodox
+    @State private var dominantLeg: DominantLeg?
+    @State private var dominantStance: Stance = .open
+    @State private var specialty: Specialty = .kyorugi
+    @State private var yearsTraining: Int = 0
     @State private var poomsaeSyllabus: String = ""
     @State private var kyorugiTier: KyorugiTier = .recreational
     @State private var primaryCoachID: EntityID?
@@ -78,7 +81,7 @@ public struct AddAthleteView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.appBackground)
         .navigationTitle(Text(editing == nil ? "athlete.add" : "athlete.edit"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -91,6 +94,7 @@ public struct AddAthleteView: View {
                     if saving { ProgressView() } else { Text("action.save") }
                 }
                 .disabled(saving || !isValid)
+                .bareToolbarButton()
             }
         }
         .alert("athlete.save_error", isPresented: $showErrorAlert) {
@@ -104,7 +108,7 @@ public struct AddAthleteView: View {
     // MARK: - Identity
 
     private var identityCard: some View {
-        SectionCard(icon: "person.text.rectangle.fill", title: "athlete.section.identity") {
+        SectionCard("athlete.section.identity", icon: "person.text.rectangle.fill") {
             memberNumberRow
 
             FieldRow {
@@ -120,14 +124,6 @@ public struct AddAthleteView: View {
                 InlineField(label: "athlete.date_of_birth") {
                     DropdownDatePicker(date: $dateOfBirth, minYear: 1950, maxYear: currentYear)
                 }
-                InlineField(label: "athlete.gender") {
-                    Picker("", selection: $gender) {
-                        Text("athlete.gender.male").tag(Gender.male)
-                        Text("athlete.gender.female").tag(Gender.female)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                }
                 InlineField(label: "athlete.nationality") {
                     Button {
                         nationalitySearch = ""
@@ -135,14 +131,14 @@ public struct AddAthleteView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Text(verbatim: flagEmoji(for: nationality))
-                                .font(.callout)
+                                .scaledFont(.callout)
                             Text(verbatim: countryName(for: nationality))
-                                .font(.callout)
+                                .scaledFont(.callout)
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
                             Spacer()
                             Image(systemName: "chevron.up.chevron.down")
-                                .font(.caption2).foregroundStyle(.secondary)
+                                .scaledFont(.caption2).foregroundStyle(.secondary)
                         }
                     }
                     .popover(isPresented: $showNationalityPicker) {
@@ -164,14 +160,8 @@ public struct AddAthleteView: View {
                 InlineField(label: "athlete.federation_licence") {
                     compactTextField($federationLicenceNumber, placeholder: "athlete.federation_licence")
                 }
-                InlineField(label: "athlete.blood_type") {
-                    Menu {
-                        ForEach(BloodType.allCases, id: \.self) { b in
-                            Button { bloodType = b } label: { Text(verbatim: b.display) }
-                        }
-                    } label: {
-                        compactMenuLabel(text: bloodType.display)
-                    }
+                InlineField(label: "athlete.id.world_taekwondo") {
+                    compactTextField($worldTaekwondoID, placeholder: "athlete.id.world_taekwondo")
                 }
             }
 
@@ -201,20 +191,20 @@ public struct AddAthleteView: View {
     private var memberNumberRow: some View {
         HStack(spacing: 8) {
             Image(systemName: "number.circle.fill")
-                .font(.subheadline)
+                .scaledFont(.subheadline)
                 .foregroundStyle(.tint.opacity(0.6))
             VStack(alignment: .leading, spacing: 0) {
                 Text("athlete.member_number")
-                    .font(.caption2.weight(.medium))
+                    .scaledFont(.caption2, weight: .medium)
                     .foregroundStyle(.secondary)
                 if let memberNumber {
                     Text(verbatim: "#\(memberNumber)")
-                        .font(.callout.bold().monospacedDigit())
+                        .scaledFont(.callout, weight: .bold, monospacedDigit: true)
                         .foregroundStyle(.tint)
                         .environment(\.layoutDirection, .leftToRight)
                 } else {
                     Text("athlete.member_number_pending")
-                        .font(.callout)
+                        .scaledFont(.callout)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -228,7 +218,7 @@ public struct AddAthleteView: View {
     // MARK: - Family & consent
 
     private var familyCard: some View {
-        SectionCard(icon: "person.2.fill", title: "athlete.section.family") {
+        SectionCard("athlete.section.family", icon: "person.2.fill") {
             InlineField(label: "athlete.school") {
                 compactTextField($school, placeholder: "athlete.school")
             }
@@ -241,20 +231,20 @@ public struct AddAthleteView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("athlete.emergency_contact")
-                        .font(.caption2.bold())
+                        .scaledFont(.caption2, weight: .bold)
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button {
                         emergencyContacts.append(EmergencyContact(name: "", relationship: "", phone: ""))
                     } label: {
                         Label("athlete.add_emergency", systemImage: "plus.circle.fill")
-                            .font(.caption2)
+                            .scaledFont(.caption2)
                             .labelStyle(.titleAndIcon)
                     }
                 }
                 if emergencyContacts.isEmpty {
                     Text("athlete.no_emergency_contacts_yet")
-                        .font(.caption2)
+                        .scaledFont(.caption2)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 4)
@@ -290,14 +280,14 @@ public struct AddAthleteView: View {
                 .keyboardType(.phonePad)
                 #endif
                 .textFieldStyle(.plain)
-                .font(.callout)
+                .scaledFont(.callout)
                 .environment(\.locale, Self.englishLocale)
             }
             Button(role: .destructive) {
                 emergencyContacts.remove(at: idx)
             } label: {
                 Image(systemName: "trash")
-                    .font(.caption)
+                    .scaledFont(.caption)
                     .foregroundStyle(.red)
                     .padding(8)
                     .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 4))
@@ -309,12 +299,12 @@ public struct AddAthleteView: View {
     // MARK: - Medical
 
     private var medicalCard: some View {
-        SectionCard(icon: "heart.text.square.fill", title: "athlete.section.medical") {
+        SectionCard("athlete.section.medical", icon: "heart.text.square.fill") {
             HStack(spacing: 6) {
                 Image(systemName: fitToTrain ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .font(.caption)
+                    .scaledFont(.caption)
                     .foregroundStyle(fitToTrain ? .green : .orange)
-                Text("athlete.fit_to_train").font(.caption2.bold())
+                Text("athlete.fit_to_train").scaledFont(.caption2, weight: .bold)
                 Spacer()
                 Toggle("", isOn: $fitToTrain).labelsHidden()
             }
@@ -328,6 +318,15 @@ public struct AddAthleteView: View {
                 }
                 InlineField(label: "kpi.weight") {
                     compactSlider(value: $weightKg, range: 15...120, step: 0.5, suffix: "kg", format: "%.1f")
+                }
+                InlineField(label: "athlete.blood_type") {
+                    Menu {
+                        ForEach(BloodType.allCases, id: \.self) { b in
+                            Button { bloodType = b } label: { Text(verbatim: b.display) }
+                        }
+                    } label: {
+                        compactMenuLabel(text: bloodType.display)
+                    }
                 }
             }
 
@@ -349,7 +348,7 @@ public struct AddAthleteView: View {
     // MARK: - Technical
 
     private var technicalCard: some View {
-        SectionCard(icon: "figure.taekwondo", title: "athlete.section.technical") {
+        SectionCard("athlete.section.technical", icon: "figure.taekwondo") {
             FieldRow {
                 InlineField(label: "athlete.belt_color") {
                     Menu {
@@ -357,27 +356,30 @@ public struct AddAthleteView: View {
                             Button(action: { beltColor = c }) {
                                 HStack {
                                     Circle().fill(c.swiftUIColor).frame(width: 10, height: 10)
-                                    Text(LocalizedStringKey(c.labelKey))
+                                    Text(localizedKey: c.labelKey)
                                 }
                             }
                         }
                     } label: {
                         HStack(spacing: 6) {
                             Circle().fill(beltColor.swiftUIColor).frame(width: 10, height: 10)
-                            Text(LocalizedStringKey(beltColor.labelKey))
-                                .font(.callout)
+                            Text(localizedKey: beltColor.labelKey)
+                                .scaledFont(.callout)
                                 .foregroundStyle(.primary)
                             Spacer()
                             Image(systemName: "chevron.up.chevron.down")
-                                .font(.caption2).foregroundStyle(.secondary)
+                                .scaledFont(.caption2).foregroundStyle(.secondary)
                         }
                     }
                 }
                 InlineField(label: "athlete.belt_kind") {
                     Menu {
                         ForEach(BeltKind.allCases, id: \.self) { k in
-                            Button { beltKind = k } label: {
-                                Text(LocalizedStringKey(k.labelKey))
+                            Button {
+                                beltKind = k
+                                beltNumber = clamp(beltNumber, to: beltNumberRange(for: k))
+                            } label: {
+                                Text(localizedKey: k.labelKey)
                             }
                         }
                     } label: {
@@ -385,12 +387,7 @@ public struct AddAthleteView: View {
                     }
                 }
                 InlineField(label: "athlete.belt_number") {
-                    Stepper(value: $beltNumber, in: 1...10) {
-                        Text(verbatim: "\(beltNumber)")
-                            .font(.callout.monospacedDigit())
-                            .foregroundStyle(.tint)
-                            .environment(\.layoutDirection, .leftToRight)
-                    }
+                    CompactStepper(value: $beltNumber, range: beltNumberRange(for: beltKind))
                 }
             }
 
@@ -399,7 +396,7 @@ public struct AddAthleteView: View {
                     Menu {
                         ForEach(AthleteStatus.allCases, id: \.self) { s in
                             Button { status = s } label: {
-                                Text(LocalizedStringKey(s.labelKey))
+                                Text(localizedKey: s.labelKey)
                             }
                         }
                     } label: {
@@ -420,29 +417,54 @@ public struct AddAthleteView: View {
             }
 
             FieldRow {
-                InlineField(label: "athlete.dominant_stance") {
-                    Picker("", selection: $dominantStance) {
-                        ForEach(Stance.allCases, id: \.self) { s in
-                            Text(LocalizedStringKey(s.labelKey)).tag(s)
+                InlineField(label: "athlete.dominant_leg") {
+                    Picker("", selection: $dominantLeg) {
+                        Text("–").tag(DominantLeg?.none)
+                        ForEach(DominantLeg.allCases, id: \.self) { l in
+                            Text(localizedKey: l.labelKey).tag(DominantLeg?.some(l))
                         }
                     }
                     .labelsHidden()
                     .pickerStyle(.segmented)
                 }
+                InlineField(label: "athlete.dominant_stance") {
+                    Picker("", selection: $dominantStance) {
+                        ForEach(Stance.allCases, id: \.self) { s in
+                            Text(localizedKey: s.labelKey).tag(s)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+            }
+
+            FieldRow {
+                InlineField(label: "athlete.specialty") {
+                    Picker("", selection: $specialty) {
+                        ForEach(Specialty.allCases, id: \.self) { s in
+                            Text(localizedKey: s.labelKey).tag(s)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+                InlineField(label: "athlete.years_training") {
+                    CompactStepper(value: $yearsTraining, range: 0...40)
+                }
+            }
+
+            FieldRow {
                 InlineField(label: "athlete.kyorugi_tier") {
                     Menu {
                         ForEach(KyorugiTier.allCases, id: \.self) { t in
                             Button { kyorugiTier = t } label: {
-                                Text(LocalizedStringKey(t.labelKey))
+                                Text(localizedKey: t.labelKey)
                             }
                         }
                     } label: {
                         compactMenuLabel(text: NSLocalizedString(kyorugiTier.labelKey, comment: ""))
                     }
                 }
-            }
-
-            FieldRow {
                 InlineField(label: "athlete.poomsae_syllabus") {
                     compactTextField($poomsaeSyllabus, placeholder: "athlete.poomsae_syllabus")
                 }
@@ -464,6 +486,23 @@ public struct AddAthleteView: View {
         }
     }
 
+    // MARK: - Belt helpers
+
+    /// Valid rank ranges per IBSF/WT convention:
+    /// gup 10–1 (10 = white, 1 = highest pre-black), poom 1–4 (junior black),
+    /// dan 1–9. Stepper clamps + bumps the displayed number when kind changes.
+    private func beltNumberRange(for kind: BeltKind) -> ClosedRange<Int> {
+        switch kind {
+        case .gup: 1...10
+        case .poom: 1...4
+        case .dan: 1...9
+        }
+    }
+
+    private func clamp(_ value: Int, to range: ClosedRange<Int>) -> Int {
+        min(max(value, range.lowerBound), range.upperBound)
+    }
+
     // MARK: - Field helpers
 
     private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
@@ -473,53 +512,54 @@ public struct AddAthleteView: View {
     private func compactTextField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
         TextField(placeholder, text: binding)
             .textFieldStyle(.plain)
-            .font(.callout)
+            .scaledFont(.callout)
             .environment(\.locale, Self.englishLocale)
     }
 
     private func arabicTextField(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
         TextField(placeholder, text: binding)
             .textFieldStyle(.plain)
-            .font(.callout)
+            .scaledFont(.callout)
             .environment(\.locale, Self.arabicLocale)
     }
 
     private func compactMultiline(_ binding: Binding<String>, placeholder: LocalizedStringKey) -> some View {
         TextField(placeholder, text: binding, axis: .vertical)
             .textFieldStyle(.plain)
-            .font(.callout)
+            .scaledFont(.callout)
             .lineLimit(1...3)
             .environment(\.locale, Self.englishLocale)
     }
 
     private func compactMenuLabel(text: String) -> some View {
         HStack {
-            Text(verbatim: text).font(.callout).foregroundStyle(.primary).lineLimit(1)
+            Text(verbatim: text).scaledFont(.callout).foregroundStyle(.primary).lineLimit(1)
             Spacer()
-            Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(.secondary)
+            Image(systemName: "chevron.up.chevron.down").scaledFont(.caption2).foregroundStyle(.secondary)
         }
     }
 
     private func compactSlider(value: Binding<Double>, range: ClosedRange<Double>, step: Double, suffix: String, format: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(verbatim: String(format: "\(format) \(suffix)", value.wrappedValue))
-                .font(.caption.bold().monospacedDigit())
+                .scaledFont(.caption, weight: .bold, monospacedDigit: true)
                 .foregroundStyle(.tint)
                 .environment(\.layoutDirection, .leftToRight)
+                .tappableDouble(value, in: range, decimals: step < 1 ? 1 : 0)
             Slider(value: value, in: range, step: step)
         }
     }
 
     private func compactToggle(label: LocalizedStringKey, binding: Binding<Bool>, icon: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon).font(.caption).foregroundStyle(.tint)
-            Text(label).font(.caption2.weight(.semibold)).foregroundStyle(.primary.opacity(0.55))
+            Image(systemName: icon).scaledFont(.caption).foregroundStyle(.tint)
+            Text(label).scaledFont(.caption2, weight: .semibold).foregroundStyle(.primary.opacity(0.55))
             Spacer()
             Toggle("", isOn: binding).labelsHidden()
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 6))
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 6))
         .overlay(
             RoundedRectangle(cornerRadius: 6)
                 .stroke(Color.primary.opacity(0.18), lineWidth: 1)
@@ -532,7 +572,7 @@ public struct AddAthleteView: View {
         VStack(alignment: .leading, spacing: 2) {
             TextField("784-0000-0000000-0", text: $emiratesID)
                 .textFieldStyle(.plain)
-                .font(.callout.monospacedDigit())
+                .scaledFont(.callout, monospacedDigit: true)
                 #if os(iOS)
                 .keyboardType(.numberPad)
                 #endif
@@ -544,7 +584,7 @@ public struct AddAthleteView: View {
                 }
             if !emiratesID.isEmpty && !isValidEmiratesID(emiratesID) {
                 Text("athlete.emirates_id_format")
-                    .font(.caption2)
+                    .scaledFont(.caption2)
                     .foregroundStyle(.red)
             }
         }
@@ -583,15 +623,15 @@ public struct AddAthleteView: View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .font(.caption)
+                    .scaledFont(.caption)
                     .foregroundStyle(.secondary)
                 TextField("action.search", text: $nationalitySearch)
                     .textFieldStyle(.plain)
-                    .font(.callout)
+                    .scaledFont(.callout)
                     .environment(\.locale, Self.englishLocale)
             }
             .padding(10)
-            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+            .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
 
@@ -606,17 +646,17 @@ public struct AddAthleteView: View {
                         } label: {
                             HStack(spacing: 8) {
                                 Text(verbatim: flagEmoji(for: country.code))
-                                    .font(.callout)
+                                    .scaledFont(.callout)
                                 Text(verbatim: country.name)
-                                    .font(.callout)
+                                    .scaledFont(.callout)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 Text(verbatim: country.code)
-                                    .font(.caption.monospaced())
+                                    .scaledFont(.caption, design: .monospaced)
                                     .foregroundStyle(.secondary)
                                 if country.code == nationality {
                                     Image(systemName: "checkmark")
-                                        .font(.caption.bold())
+                                        .scaledFont(.caption, weight: .bold)
                                         .foregroundStyle(.tint)
                                 }
                             }
@@ -678,12 +718,12 @@ public struct AddAthleteView: View {
         fullName = a.fullName
         fullNameAr = a.fullNameAr
         dateOfBirth = a.dateOfBirth
-        gender = a.gender
         nationality = a.nationality
         emiratesID = a.emiratesID ?? ""
         passportNumber = a.passportNumber ?? ""
         bloodType = a.bloodType ?? .unknown
         federationLicenceNumber = a.federationLicenceNumber ?? ""
+        worldTaekwondoID = a.worldTaekwondoID ?? ""
         branchID = a.branchID
         joinedAt = a.joinedAt
         emergencyContacts = a.emergencyContacts
@@ -701,7 +741,10 @@ public struct AddAthleteView: View {
         beltNumber = a.currentBelt.number
         status = a.status
         weightClass = a.weightClass
-        dominantStance = a.dominantStance ?? .orthodox
+        dominantLeg = a.dominantLeg
+        dominantStance = a.dominantStance ?? .open
+        specialty = a.specialty ?? .kyorugi
+        yearsTraining = a.yearsTraining ?? 0
         poomsaeSyllabus = a.poomsaeSyllabus ?? ""
         kyorugiTier = a.kyorugiTier ?? .recreational
         primaryCoachID = a.primaryCoachID
@@ -745,7 +788,6 @@ public struct AddAthleteView: View {
             fullName: fullName,
             fullNameAr: fullNameAr.isEmpty ? fullName : fullNameAr,
             dateOfBirth: dateOfBirth,
-            gender: gender,
             nationality: nationality.isEmpty ? "AE" : nationality,
             emiratesID: emiratesID.isEmpty ? nil : emiratesID,
             branchID: resolvedBranchID,
@@ -760,6 +802,7 @@ public struct AddAthleteView: View {
             passportNumber: passportNumber.isEmpty ? nil : passportNumber,
             bloodType: bloodType == .unknown ? nil : bloodType,
             federationLicenceNumber: federationLicenceNumber.isEmpty ? nil : federationLicenceNumber,
+            worldTaekwondoID: worldTaekwondoID.isEmpty ? nil : worldTaekwondoID,
             parentUserIDs: editing?.parentUserIDs ?? [],
             emergencyContacts: emergencyContacts.filter { !$0.name.isEmpty },
             school: school.isEmpty ? nil : school,
@@ -775,9 +818,15 @@ public struct AddAthleteView: View {
             fitToTrain: fitToTrain,
             injuries: editing?.injuries ?? [],
             weightClass: weightClass,
+            dominantLeg: dominantLeg,
             dominantStance: dominantStance,
+            specialty: specialty,
+            yearsTraining: yearsTraining > 0 ? yearsTraining : nil,
             poomsaeSyllabus: poomsaeSyllabus.isEmpty ? nil : poomsaeSyllabus,
-            kyorugiTier: kyorugiTier
+            kyorugiTier: kyorugiTier,
+            coachNotes: editing?.coachNotes ?? [],
+            documents: editing?.documents ?? [],
+            ranking: editing?.ranking
         )
         do {
             try await session.repository.upsert(athlete)
@@ -808,38 +857,6 @@ public struct AddAthleteView: View {
 
 // MARK: - Layout primitives
 
-private struct SectionCard<Content: View>: View {
-    let icon: String
-    let title: LocalizedStringKey
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.caption.bold())
-                    .foregroundStyle(.white)
-                    .frame(width: 20, height: 20)
-                    .background(Color.tint, in: RoundedRectangle(cornerRadius: 5))
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.primary)
-                Spacer()
-            }
-            Divider()
-            VStack(alignment: .leading, spacing: 8) {
-                content
-            }
-        }
-        .padding(12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
-        )
-    }
-}
-
 private struct InlineField<Content: View>: View {
     let label: LocalizedStringKey
     @ViewBuilder let content: Content
@@ -847,14 +864,14 @@ private struct InlineField<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption2.weight(.semibold))
+                .scaledFont(.caption2, weight: .semibold)
                 .foregroundStyle(.primary.opacity(0.55))
             content
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 6))
+        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 6))
         .overlay(
             RoundedRectangle(cornerRadius: 6)
                 .stroke(Color.primary.opacity(0.18), lineWidth: 1)
@@ -874,8 +891,4 @@ private struct FieldRow<Content: View>: View {
             content
         }
     }
-}
-
-private extension Color {
-    static var tint: Color { .accentColor }
 }

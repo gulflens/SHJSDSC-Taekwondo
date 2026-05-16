@@ -18,10 +18,22 @@ public enum BloodType: String, Codable, CaseIterable, Sendable, Hashable {
     public var display: String { self == .unknown ? "?" : rawValue }
 }
 
+public enum DominantLeg: String, Codable, CaseIterable, Sendable, Hashable {
+    case left, right
+
+    public var labelKey: String { "dominant_leg.\(rawValue)" }
+}
+
 public enum Stance: String, Codable, CaseIterable, Sendable, Hashable {
-    case orthodox, southpaw, switchStance
+    case open, closed, switchStance
 
     public var labelKey: String { "stance.\(rawValue)" }
+}
+
+public enum Specialty: String, Codable, CaseIterable, Sendable, Hashable {
+    case kyorugi, poomsae, both
+
+    public var labelKey: String { "specialty.\(rawValue)" }
 }
 
 public enum KyorugiTier: String, Codable, CaseIterable, Sendable, Hashable {

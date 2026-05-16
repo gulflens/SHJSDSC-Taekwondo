@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AuditEntry: Codable, Identifiable, Hashable, Sendable {
+public nonisolated struct AuditEntry: Codable, Identifiable, Hashable, Sendable {
     public let id: EntityID
     public var at: Date
     public var actorUserID: EntityID

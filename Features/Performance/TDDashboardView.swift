@@ -1,7 +1,11 @@
 import SwiftUI
 
+/// Technical Director's dashboard. Stage 1.7 remodel: greeting hero + club
+/// composite ring + branch grades grid + watch list + ready-to-grade list +
+/// live-match banner. Every block uses the shared design-system primitives.
 public struct TDDashboardView: View {
     @Environment(AppSession.self) private var session
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var clubComposite: Double = 0
     @State private var clubGrade: LetterGrade = .c
     @State private var branchSummaries: [BranchSummary] = []
@@ -12,157 +16,275 @@ public struct TDDashboardView: View {
     public init() {}
 
     public var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    headline
-                    if let match = liveMatch {
-                        liveMatchBanner(match: match)
-                    }
-                    branchGrades
-                    gradingLink
-                    watchSection
-                    readySection
+        ScrollView {
+            VStack(spacing: 14) {
+                if let user = session.currentUser {
+                    GreetingHero(
+                        fullName: user.fullName,
+                        fullNameAr: user.fullNameAr,
+                        roleLabel: NSLocalizedString("role.\(user.role.rawValue)", comment: ""),
+                        subtitleKey: "td.subtitle"
+                    )
                 }
-                .padding()
+                if let match = liveMatch {
+                    liveMatchBanner(match: match)
+                }
+                clubCompositeCard
+                branchGradesCard
+                if isWide {
+                    HStack(alignment: .top, spacing: 14) {
+                        squadsLink.frame(maxWidth: .infinity)
+                        gradingLink.frame(maxWidth: .infinity)
+                    }
+                } else {
+                    squadsLink
+                    gradingLink
+                }
+                watchListCard
+                readyToGradeCard
             }
-            .navigationTitle(Text("tab.overview"))
-            .demoRoleSwitcher()
+            .padding(.horizontal, isWide ? 20 : 14)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
+        .background(Color.appBackground.ignoresSafeArea())
+        .demoRoleSwitcher()
         .task { await load() }
     }
 
-    private var headline: some View {
-        HStack(spacing: 16) {
-            GradeBadge(grade: clubGrade, size: 64)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("heading.club_composite").font(.caption).foregroundStyle(.secondary)
-                Text(verbatim: String(format: "%.0f", clubComposite))
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .environment(\.layoutDirection, .leftToRight)
-            }
-            Spacer()
-        }
-    }
+    private var isWide: Bool { sizeClass == .regular }
 
-    private var branchGrades: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("heading.branch_grades").font(.headline)
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                ForEach(branchSummaries) { s in
-                    HStack(spacing: 10) {
-                        GradeBadge(grade: s.grade, size: 36)
-                        VStack(alignment: .leading) {
-                            Text(verbatim: s.branch.name).font(.subheadline.bold())
-                            Text(verbatim: String(format: "%.0f", s.composite))
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .environment(\.layoutDirection, .leftToRight)
-                        }
-                        Spacer()
-                    }
-                    .padding(10)
-                    .background(Color.secondary.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+    // MARK: - Club composite
+
+    private var clubCompositeCard: some View {
+        SectionCard("heading.club_composite", icon: "star.fill") {
+            HStack(spacing: 16) {
+                GradeBadge(grade: clubGrade, size: 64)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: String(format: "%.0f", clubComposite))
+                        .scaledFont(size: 40, weight: .bold, design: .rounded, monospacedDigit: true)
+                        .environment(\.layoutDirection, .leftToRight)
+                    Text("heading.club_composite_caption")
+                        .scaledFont(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(verbatim: "\(branchSummaries.count)")
+                        .scaledFont(.title3, weight: .bold, monospacedDigit: true)
+                        .environment(\.layoutDirection, .leftToRight)
+                    Text("kpi.branches")
+                        .scaledFont(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
     }
 
+    // MARK: - Live match
+
     private func liveMatchBanner(match: Match) -> some View {
-        HStack(spacing: 10) {
-            Circle().fill(Color.red).frame(width: 8, height: 8)
-                .overlay(
-                    Circle().stroke(Color.red.opacity(0.4), lineWidth: 4)
-                )
-            VStack(alignment: .leading, spacing: 2) {
-                Text("match.live").font(.subheadline.bold())
-                Text(verbatim: "\(match.tournamentName)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        SectionCard {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.red.opacity(0.18))
+                        .frame(width: 44, height: 44)
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 12, height: 12)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("match.live")
+                        .scaledFont(.caption, weight: .bold)
+                        .foregroundStyle(.red)
+                        .textCase(.uppercase)
+                    Text(verbatim: match.tournamentName)
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                Text(verbatim: "\(match.ourScore) – \(match.opponentScore)")
+                    .scaledFont(.title2, weight: .bold, monospacedDigit: true)
+                    .environment(\.layoutDirection, .leftToRight)
             }
-            Spacer()
-            Text(verbatim: "\(match.ourScore) — \(match.opponentScore)")
-                .font(.headline.monospacedDigit())
-                .environment(\.layoutDirection, .leftToRight)
         }
-        .padding(12)
-        .background(Color.red.opacity(0.10))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private var gradingLink: some View {
-        NavigationLink(destination: GradingDashboardView()) {
-            HStack {
-                Image(systemName: "rosette").foregroundStyle(.tint)
-                Text("grading.dashboard").font(.subheadline.bold()).foregroundStyle(.primary)
-                Spacer()
-                Image(systemName: "chevron.right").foregroundStyle(.secondary)
+    // MARK: - Branch grades
+
+    private var branchGradesCard: some View {
+        SectionCard("heading.branch_grades", icon: "building.2.fill") {
+            if branchSummaries.isEmpty {
+                EmptyStateCard(
+                    icon: "building.2",
+                    titleKey: "td.branches.empty.title",
+                    messageKey: nil
+                )
+            } else {
+                let cols = Array(repeating: GridItem(.flexible(), spacing: 10), count: isWide ? 4 : 2)
+                LazyVGrid(columns: cols, spacing: 10) {
+                    ForEach(branchSummaries.sorted { $0.composite > $1.composite }) { s in
+                        NavigationLink(destination: BranchProfileView(branchID: s.branch.id)) {
+                            branchGradeTile(s)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
-            .padding(12)
-            .background(Color.secondary.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+    }
+
+    private func branchGradeTile(_ s: BranchSummary) -> some View {
+        HStack(spacing: 10) {
+            GradeBadge(grade: s.grade, size: 36)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: s.branch.name)
+                    .scaledFont(.caption, weight: .semibold)
+                    .lineLimit(1)
+                Text(verbatim: String(format: "%.0f", s.composite))
+                    .scaledFont(.caption2, monospacedDigit: true)
+                    .foregroundStyle(.secondary)
+                    .environment(\.layoutDirection, .leftToRight)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Quick links
+
+    private var squadsLink: some View {
+        NavigationLink(destination: SquadListView()) {
+            linkRow(icon: "person.3.sequence.fill", labelKey: "squad.title")
         }
         .buttonStyle(.plain)
     }
 
-    private var watchSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("heading.watch_list").font(.headline)
+    private var gradingLink: some View {
+        NavigationLink(destination: GradingDashboardView()) {
+            linkRow(icon: "rosette", labelKey: "grading.dashboard")
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func linkRow(icon: String, labelKey: LocalizedStringKey) -> some View {
+        SectionCard {
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.14))
+                    Image(systemName: icon)
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(.tint)
+                }
+                .frame(width: 38, height: 38)
+                Text(labelKey)
+                    .scaledFont(.subheadline, weight: .semibold)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .scaledFont(.caption, weight: .semibold)
+                    .foregroundStyle(.secondary)
+                    .flipsForRightToLeftLayoutDirection(true)
+            }
+        }
+    }
+
+    // MARK: - Watch list
+
+    private var watchListCard: some View {
+        SectionCard("heading.watch_list", icon: "eye.fill") {
             if watchList.isEmpty {
-                Text("empty.no_athletes_flagged").foregroundStyle(.secondary)
+                EmptyStateCard(
+                    icon: "checkmark.circle",
+                    titleKey: "empty.no_athletes_flagged",
+                    messageKey: nil
+                )
             } else {
-                ForEach(watchList) { a in
-                    NavigationLink(destination: AthleteDetailView(athlete: a)) {
-                        HStack(spacing: 10) {
-                            Avatar(seed: a.avatarSeed, label: a.initials, size: 32)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(verbatim: a.fullName).foregroundStyle(.primary)
-                                Text(LocalizedStringKey(a.currentBelt.label))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            StatusPill(status: a.status)
+                VStack(spacing: 0) {
+                    ForEach(watchList) { athlete in
+                        NavigationLink(destination: AthleteDetailView(athlete: athlete)) {
+                            athleteRow(athlete: athlete, trailing: .status(athlete.status))
+                        }
+                        .buttonStyle(.plain)
+                        if athlete.id != watchList.last?.id {
+                            Divider().opacity(0.3)
                         }
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
     }
 
-    private var readySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("heading.ready_to_grade").font(.headline)
+    // MARK: - Ready to grade
+
+    private var readyToGradeCard: some View {
+        SectionCard("heading.ready_to_grade", icon: "circle.hexagongrid.fill") {
             if readyToGrade.isEmpty {
-                Text("empty.nobody_to_grade").foregroundStyle(.secondary)
+                EmptyStateCard(
+                    icon: "rosette",
+                    titleKey: "empty.nobody_to_grade",
+                    messageKey: nil
+                )
             } else {
-                ForEach(readyToGrade, id: \.0.id) { a, elig in
-                    NavigationLink(destination: AthleteDetailView(athlete: a)) {
-                        HStack(spacing: 10) {
-                            Avatar(seed: a.avatarSeed, label: a.initials, size: 32)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(verbatim: a.fullName).foregroundStyle(.primary)
-                                HStack(spacing: 4) {
-                                    Text(LocalizedStringKey(elig.currentBelt.label))
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                    Text(verbatim: "→")
-                                    Text(LocalizedStringKey(elig.targetBelt.label))
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            Spacer()
-                            Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
+                VStack(spacing: 0) {
+                    ForEach(readyToGrade, id: \.0.id) { athlete, elig in
+                        NavigationLink(destination: AthleteDetailView(athlete: athlete)) {
+                            athleteRow(athlete: athlete, trailing: .beltJump(elig.currentBelt, elig.targetBelt))
+                        }
+                        .buttonStyle(.plain)
+                        if athlete.id != readyToGrade.last?.0.id {
+                            Divider().opacity(0.3)
                         }
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
     }
+
+    private enum AthleteRowTrailing {
+        case status(AthleteStatus)
+        case beltJump(Belt, Belt)
+    }
+
+    private func athleteRow(athlete: Athlete, trailing: AthleteRowTrailing) -> some View {
+        HStack(spacing: 12) {
+            Avatar(seed: athlete.avatarSeed, label: athlete.initials, size: 36, urlString: athlete.avatarURL)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: athlete.fullName)
+                    .scaledFont(.subheadline, weight: .semibold)
+                    .lineLimit(1)
+                Text(localizedKey: athlete.currentBelt.label)
+                    .scaledFont(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            switch trailing {
+            case .status(let s):
+                StatusPill(status: s)
+            case .beltJump(let from, let to):
+                HStack(spacing: 4) {
+                    Text(localizedKey: from.label)
+                        .scaledFont(.caption2, weight: .medium)
+                    Image(systemName: "arrow.right")
+                        .scaledFont(.caption2, weight: .semibold)
+                        .flipsForRightToLeftLayoutDirection(true)
+                    Text(localizedKey: to.label)
+                        .scaledFont(.caption2, weight: .bold)
+                        .foregroundStyle(.green)
+                }
+            }
+            Image(systemName: "chevron.right")
+                .scaledFont(.caption, weight: .semibold)
+                .foregroundStyle(.secondary)
+                .flipsForRightToLeftLayoutDirection(true)
+        }
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
+    }
+
+    // MARK: - Load
 
     private func load() async {
         do {
@@ -188,7 +310,6 @@ public struct TDDashboardView: View {
 
             let allAthletes = try await session.repository.athletes()
 
-            // Watch list: status == .watch OR latest composite dropped >10 from previous month
             var watch: [Athlete] = []
             for a in allAthletes {
                 if a.status == .watch {
@@ -205,7 +326,6 @@ public struct TDDashboardView: View {
             }
             watchList = watch
 
-            // Ready to grade via real eligibility engine
             var ready: [(Athlete, GradingEligibility)] = []
             for a in allAthletes {
                 let target = GradingEngine.nextBelt(after: a.currentBelt)
