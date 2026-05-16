@@ -18,26 +18,19 @@ public struct UsersConsoleView: View {
     @State private var page = 0
     @State private var showCreate = false
     @State private var createRole: Role = .coach
-    /// Measured width of the table/detail split row — drives the 40/60 ratio.
-    @State private var splitWidth: CGFloat = 0
 
     public init() {}
 
     private var isWide: Bool { hSize == .regular }
 
     public var body: some View {
-        ScrollView {
-            VStack(spacing: 18) {
-                header
-                statBand
-                createHeroCard
-                filterPills
-                mainArea
+        VStack(spacing: 0) {
+            header
+            if loading {
+                Spacer(); ProgressView(); Spacer()
+            } else {
+                content
             }
-            .padding(.horizontal, isWide ? 22 : 14)
-            .padding(.top, 14)
-            .padding(.bottom, 28)
-            .frame(maxWidth: .infinity)
         }
         .background(Color.appBackground.ignoresSafeArea())
         .task { await load() }
@@ -55,29 +48,90 @@ public struct UsersConsoleView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("users.title").scaledFont(.title2, weight: .bold)
-                Text("users.subtitle").scaledFont(.caption).foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
+        Group {
             if isWide {
-                searchField.frame(maxWidth: 220)
-                Button { createRole = .coach; showCreate = true } label: {
-                    Label("admin.create_account", systemImage: "person.badge.plus")
-                        .scaledFont(.subheadline, weight: .semibold)
-                        .padding(.horizontal, 14).padding(.vertical, 9)
-                        .foregroundStyle(.white)
-                        .background(
-                            Capsule().fill(
-                                LinearGradient(colors: [Color.accentColor, Color.accentColor.opacity(0.82)],
-                                               startPoint: .top, endPoint: .bottom))
-                        )
-                        .shadow(color: Color.accentColor.opacity(0.32), radius: 9, y: 4)
+                HStack(alignment: .center, spacing: 12) {
+                    titleBlock
+                    Spacer(minLength: 8)
+                    searchField.frame(maxWidth: 240)
+                    createMenu
                 }
-                .buttonStyle(.plain)
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        titleBlock
+                        Spacer(minLength: 8)
+                        createMenu
+                    }
+                    searchField
+                }
             }
         }
+        .padding(.horizontal, isWide ? 22 : 14)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("users.title").scaledFont(.title2, weight: .bold)
+            Text("users.subtitle").scaledFont(.caption).foregroundStyle(.secondary)
+        }
+    }
+
+    /// Premium create button — a menu of role quick-starts (replaces the
+    /// former standalone create-hero card).
+    private var createMenu: some View {
+        Menu {
+            Button { createRole = .coach; showCreate = true } label: {
+                Label("users.shortcut.coach", systemImage: Role.coach.icon)
+            }
+            Button { createRole = .athlete; showCreate = true } label: {
+                Label("users.shortcut.athlete", systemImage: Role.athlete.icon)
+            }
+            Button { createRole = .parent; showCreate = true } label: {
+                Label("users.shortcut.parent", systemImage: Role.parent.icon)
+            }
+            Button { createRole = .frontDesk; showCreate = true } label: {
+                Label("users.shortcut.staff", systemImage: Role.frontDesk.icon)
+            }
+        } label: {
+            Label("admin.create_account", systemImage: "person.badge.plus")
+                .scaledFont(.subheadline, weight: .semibold)
+                .padding(.horizontal, 14).padding(.vertical, 9)
+                .foregroundStyle(.white)
+                .background(
+                    Capsule().fill(
+                        LinearGradient(colors: [Color.accentColor, Color.accentColor.opacity(0.82)],
+                                       startPoint: .top, endPoint: .bottom))
+                )
+                .shadow(color: Color.accentColor.opacity(0.32), radius: 9, y: 4)
+        }
+        .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+    }
+
+    // MARK: - Content
+
+    private var content: some View {
+        VStack(spacing: 14) {
+            statBand
+            filterPills
+            if isWide {
+                GeometryReader { geo in
+                    let gap: CGFloat = 18
+                    let w = max(0, geo.size.width - gap)
+                    HStack(alignment: .top, spacing: gap) {
+                        tableCard.frame(width: w * 0.5)
+                        detailPane.frame(width: w * 0.5)
+                    }
+                }
+            } else {
+                tableCard
+            }
+        }
+        .padding(.horizontal, isWide ? 22 : 14)
+        .padding(.top, 4)
+        .padding(.bottom, 14)
     }
 
     private var searchField: some View {
@@ -144,67 +198,6 @@ public struct UsersConsoleView: View {
         .shadow(color: .black.opacity(0.04), radius: 9, y: 4)
     }
 
-    // MARK: - Create hero
-
-    private var createHeroCard: some View {
-        let shortcuts: [(LocalizedStringKey, Role)] = [
-            ("users.shortcut.coach", .coach),
-            ("users.shortcut.athlete", .athlete),
-            ("users.shortcut.parent", .parent),
-            ("users.shortcut.staff", .frontDesk),
-        ]
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
-                Image(systemName: "person.crop.circle.badge.plus")
-                    .scaledFont(.title2, weight: .semibold)
-                    .foregroundStyle(.white)
-                    .frame(width: 46, height: 46)
-                    .background(
-                        LinearGradient(colors: [Color.accentColor, Color.accentColor.opacity(0.8)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing),
-                        in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("users.create_hero.title").scaledFont(.headline)
-                    Text("users.create_hero.subtitle").scaledFont(.caption).foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-            }
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) { ForEach(shortcuts.indices, id: \.self) { shortcutButton(shortcuts[$0]) } }
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    ForEach(shortcuts.indices, id: \.self) { shortcutButton(shortcuts[$0]) }
-                }
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(LinearGradient(colors: [Color.accentColor.opacity(0.10), Color.cardBackground],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-        )
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Color.secondary.opacity(0.10), lineWidth: 1))
-        .shadow(color: .black.opacity(0.05), radius: 14, y: 6)
-    }
-
-    private func shortcutButton(_ shortcut: (LocalizedStringKey, Role)) -> some View {
-        Button {
-            createRole = shortcut.1
-            showCreate = true
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: shortcut.1.icon).scaledFont(.footnote, weight: .semibold)
-                Text(shortcut.0).scaledFont(.subheadline, weight: .semibold)
-            }
-            .foregroundStyle(Color.accentColor)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 11)
-            .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.accentColor.opacity(0.28), lineWidth: 1))
-        }
-        .buttonStyle(.plain)
-    }
-
     // MARK: - Filter pills
 
     private var filterPills: some View {
@@ -234,55 +227,30 @@ public struct UsersConsoleView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Main area (table + detail)
-
-    @ViewBuilder
-    private var mainArea: some View {
-        if isWide {
-            HStack(alignment: .top, spacing: 18) {
-                tableCard.frame(width: panelWidth(0.4))
-                detailPane.frame(width: panelWidth(0.6))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                GeometryReader { geo in
-                    Color.clear
-                        .onAppear { splitWidth = geo.size.width }
-                        .onChange(of: geo.size.width) { _, w in splitWidth = w }
-                }
-            )
-        } else {
-            tableCard
-        }
-    }
-
-    /// 40 / 60 split of the available width, minus the 18 pt gap.
-    private func panelWidth(_ fraction: CGFloat) -> CGFloat {
-        max(0, splitWidth - 18) * fraction
-    }
+    // MARK: - Table
 
     private var tableCard: some View {
-        let rows = pageSlice
-        return VStack(spacing: 0) {
-            if loading {
-                ProgressView().frame(maxWidth: .infinity).padding(.vertical, 30)
-            } else if rows.isEmpty {
+        VStack(spacing: 0) {
+            if filtered.isEmpty {
                 EmptyStateCard(icon: "person.crop.circle.badge.questionmark",
                                titleKey: "users.empty.title", messageKey: "users.empty.message")
-                    .padding(.vertical, 16)
+                    .padding(16)
+                Spacer(minLength: 0)
             } else {
-                LazyVStack(spacing: 8) {
-                    ForEach(rows) { user in
-                        userRow(user)
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(pageSlice) { user in
+                            userRow(user)
+                        }
                     }
+                    .padding(12)
                 }
-            }
-            if !filtered.isEmpty {
-                Divider().opacity(0.5).padding(.top, 8)
+                Divider().opacity(0.5)
                 paginationFooter
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
             }
         }
-        .padding(12)
         .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.secondary.opacity(0.10), lineWidth: 1))
         .shadow(color: .black.opacity(0.05), radius: 14, y: 6)
@@ -350,23 +318,23 @@ public struct UsersConsoleView: View {
 
     // MARK: - Detail pane (wide)
 
-    @ViewBuilder
     private var detailPane: some View {
-        if let user = selectedUser {
-            UserDetailContent(user: user, branchName: branchName(user))
-        } else {
-            VStack(spacing: 10) {
-                Image(systemName: "person.crop.square.badge.magnifyingglass")
-                    .font(.system(size: 40))
-                    .foregroundStyle(.tertiary)
-                Text("users.detail.empty")
-                    .scaledFont(.subheadline).foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+        ScrollView {
+            if let user = selectedUser {
+                UserDetailContent(user: user, branchName: branchName(user))
+            } else {
+                VStack(spacing: 10) {
+                    Image(systemName: "person.crop.square.badge.magnifyingglass")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.tertiary)
+                    Text("users.detail.empty")
+                        .scaledFont(.subheadline).foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, minHeight: 340)
+                .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.secondary.opacity(0.10), lineWidth: 1))
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 50)
-            .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.secondary.opacity(0.10), lineWidth: 1))
         }
     }
 

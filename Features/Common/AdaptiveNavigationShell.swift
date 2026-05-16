@@ -60,11 +60,17 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
 
     public var body: some View {
         Group {
+            #if os(macOS)
+            // macOS always uses the sidebar shell — never the bottom-tab
+            // layout, regardless of how the window is resized.
+            regularShell
+            #else
             if sizeClass == .regular {
                 regularShell
             } else {
                 compactShell
             }
+            #endif
         }
     }
 
@@ -127,7 +133,11 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
     // MARK: - iPad: NavigationSplitView with layered sidebar
 
     private var regularShell: some View {
-        NavigationSplitView {
+        // Pin the sidebar column open — `NavigationSplitView` otherwise
+        // auto-hides it on window resize and leaves no way back, since the
+        // expand/collapse toggle lives inside the sidebar itself. The shell's
+        // own `isSidebarCollapsed` icon-rail mode handles reclaiming space.
+        NavigationSplitView(columnVisibility: .constant(.all)) {
             sidebarContent
                 .navigationSplitViewColumnWidth(
                     min: (isSidebarCollapsed ? collapsedSidebarWidth : 240) * uiScale,

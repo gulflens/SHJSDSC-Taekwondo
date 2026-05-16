@@ -75,8 +75,8 @@ public struct DrillLibraryView: View {
                 let gap: CGFloat = 16
                 let w = max(0, geo.size.width - gap)
                 HStack(alignment: .top, spacing: gap) {
-                    listPanel.frame(width: w * 0.4)
-                    detailColumn.frame(width: w * 0.6)
+                    listPanel.frame(width: w * 0.5)
+                    detailColumn.frame(width: w * 0.5)
                 }
             }
             .padding(.horizontal, 18)
