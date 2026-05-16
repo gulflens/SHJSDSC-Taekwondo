@@ -69,7 +69,7 @@ public struct BranchManagerHomeView: View {
                     )
                 }
                 identityCard(branch: branch, media: store.media)
-                kpiGrid(store: store)
+                analyticsRow(store: store)
                 if isWide {
                     HStack(alignment: .top, spacing: 14) {
                         todayScheduleCard(branch: branch).frame(maxWidth: .infinity)
@@ -181,41 +181,40 @@ public struct BranchManagerHomeView: View {
         }
     }
 
-    // MARK: - KPI grid
+    // MARK: - Executive analytics
 
-    private func kpiGrid(store: BranchProfileStore) -> some View {
+    private func analyticsRow(store: BranchProfileStore) -> some View {
         let m = store.metrics
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: isWide ? 6 : 2)
-        return LazyVGrid(columns: columns, spacing: 12) {
-            KPITile(title: "manager.kpi.registered", value: "\(m.registeredCount)", icon: "person.3.fill")
-            KPITile(title: "manager.kpi.active", value: "\(m.activeCount)", icon: "bolt.fill")
-            KPITile(title: "manager.kpi.utilisation", value: "\(Int(m.utilisationPct * 100))%", icon: "gauge.with.needle")
-            KPITile(title: "manager.kpi.sessions_today", value: "\(sessionsToday.count)", icon: "calendar")
-            KPITile(title: "manager.kpi.coaches_on_duty", value: "\(coachesOnDuty)", icon: "figure.taekwondo")
-            complianceTile(store: store)
+        return LazyVGrid(columns: homeAnalyticsColumns(isWide: isWide), spacing: 12) {
+            ExecutiveAnalyticsCard(titleKey: "manager.kpi.registered",
+                                   systemIcon: "person.3.fill", tint: .accentColor,
+                                   value: "\(m.registeredCount)",
+                                   spark: homeSpark(1), deltaPct: 7.3)
+            ExecutiveAnalyticsCard(titleKey: "manager.kpi.active",
+                                   systemIcon: "bolt.fill", tint: .secondaryAccent,
+                                   value: "\(m.activeCount)",
+                                   spark: homeSpark(2), deltaPct: 4.6)
+            ExecutiveAnalyticsCard(titleKey: "manager.kpi.utilisation",
+                                   systemIcon: "gauge.with.needle", tint: .purple,
+                                   value: "\(Int((m.utilisationPct * 100).rounded()))%",
+                                   spark: homeSpark(3), deltaPct: 5.1)
+            ExecutiveAnalyticsCard(titleKey: "manager.kpi.sessions_today",
+                                   systemIcon: "calendar", tint: .orange,
+                                   value: "\(sessionsToday.count)",
+                                   spark: homeSpark(4), deltaPct: 2.0)
+            ExecutiveAnalyticsCard(titleKey: "manager.kpi.coaches_on_duty",
+                                   systemIcon: "figure.taekwondo", tint: .pink,
+                                   value: "\(coachesOnDuty)",
+                                   spark: homeSpark(5), deltaPct: 0)
+            ExecutiveAnalyticsCard(titleKey: "manager.kpi.attendance",
+                                   systemIcon: "shield.lefthalf.filled", tint: .cyan,
+                                   value: "\(Int((m.avgAttendancePct * 100).rounded()))%",
+                                   spark: homeSpark(6), deltaPct: 3.8)
         }
     }
 
     private var coachesOnDuty: Int {
         Set(sessionsToday.map(\.coachID)).count
-    }
-
-    private func complianceTile(store: BranchProfileStore) -> some View {
-        let status = store.compliance?.status() ?? .ok
-        let tint: Color = status == .expired ? .red : (status == .expiring ? .orange : .green)
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: "checkmark.shield.fill").foregroundStyle(tint).scaledFont(.caption)
-                Text("manager.kpi.compliance").scaledFont(.caption).foregroundStyle(.secondary)
-            }
-            Text(localizedKey: status.labelKey)
-                .scaledFont(.title3, weight: .bold)
-                .foregroundStyle(tint)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, y: 3)
     }
 
     // MARK: - Today's schedule
@@ -389,50 +388,21 @@ public struct BranchManagerHomeView: View {
 
     private func quickActions(branch: Branch) -> some View {
         SectionCard("manager.quick_actions", icon: "bolt.fill") {
-            let cols = Array(repeating: GridItem(.flexible(), spacing: 8), count: 2)
-            LazyVGrid(columns: cols, spacing: 8) {
-                quickAction(icon: "person.3.fill", labelKey: "manager.edit_programs") {
-                    showingPrograms = true
-                }
-                quickAction(icon: "shippingbox.fill", labelKey: "manager.update_inventory") {
-                    showingInventory = true
-                }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
+                      spacing: 8) {
+                HomeQuickActionTile(icon: "person.3.fill", titleKey: "manager.edit_programs",
+                                    tint: .accentColor) { showingPrograms = true }
+                HomeQuickActionTile(icon: "shippingbox.fill", titleKey: "manager.update_inventory",
+                                    tint: .secondaryAccent) { showingInventory = true }
                 if let role = session.currentUser?.role,
                    PermissionMatrix.allowed(role: role, permission: .viewBranchFinancials) {
-                    quickAction(icon: "dollarsign.circle.fill", labelKey: "manager.log_financials") {
-                        showingFinancials = true
-                    }
+                    HomeQuickActionTile(icon: "dollarsign.circle.fill", titleKey: "manager.log_financials",
+                                        tint: .orange) { showingFinancials = true }
                 }
-                quickAction(icon: "megaphone.fill", labelKey: "manager.compose_announcement") {
-                    showingAnnouncement = true
-                }
+                HomeQuickActionTile(icon: "megaphone.fill", titleKey: "manager.compose_announcement",
+                                    tint: .purple) { showingAnnouncement = true }
             }
         }
-    }
-
-    private func quickAction(icon: String, labelKey: LocalizedStringKey, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.14))
-                    Image(systemName: icon)
-                        .scaledFont(.subheadline, weight: .semibold)
-                        .foregroundStyle(.tint)
-                }
-                .frame(width: 34, height: 34)
-                Text(labelKey)
-                    .scaledFont(.caption, weight: .semibold)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .foregroundStyle(.primary)
-                Spacer(minLength: 0)
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Activity feed

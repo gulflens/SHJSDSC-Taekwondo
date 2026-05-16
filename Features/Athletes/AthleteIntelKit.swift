@@ -58,8 +58,8 @@ public struct AthleteMetricScore: Identifiable, Sendable, Hashable {
 public struct AthleteActivity: Identifiable, Sendable, Hashable {
     public enum Kind: String, Sendable, Hashable {
         case training, sparring, fitnessTest, grading
-        var labelKey: String { "athlete.activity.\(rawValue)" }
-        var systemIcon: String {
+        public var labelKey: String { "athlete.activity.\(rawValue)" }
+        public var systemIcon: String {
             switch self {
             case .training:    "figure.taekwondo"
             case .sparring:    "figure.kickboxing"

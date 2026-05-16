@@ -1,20 +1,25 @@
 import SwiftUI
 
-/// Coach's home dashboard — greeting hero, today's classes as rich rows,
-/// quick squad shortcut. Replaces the Stage 1.5 bare-`List` version.
+/// Coach's home dashboard — Stage 1.13 executive remodel. Greeting hero +
+/// executive analytics row + today's classes + a squad performance snapshot
+/// (grade ring + averaged metric rings) + promotion readiness + quick actions.
 public struct CoachHomeView: View {
     @Environment(AppSession.self) private var session
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State private var store: ScheduleStore?
+    @State private var schedule: ScheduleStore?
+    @State private var squad: AthletesStore?
     @State private var showingSchedule = false
+    @State private var showingSquad = false
+    @State private var showingDrills = false
+    @State private var showingAnnouncements = false
     @State private var liveSession: ClassSession?
 
     public init() {}
 
     public var body: some View {
         Group {
-            if let store {
-                content(store: store)
+            if let schedule {
+                content(schedule: schedule)
             } else {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -40,11 +45,14 @@ public struct CoachHomeView: View {
                 ScheduleClassView { _ in
                     Task {
                         guard let coachID = session.currentUser?.id else { return }
-                        await store?.loadCoachDay(coachID: coachID)
+                        await schedule?.loadCoachDay(coachID: coachID)
                     }
                 }
             }
         }
+        .navigationDestination(isPresented: $showingSquad) { SquadListView() }
+        .navigationDestination(isPresented: $showingDrills) { DrillLibraryView() }
+        .navigationDestination(isPresented: $showingAnnouncements) { AnnouncementsView() }
         #if os(iOS)
         .fullScreenCover(item: $liveSession) { s in
             LiveClassView(session: s)
@@ -55,9 +63,11 @@ public struct CoachHomeView: View {
         }
         #endif
         .task {
-            if store == nil { store = ScheduleStore(repository: session.repository) }
-            guard let store, let coachID = session.currentUser?.id else { return }
-            await store.loadCoachDay(coachID: coachID)
+            guard let coachID = session.currentUser?.id else { return }
+            if schedule == nil { schedule = ScheduleStore(repository: session.repository) }
+            if squad == nil { squad = AthletesStore(repository: session.repository) }
+            await schedule?.loadCoachDay(coachID: coachID)
+            await squad?.loadForCoach(coachID)
         }
     }
 
@@ -69,7 +79,7 @@ public struct CoachHomeView: View {
     }
 
     @ViewBuilder
-    private func content(store: ScheduleStore) -> some View {
+    private func content(schedule: ScheduleStore) -> some View {
         ScrollView {
             VStack(spacing: 14) {
                 if let user = session.currentUser {
@@ -80,12 +90,13 @@ public struct CoachHomeView: View {
                         subtitleKey: "coach.home.subtitle"
                     )
                 }
-                kpiStrip(store: store)
-                todayCard(store: store)
+                analyticsRow(schedule: schedule)
+                todayCard(schedule: schedule)
+                squadSnapshotCard
                 if let coachID = session.currentUser?.id {
                     PromotionReadinessCard(coachID: coachID)
                 }
-                quickLinksCard
+                quickActionsCard
             }
             .padding(.horizontal, isWide ? 20 : 14)
             .padding(.top, 12)
@@ -93,50 +104,67 @@ public struct CoachHomeView: View {
         }
     }
 
-    private func kpiStrip(store: ScheduleStore) -> some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: isWide ? 4 : 2),
-            spacing: 12
-        ) {
-            KPITile(
-                title: "coach.home.kpi.classes_today",
-                value: "\(store.sessionsToday.count)",
-                icon: "calendar.badge.checkmark"
-            )
-            KPITile(
-                title: "coach.home.kpi.athletes_today",
-                value: "\(athletesToday(store))",
-                icon: "person.3.fill"
-            )
-            KPITile(
-                title: "coach.home.kpi.hours",
-                value: String(format: "%.1fh", hoursToday(store)),
-                icon: "clock.fill"
-            )
-            KPITile(
-                title: "coach.home.kpi.next_class",
-                value: nextClassTime(store),
-                icon: "calendar.badge.clock"
-            )
+    // MARK: - Executive analytics
+
+    private func analyticsRow(schedule: ScheduleStore) -> some View {
+        LazyVGrid(columns: homeAnalyticsColumns(isWide: isWide), spacing: 12) {
+            ExecutiveAnalyticsCard(titleKey: "coach.home.kpi.classes_today",
+                                   systemIcon: "calendar.badge.checkmark", tint: .accentColor,
+                                   value: "\(schedule.sessionsToday.count)",
+                                   spark: homeSpark(1), deltaPct: 6.0)
+            ExecutiveAnalyticsCard(titleKey: "coach.home.kpi.athletes_today",
+                                   systemIcon: "person.3.fill", tint: .secondaryAccent,
+                                   value: "\(athletesToday(schedule))",
+                                   spark: homeSpark(2), deltaPct: 9.5)
+            ExecutiveAnalyticsCard(titleKey: "coach.home.kpi.hours",
+                                   systemIcon: "clock.fill", tint: .orange,
+                                   value: String(format: "%.1fh", hoursToday(schedule)),
+                                   spark: homeSpark(3), deltaPct: 4.0)
+            ExecutiveAnalyticsCard(titleKey: "coach.home.kpi.squad",
+                                   systemIcon: "person.2.badge.gearshape.fill", tint: .purple,
+                                   value: "\(squadIntels.count)",
+                                   spark: homeSpark(4), deltaPct: 12.0)
+            ExecutiveAnalyticsCard(titleKey: "coach.home.kpi.squad_score",
+                                   systemIcon: "chart.line.uptrend.xyaxis", tint: .pink,
+                                   value: String(format: "%.0f", squadComposite),
+                                   spark: homeSpark(5), deltaPct: 5.5)
+            ExecutiveAnalyticsCard(titleKey: "coach.home.kpi.attendance",
+                                   systemIcon: "shield.lefthalf.filled", tint: .cyan,
+                                   value: "\(Int(squadMetricAvg(.attendance).rounded()))%",
+                                   spark: homeSpark(6), deltaPct: 3.2)
         }
     }
 
-    private func todayCard(store: ScheduleStore) -> some View {
-        SectionCard("heading.today", icon: "calendar") {
-            if store.sessionsToday.isEmpty {
-                EmptyStateCard(
-                    icon: "calendar",
-                    titleKey: "empty.no_classes_today",
-                    messageKey: "coach.home.no_classes.message"
-                )
+    // MARK: - Today's classes
+
+    @ViewBuilder
+    private func todayCard(schedule: ScheduleStore) -> some View {
+        let sorted = schedule.sessionsToday.sorted { $0.startsAt < $1.startsAt }
+        SectionCard("heading.today", icon: "calendar", trailing: {
+            if let next = nextClass(schedule) {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .scaledFont(.caption2, weight: .semibold)
+                    Text(verbatim: String(
+                        format: NSLocalizedString("coach.home.next_at.fmt", comment: ""),
+                        next.startsAt.formatted(.dateTime.hour().minute())))
+                        .scaledFont(.caption2, weight: .semibold)
+                        .environment(\.layoutDirection, .leftToRight)
+                }
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 9).padding(.vertical, 4)
+                .background(Color.accentColor.opacity(0.12), in: Capsule())
+            }
+        }, content: {
+            if sorted.isEmpty {
+                EmptyStateCard(icon: "calendar",
+                               titleKey: "empty.no_classes_today",
+                               messageKey: "coach.home.no_classes.message")
             } else {
-                let sorted = store.sessionsToday.sorted { $0.startsAt < $1.startsAt }
                 VStack(spacing: 8) {
                     ForEach(sorted) { session in
-                        Button {
-                            liveSession = session
-                        } label: {
-                            classRow(session, branch: store.branchLookup[session.branchID])
+                        Button { liveSession = session } label: {
+                            classRow(session, branch: schedule.branchLookup[session.branchID])
                         }
                         .buttonStyle(.plain)
                         if session.id != sorted.last?.id {
@@ -145,7 +173,7 @@ public struct CoachHomeView: View {
                     }
                 }
             }
-        }
+        })
     }
 
     private func classRow(_ session: ClassSession, branch: Branch?) -> some View {
@@ -161,7 +189,8 @@ public struct CoachHomeView: View {
             }
             .frame(width: 46)
             .padding(.vertical, 6)
-            .background(disciplineColor(session.discipline).opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .background(disciplineColor(session.discipline).opacity(0.12),
+                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             VStack(alignment: .leading, spacing: 3) {
                 Text(verbatim: session.title)
                     .scaledFont(.subheadline, weight: .semibold)
@@ -196,65 +225,104 @@ public struct CoachHomeView: View {
         .contentShape(Rectangle())
     }
 
-    private var quickLinksCard: some View {
-        SectionCard("coach.home.quick_links", icon: "bolt.fill") {
-            VStack(spacing: 0) {
-                NavigationLink(destination: SquadListView()) {
-                    quickLinkRow(icon: "person.3.sequence.fill", labelKey: "squad.title")
+    // MARK: - Squad snapshot
+
+    private var squadSnapshotCard: some View {
+        SectionCard("coach.home.squad_snapshot", icon: "chart.bar.xaxis", trailing: {
+            Button { showingSquad = true } label: {
+                HStack(spacing: 3) {
+                    Text("coach.home.view_squad")
+                        .scaledFont(.caption2, weight: .semibold)
+                    Image(systemName: "chevron.right")
+                        .scaledFont(.caption2, weight: .semibold)
+                        .flipsForRightToLeftLayoutDirection(true)
                 }
-                .buttonStyle(.plain)
-                Divider().opacity(0.3)
-                NavigationLink(destination: DrillLibraryView()) {
-                    quickLinkRow(icon: "list.bullet.rectangle", labelKey: "coach.home.drills")
-                }
-                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
             }
-        }
+            .buttonStyle(.plain)
+        }, content: {
+            if squadIntels.isEmpty {
+                EmptyStateCard(icon: "person.3",
+                               titleKey: "coach.home.squad.empty",
+                               messageKey: nil)
+            } else {
+                HStack(alignment: .center, spacing: 14) {
+                    AthleteGradeRing(grade: LetterGrade.from(score: squadComposite),
+                                     score: squadComposite, size: 66)
+                    Divider().frame(height: 64).opacity(0.5)
+                    HStack(spacing: 6) {
+                        ForEach(AthleteMetricKind.allCases, id: \.self) { kind in
+                            MiniMetricRing(kind: kind, score: squadMetricAvg(kind))
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                }
+            }
+        })
     }
 
-    private func quickLinkRow(icon: String, labelKey: LocalizedStringKey) -> some View {
-        HStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.14))
-                Image(systemName: icon)
-                    .scaledFont(.subheadline, weight: .semibold)
-                    .foregroundStyle(.tint)
+    // MARK: - Quick actions
+
+    private var quickActionsCard: some View {
+        SectionCard("coach.home.quick_links", icon: "bolt.fill") {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
+                      spacing: 8) {
+                HomeQuickActionTile(icon: "person.3.sequence.fill",
+                                    titleKey: "squad.title", tint: .accentColor) {
+                    showingSquad = true
+                }
+                HomeQuickActionTile(icon: "list.bullet.rectangle",
+                                    titleKey: "coach.home.drills", tint: .secondaryAccent) {
+                    showingDrills = true
+                }
+                HomeQuickActionTile(icon: "megaphone.fill",
+                                    titleKey: "coach.home.announcements", tint: .orange) {
+                    showingAnnouncements = true
+                }
+                if canSchedule {
+                    HomeQuickActionTile(icon: "calendar.badge.plus",
+                                        titleKey: "class.add", tint: .purple) {
+                        showingSchedule = true
+                    }
+                }
             }
-            .frame(width: 34, height: 34)
-            Text(labelKey)
-                .scaledFont(.subheadline, weight: .semibold)
-                .foregroundStyle(.primary)
-            Spacer(minLength: 0)
-            Image(systemName: "chevron.right")
-                .scaledFont(.caption, weight: .semibold)
-                .foregroundStyle(.secondary)
-                .flipsForRightToLeftLayoutDirection(true)
         }
-        .padding(.vertical, 8)
-        .contentShape(Rectangle())
     }
 
     // MARK: - Derived
 
-    private func athletesToday(_ store: ScheduleStore) -> Int {
-        Set(store.sessionsToday.flatMap { $0.enrolledAthleteIDs }).count
+    private var squadIntels: [AthleteIntel] {
+        guard let squad else { return [] }
+        return squad.athletes.map {
+            AthleteIntel.make(athlete: $0, score: squad.scoreByAthlete[$0.id], branchName: "")
+        }
     }
 
-    private func hoursToday(_ store: ScheduleStore) -> Double {
-        store.sessionsToday.reduce(0.0) { acc, s in
+    private var squadComposite: Double {
+        let xs = squadIntels.map(\.composite)
+        return xs.isEmpty ? 0 : xs.reduce(0, +) / Double(xs.count)
+    }
+
+    private func squadMetricAvg(_ kind: AthleteMetricKind) -> Double {
+        let xs = squadIntels.map { $0.metric(kind) }
+        return xs.isEmpty ? 0 : xs.reduce(0, +) / Double(xs.count)
+    }
+
+    private func athletesToday(_ schedule: ScheduleStore) -> Int {
+        Set(schedule.sessionsToday.flatMap { $0.enrolledAthleteIDs }).count
+    }
+
+    private func hoursToday(_ schedule: ScheduleStore) -> Double {
+        schedule.sessionsToday.reduce(0.0) { acc, s in
             acc + s.endsAt.timeIntervalSince(s.startsAt) / 3600
         }
     }
 
-    private func nextClassTime(_ store: ScheduleStore) -> String {
+    private func nextClass(_ schedule: ScheduleStore) -> ClassSession? {
         let now = Date()
-        guard let next = store.sessionsToday.filter({ $0.startsAt > now }).min(by: { $0.startsAt < $1.startsAt }) else {
-            return "—"
-        }
-        let f = DateFormatter()
-        f.timeStyle = .short
-        return f.string(from: next.startsAt)
+        return schedule.sessionsToday
+            .filter { $0.startsAt > now }
+            .min { $0.startsAt < $1.startsAt }
     }
 
     private func disciplineColor(_ d: ClassDiscipline) -> Color {

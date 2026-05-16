@@ -177,7 +177,8 @@ To swap accent again, edit `Assets.xcassets/AccentColor.colorset/Contents.json` 
 - `AuditLogView` — activity timeline grouped by day, severity stripe, user avatar, action verb, target chip, category filter
 - `MoreView` (settings) — grouped premium cards: Account / Appearance / Notifications / Privacy & About / Developer (role-gated). No more bare Form.
 
-**Still deferred:** role home dashboards (`BranchManagerHomeView`, `CoachHomeView`, `AthleteHomeView`, etc.) — left on existing primitives. Pick up in a follow-up pass once foundation is reviewed.
+The role home dashboards were remodelled to executive-grade in Stage 1.13 —
+see that section.
 
 iPad adaptation: each tab takes an `isWide` bool driven by `horizontalSizeClass == .regular`. Compact = single column; wide = multi-column grids with denser KPIs.
 
@@ -336,6 +337,37 @@ composite / grade / the five metric scores are real (from the athlete's
 are demo-derived deterministically. Executive cards reuse
 `ExecutiveAnalyticsCard` / `MiniSparkline` / `TrendIndicator` from
 `BranchOverviewKit`.
+
+## Stage 1.13 — Role home dashboards remodel
+
+Brings the four role home dashboards up to Stage 1.11/1.12 executive caliber —
+greeting hero + an executive analytics row (`ExecutiveAnalyticsCard` +
+synthesised sparklines) + premium content cards. No new design tokens.
+
+Shared kit — `Features/Common/RoleHomeKit.swift`:
+- `homeSpark(_:rising:)` — deterministic 12-point sparkline (no analytics
+  table; same demo-derived approach as Stage 1.11)
+- `homeAnalyticsColumns(isWide:wideCount:)` — adaptive analytics-grid columns
+- `HomeQuickActionTile` — tinted quick-action tile (Coach / Branch Manager)
+- `HomeActivityRow` — recent-activity feed row
+
+Home views remodelled:
+- `CoachHomeView` — analytics row (classes / athletes / hours / squad / squad
+  score / attendance) + today's classes + squad performance snapshot (grade
+  ring + averaged `MiniMetricRing`s, built from `AthleteIntel` over the
+  coach's `AthletesStore`) + `PromotionReadinessCard` + quick actions
+- `AthleteHomeView` (`FamilyHomeViews.swift`) — personal analytics row
+  (composite + five metrics) + performance card (grade ring + strong/focus
+  insights + `AthletePerformanceTrendChart`) + next class + recent activity,
+  all from `AthleteIntel.make`
+- `ParentHomeView` (`FamilyHomeViews.swift`) — aggregate analytics row across
+  linked children + a rich per-child `AthletePerformanceCard`
+- `BranchManagerHomeView` — `kpiGrid` replaced by an executive analytics row
+  off `BranchOperationalMetrics`; quick actions moved to `HomeQuickActionTile`
+
+Also fixed three Stage 1.12 format keys (`athlete.branch.fmt`,
+`athlete.weight.fmt`, `athlete.height.fmt`) that shipped without
+localizations and rendered as raw keys.
 
 ## Embedded model dossiers
 Heavy per-athlete records (`coachNotes`, `documents`, `ranking`, plus existing
