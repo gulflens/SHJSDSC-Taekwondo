@@ -1,582 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "branch.metric.competition" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "المنافسة"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Competition"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compétition"
-          }
-        }
-      }
-    },
-    "branch.metric.technique" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "التقنية"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Technique"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Technique"
-          }
-        }
-      }
-    },
-    "branch.metric.fitness" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "اللياقة"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fitness"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Forme"
-          }
-        }
-      }
-    },
-    "branch.metric.progress" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "التقدّم"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Progress"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Progression"
-          }
-        }
-      }
-    },
-    "branch.metric.wellness" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "العافية"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wellness"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bien-être"
-          }
-        }
-      }
-    },
-    "branch.radar.athleteImprovement" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تطوّر الرياضيين"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Athlete Improvement"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Progression des athlètes"
-          }
-        }
-      }
-    },
-    "branch.radar.technicalQuality" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الجودة التقنية"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Technical Quality"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qualité technique"
-          }
-        }
-      }
-    },
-    "branch.radar.attendanceImpact" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "أثر الحضور"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Attendance Impact"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impact de l'assiduité"
-          }
-        }
-      }
-    },
-    "branch.radar.retentionRate" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "معدل الاستبقاء"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retention Rate"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Taux de rétention"
-          }
-        }
-      }
-    },
-    "branch.radar.promotionSuccess" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "نجاح الترقيات"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Promotion Success"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réussite aux passages"
-          }
-        }
-      }
-    },
-    "branch.radar.sessionQuality" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "جودة الحصص"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Session Quality"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qualité des séances"
-          }
-        }
-      }
-    },
-    "branch.trend.improving" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "في تحسّن"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Improving"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En progrès"
-          }
-        }
-      }
-    },
-    "branch.trend.stable" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مستقر"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stable"
-          }
-        }
-      }
-    },
-    "branch.trend.declining" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "في تراجع"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Declining"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En baisse"
-          }
-        }
-      }
-    },
-    "branch.vs_30d" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مقارنةً بآخر 30 يومًا"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "vs last 30 days"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "vs 30 derniers jours"
-          }
-        }
-      }
-    },
-    "branch.score.fmt" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "النتيجة %.1f"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Score %.1f"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Score %.1f"
-          }
-        }
-      }
-    },
-    "branch.overview.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الفروع"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Branches"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filiales"
-          }
-        }
-      }
-    },
-    "branch.overview.subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "نظرة عامة على أداء جميع الفروع"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Performance overview of all branches"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aperçu des performances de toutes les filiales"
-          }
-        }
-      }
-    },
-    "branch.range.days30" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "آخر 30 يومًا"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last 30 days"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "30 derniers jours"
-          }
-        }
-      }
-    },
-    "branch.range.days90" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "آخر 90 يومًا"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last 90 days"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "90 derniers jours"
-          }
-        }
-      }
-    },
-    "branch.range.year" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "هذا العام"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This year"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette année"
-          }
-        }
-      }
-    },
-    "branch.sort" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ترتيب حسب"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort by"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trier par"
-          }
-        }
-      }
-    },
-    "branch.filter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تصفية"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filter"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filtrer"
-          }
-        }
-      }
-    },
-    "branch.sort.overall" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "النتيجة الإجمالية"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overall score"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Score global"
-          }
-        }
-      }
-    },
-    "branch.sort.competition" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "المنافسة"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Competition"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compétition"
-          }
-        }
-      }
-    },
-    "branch.sort.attendance" : {
+    "athlete.metric.attendance" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -599,99 +24,467 @@
         }
       }
     },
-    "branch.sort.growth" : {
+    "athlete.metric.progress" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "النمو"
+            "value" : "التقدّم"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Growth"
+            "value" : "Progress"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Croissance"
+            "value" : "Progression"
           }
         }
       }
     },
-    "branch.sort.wellness" : {
+    "athlete.metric.discipline" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "العافية"
+            "value" : "الانضباط"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wellness"
+            "value" : "Discipline"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bien-être"
+            "value" : "Discipline"
           }
         }
       }
     },
-    "branch.compare" : {
+    "athlete.metric.fitness" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "مقارنة الفروع"
+            "value" : "اللياقة"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Compare branches"
+            "value" : "Fitness"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comparer les filiales"
+            "value" : "Forme"
           }
         }
       }
     },
-    "branch.kpi.branches" : {
+    "athlete.metric.competition" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إجمالي الفروع"
+            "value" : "منافسة"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Total Branches"
+            "value" : "Comp."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Total des filiales"
+            "value" : "Compét."
           }
         }
       }
     },
-    "branch.kpi.athletes" : {
+    "athlete.activity.training" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حصة تدريب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Training Session"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séance d'entraînement"
+          }
+        }
+      }
+    },
+    "athlete.activity.sparring" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حصة قتال"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sparring Session"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séance de combat"
+          }
+        }
+      }
+    },
+    "athlete.activity.fitnessTest" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختبار اللياقة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fitness Test"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test de forme"
+          }
+        }
+      }
+    },
+    "athlete.activity.grading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تقييم الترقية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grading Assessment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évaluation de passage"
+          }
+        }
+      }
+    },
+    "athlete.activity.today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اليوم"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd'hui"
+          }
+        }
+      }
+    },
+    "athlete.activity.yesterday" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أمس"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier"
+          }
+        }
+      }
+    },
+    "athlete.activity.days_ago" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قبل %d يوم"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d days ago"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il y a %d jours"
+          }
+        }
+      }
+    },
+    "athlete.elite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نخبة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elite"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Élite"
+          }
+        }
+      }
+    },
+    "athlete.age" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العمر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Age"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Âge"
+          }
+        }
+      }
+    },
+    "athlete.weight" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الوزن"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids"
+          }
+        }
+      }
+    },
+    "athlete.dashboard.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الرياضيون"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athletes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athlètes"
+          }
+        }
+      }
+    },
+    "athlete.dashboard.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إدارة تطوّر الرياضيين وأدائهم"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage athlete development and performance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérez le développement et la performance des athlètes"
+          }
+        }
+      }
+    },
+    "athlete.filter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصفية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtrer"
+          }
+        }
+      }
+    },
+    "athlete.filter.branch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الفرع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branch"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filiale"
+          }
+        }
+      }
+    },
+    "athlete.filter.all_branches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كل الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All branches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les filiales"
+          }
+        }
+      }
+    },
+    "athlete.export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصدير"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter"
+          }
+        }
+      }
+    },
+    "athlete.kpi.total" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -714,439 +507,393 @@
         }
       }
     },
-    "branch.kpi.coaches" : {
+    "athlete.kpi.competition" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "المدربون النشطون"
+            "value" : "فريق المنافسة"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Active Coaches"
+            "value" : "Competition Team"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entraîneurs actifs"
+            "value" : "Équipe de compétition"
           }
         }
       }
     },
-    "branch.kpi.performance" : {
+    "athlete.kpi.grading" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "الأداء العام"
+            "value" : "جاهز للترقية"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Overall Performance"
+            "value" : "Ready for Grading"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Performance globale"
+            "value" : "Prêt pour le passage"
           }
         }
       }
     },
-    "branch.kpi.growth" : {
+    "athlete.kpi.injury" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "معدل النمو"
+            "value" : "متابعة الإصابات"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Growth Rate"
+            "value" : "Injury Watch"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Taux de croissance"
+            "value" : "Suivi des blessures"
           }
         }
       }
     },
-    "branch.ranking.title" : {
+    "athlete.kpi.elite" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ترتيب أداء الفروع"
+            "value" : "رياضيو النخبة"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Branch Performance Ranking"
+            "value" : "Elite Athletes"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Classement des filiales"
+            "value" : "Athlètes d'élite"
           }
         }
       }
     },
-    "branch.growth_30d" : {
+    "athlete.kpi.attendance" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "النمو (30 يومًا)"
+            "value" : "صحة الحضور"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Growth (30d)"
+            "value" : "Attendance Health"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Croissance (30 j)"
+            "value" : "Santé de l'assiduité"
           }
         }
       }
     },
-    "branch.national_rank.fmt" : {
+    "athlete.filter.all" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "الترتيب الوطني #%d"
+            "value" : "كل الرياضيين"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "National Rank #%d"
+            "value" : "All Athletes"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rang national n°%d"
+            "value" : "Tous les athlètes"
           }
         }
       }
     },
-    "branch.athletes.fmt" : {
+    "athlete.filter.competitionTeam" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d رياضي"
+            "value" : "فريق المنافسة"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d Athletes"
+            "value" : "Competition Team"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d athlètes"
+            "value" : "Équipe de compétition"
           }
         }
       }
     },
-    "branch.coaches.fmt" : {
+    "athlete.filter.elite" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d مدرب"
+            "value" : "النخبة"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d Coaches"
+            "value" : "Elite"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d entraîneurs"
+            "value" : "Élite"
           }
         }
       }
     },
-    "branch.sessions.fmt" : {
+    "athlete.filter.readyToGrade" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d حصة / أسبوع"
+            "value" : "جاهز للترقية"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d Sessions / week"
+            "value" : "Ready to Grade"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%d séances / semaine"
+            "value" : "Prêt à passer"
           }
         }
       }
     },
-    "branch.insights.title" : {
+    "athlete.filter.cadets" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "أبرز الملاحظات"
+            "value" : "الناشئون"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Key Insights"
+            "value" : "Cadets"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Points clés"
+            "value" : "Cadets"
           }
         }
       }
     },
-    "branch.insight.attendance" : {
+    "athlete.filter.juniors" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** حسّن الحضور بنسبة %.1f%% خلال آخر 30 يومًا."
+            "value" : "الشباب"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** improved attendance by %.1f%% in the last 30 days."
+            "value" : "Juniors"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** a amélioré l'assiduité de %.1f%% sur 30 jours."
+            "value" : "Juniors"
           }
         }
       }
     },
-    "branch.insight.competition" : {
+    "athlete.filter.kids" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** يملك أعلى نتيجة منافسة في النادي."
+            "value" : "الأطفال"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** has the highest competition score in the club."
+            "value" : "Kids"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** a le meilleur score de compétition du club."
+            "value" : "Enfants"
           }
         }
       }
     },
-    "branch.insight.attention" : {
+    "athlete.filter.inactive" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** يحتاج إلى متابعة في الحضور والعافية."
+            "value" : "غير نشط"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** needs attention in attendance and wellness."
+            "value" : "Inactive"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**%@** nécessite une attention en assiduité et bien-être."
+            "value" : "Inactif"
           }
         }
       }
     },
-    "branch.insight.overall" : {
+    "athlete.empty.title" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تحسّن الأداء العام بنسبة %.1f%% مقارنةً بالشهر الماضي."
+            "value" : "لا يوجد رياضيون"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Overall performance improved by %.1f%% compared to last month."
+            "value" : "No athletes found"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La performance globale a progressé de %.1f%% vs le mois dernier."
+            "value" : "Aucun athlète trouvé"
           }
         }
       }
     },
-    "branch.dist.title" : {
+    "athlete.empty.message" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "توزيع الرياضيين"
+            "value" : "جرّب بحثًا أو تصفية مختلفة."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Athlete Distribution"
+            "value" : "Try a different search or filter."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Répartition des athlètes"
+            "value" : "Essayez une autre recherche ou un autre filtre."
           }
         }
       }
     },
-    "branch.trend.title" : {
+    "athlete.showing.fmt" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "اتجاه الحضور"
+            "value" : "عرض %1$d إلى %2$d من %3$d رياضي"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attendance Trend"
+            "value" : "Showing %1$d to %2$d of %3$d athletes"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tendance de l'assiduité"
+            "value" : "Affichage de %1$d à %2$d sur %3$d athlètes"
           }
         }
       }
     },
-    "branch.coaching.title" : {
+    "athlete.detail.empty" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "فعالية التدريب"
+            "value" : "اختر رياضيًا لعرض معاينته"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coaching Effectiveness"
+            "value" : "Select an athlete to see their preview"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Efficacité de l'encadrement"
-          }
-        }
-      }
-    },
-    "branch.dist.total" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "إجمالي الرياضيين"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total Athletes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total des athlètes"
-          }
-        }
-      }
-    },
-    "branch.radar.scale_note" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "النتائج على مقياس 100"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scores are on a scale of 100"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scores sur une échelle de 100"
+            "value" : "Sélectionnez un athlète pour voir l'aperçu"
           }
         }
       }
@@ -4192,6 +3939,10 @@
         }
       }
     },
+    "athlete.branch.fmt" : {
+      "comment" : "Athlete branch name.",
+      "isCommentAutoGenerated" : true
+    },
     "athlete.card.composite_trend" : {
       "comment" : "Identifier for the title of the performance trend card.",
       "isCommentAutoGenerated" : true,
@@ -4901,6 +4652,10 @@
           }
         }
       }
+    },
+    "athlete.height.fmt" : {
+      "comment" : "A localized string that formats a height in centimeters.",
+      "isCommentAutoGenerated" : true
     },
     "athlete.home.no_class.message" : {
       "comment" : "Message displayed when the athlete has no classes today.",
@@ -5987,6 +5742,10 @@
         }
       }
     },
+    "athlete.overall_score" : {
+      "comment" : "A label describing the athlete's overall score.",
+      "isCommentAutoGenerated" : true
+    },
     "athlete.passport_number" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6009,6 +5768,9 @@
           }
         }
       }
+    },
+    "athlete.perf_trend" : {
+
     },
     "athlete.placement" : {
       "extractionState" : "manual",
@@ -6114,6 +5876,10 @@
         }
       }
     },
+    "athlete.recent_activity" : {
+      "comment" : "A label for the recent activity section of the athlete preview.",
+      "isCommentAutoGenerated" : true
+    },
     "athlete.return_to_train" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6182,6 +5948,10 @@
           }
         }
       }
+    },
+    "athlete.search" : {
+      "comment" : "A placeholder for a search field.",
+      "isCommentAutoGenerated" : true
     },
     "athlete.section.belt_progression" : {
       "extractionState" : "manual",
@@ -6705,6 +6475,10 @@
         }
       }
     },
+    "athlete.view_profile" : {
+      "comment" : "A button to view the athlete's full profile.",
+      "isCommentAutoGenerated" : true
+    },
     "athlete.vs_last_month" : {
       "comment" : "A label for the \"vs last month\" text in the",
       "isCommentAutoGenerated" : true,
@@ -6740,6 +6514,10 @@
         }
       }
     },
+    "athlete.weight.fmt" : {
+      "comment" : "A formatted weight.",
+      "isCommentAutoGenerated" : true
+    },
     "athlete.years_training" : {
       "comment" : "Label for the number of years of training of an athlete.",
       "isCommentAutoGenerated" : true,
@@ -6757,6 +6535,10 @@
           }
         }
       }
+    },
+    "attendance" : {
+      "comment" : "\"Attendance\" is a placeholder for a real metric.",
+      "isCommentAutoGenerated" : true
     },
     "attendance.absent" : {
       "extractionState" : "manual",
@@ -9448,6 +9230,10 @@
         }
       }
     },
+    "branch" : {
+      "comment" : "Identifier for the branch dimension in the chart.",
+      "isCommentAutoGenerated" : true
+    },
     "branch.about" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9653,6 +9439,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No athletes yet"
+          }
+        }
+      }
+    },
+    "branch.athletes.fmt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d رياضي"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Athletes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d athlètes"
           }
         }
       }
@@ -10092,6 +9901,29 @@
         }
       }
     },
+    "branch.coaches.fmt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d مدرب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Coaches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d entraîneurs"
+          }
+        }
+      }
+    },
     "branch.coaches.roster" : {
       "comment" : "Title of the section card for the list of coaches.",
       "isCommentAutoGenerated" : true,
@@ -10100,6 +9932,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coach Roster"
+          }
+        }
+      }
+    },
+    "branch.coaching.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فعالية التدريب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coaching Effectiveness"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efficacité de l'encadrement"
           }
         }
       }
@@ -10123,6 +9978,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Code"
+          }
+        }
+      }
+    },
+    "branch.compare" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مقارنة الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare branches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparer les filiales"
           }
         }
       }
@@ -10265,6 +10143,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Itinéraire"
+          }
+        }
+      }
+    },
+    "branch.dist.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "توزيع الرياضيين"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athlete Distribution"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répartition des athlètes"
+          }
+        }
+      }
+    },
+    "branch.dist.total" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إجمالي الرياضيين"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Athletes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total des athlètes"
           }
         }
       }
@@ -10516,6 +10440,29 @@
         }
       }
     },
+    "branch.filter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصفية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtrer"
+          }
+        }
+      }
+    },
     "branch.focus" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10558,6 +10505,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fondée"
+          }
+        }
+      }
+    },
+    "branch.growth_30d" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النمو (30 يومًا)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Growth (30d)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Croissance (30 j)"
           }
         }
       }
@@ -10620,6 +10590,144 @@
         }
       }
     },
+    "branch.insight.attendance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** حسّن الحضور بنسبة %.1f%% خلال آخر 30 يومًا."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** improved attendance by %.1f%% in the last 30 days."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** a amélioré l'assiduité de %.1f%% sur 30 jours."
+          }
+        }
+      }
+    },
+    "branch.insight.attention" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** يحتاج إلى متابعة في الحضور والعافية."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** needs attention in attendance and wellness."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** nécessite une attention en assiduité et bien-être."
+          }
+        }
+      }
+    },
+    "branch.insight.competition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** يملك أعلى نتيجة منافسة في النادي."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** has the highest competition score in the club."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** a le meilleur score de compétition du club."
+          }
+        }
+      }
+    },
+    "branch.insight.overall" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحسّن الأداء العام بنسبة %.1f%% مقارنةً بالشهر الماضي."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overall performance improved by %.1f%% compared to last month."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La performance globale a progressé de %.1f%% vs le mois dernier."
+          }
+        }
+      }
+    },
+    "branch.insights.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أبرز الملاحظات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key Insights"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points clés"
+          }
+        }
+      }
+    },
+    "branch.kpi.athletes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إجمالي الرياضيين"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Athletes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total des athlètes"
+          }
+        }
+      }
+    },
     "branch.kpi.attendance" : {
       "comment" : "KPI title for average attendance percentage.",
       "isCommentAutoGenerated" : true,
@@ -10628,6 +10736,75 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attendance"
+          }
+        }
+      }
+    },
+    "branch.kpi.branches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إجمالي الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Branches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total des filiales"
+          }
+        }
+      }
+    },
+    "branch.kpi.coaches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المدربون النشطون"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active Coaches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entraîneurs actifs"
+          }
+        }
+      }
+    },
+    "branch.kpi.growth" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "معدل النمو"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Growth Rate"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taux de croissance"
           }
         }
       }
@@ -10652,6 +10829,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New Sign-Ups"
+          }
+        }
+      }
+    },
+    "branch.kpi.performance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الأداء العام"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overall Performance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance globale"
           }
         }
       }
@@ -10761,6 +10961,29 @@
         }
       }
     },
+    "branch.metric.competition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المنافسة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Competition"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compétition"
+          }
+        }
+      }
+    },
     "branch.metric.competition_team" : {
       "comment" : "Label for the number of athletes on the competition team.",
       "isCommentAutoGenerated" : true,
@@ -10773,6 +10996,29 @@
         }
       }
     },
+    "branch.metric.fitness" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اللياقة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fitness"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forme"
+          }
+        }
+      }
+    },
     "branch.metric.new_30d" : {
       "comment" : "A label for the number of new signups in the last 30 days.",
       "isCommentAutoGenerated" : true,
@@ -10781,6 +11027,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New (30d)"
+          }
+        }
+      }
+    },
+    "branch.metric.progress" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التقدّم"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progression"
           }
         }
       }
@@ -10833,6 +11102,29 @@
         }
       }
     },
+    "branch.metric.technique" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التقنية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Technique"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Technique"
+          }
+        }
+      }
+    },
     "branch.metric.utilisation" : {
       "comment" : "Label for the utilisation metric.",
       "isCommentAutoGenerated" : true,
@@ -10853,6 +11145,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On Watch"
+          }
+        }
+      }
+    },
+    "branch.metric.wellness" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العافية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wellness"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bien-être"
           }
         }
       }
@@ -10929,6 +11244,29 @@
         }
       }
     },
+    "branch.national_rank.fmt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الترتيب الوطني #%d"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "National Rank #%d"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rang national n°%d"
+          }
+        }
+      }
+    },
     "branch.no_location_set" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10994,6 +11332,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvre à"
+          }
+        }
+      }
+    },
+    "branch.overview.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نظرة عامة على أداء جميع الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance overview of all branches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aperçu des performances de toutes les filiales"
+          }
+        }
+      }
+    },
+    "branch.overview.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filiales"
           }
         }
       }
@@ -11172,6 +11556,167 @@
         }
       }
     },
+    "branch.radar.athleteImprovement" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تطوّر الرياضيين"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athlete Improvement"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progression des athlètes"
+          }
+        }
+      }
+    },
+    "branch.radar.attendanceImpact" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أثر الحضور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendance Impact"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impact de l'assiduité"
+          }
+        }
+      }
+    },
+    "branch.radar.promotionSuccess" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نجاح الترقيات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promotion Success"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite aux passages"
+          }
+        }
+      }
+    },
+    "branch.radar.retentionRate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "معدل الاستبقاء"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retention Rate"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taux de rétention"
+          }
+        }
+      }
+    },
+    "branch.radar.scale_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النتائج على مقياس 100"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scores are on a scale of 100"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scores sur une échelle de 100"
+          }
+        }
+      }
+    },
+    "branch.radar.sessionQuality" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جودة الحصص"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session Quality"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qualité des séances"
+          }
+        }
+      }
+    },
+    "branch.radar.technicalQuality" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الجودة التقنية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Technical Quality"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qualité technique"
+          }
+        }
+      }
+    },
     "branch.ramadan_hours" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11191,6 +11736,98 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Horaires de Ramadan"
+          }
+        }
+      }
+    },
+    "branch.range.days30" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "آخر 30 يومًا"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 30 days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 derniers jours"
+          }
+        }
+      }
+    },
+    "branch.range.days90" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "آخر 90 يومًا"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 90 days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "90 derniers jours"
+          }
+        }
+      }
+    },
+    "branch.range.year" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا العام"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This year"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette année"
+          }
+        }
+      }
+    },
+    "branch.ranking.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترتيب أداء الفروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branch Performance Ranking"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classement des filiales"
           }
         }
       }
@@ -11386,6 +12023,29 @@
         }
       }
     },
+    "branch.score.fmt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النتيجة %.1f"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score %.1f"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score %.1f"
+          }
+        }
+      }
+    },
     "branch.search_address" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11492,6 +12152,29 @@
         }
       }
     },
+    "branch.sessions.fmt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d حصة / أسبوع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Sessions / week"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d séances / semaine"
+          }
+        }
+      }
+    },
     "branch.sessions.this_week" : {
       "comment" : "Title of a KPI tile showing the number of sessions in the current week.",
       "isCommentAutoGenerated" : true,
@@ -11584,6 +12267,144 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "YouTube"
+          }
+        }
+      }
+    },
+    "branch.sort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترتيب حسب"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort by"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trier par"
+          }
+        }
+      }
+    },
+    "branch.sort.attendance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحضور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assiduité"
+          }
+        }
+      }
+    },
+    "branch.sort.competition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المنافسة"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Competition"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compétition"
+          }
+        }
+      }
+    },
+    "branch.sort.growth" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النمو"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Growth"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Croissance"
+          }
+        }
+      }
+    },
+    "branch.sort.overall" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النتيجة الإجمالية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overall score"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score global"
+          }
+        }
+      }
+    },
+    "branch.sort.wellness" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العافية"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wellness"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bien-être"
           }
         }
       }
@@ -12114,6 +12935,98 @@
         }
       }
     },
+    "branch.trend.declining" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في تراجع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Declining"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En baisse"
+          }
+        }
+      }
+    },
+    "branch.trend.improving" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في تحسّن"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Improving"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En progrès"
+          }
+        }
+      }
+    },
+    "branch.trend.stable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مستقر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stable"
+          }
+        }
+      }
+    },
+    "branch.trend.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اتجاه الحضور"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendance Trend"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tendance de l'assiduité"
+          }
+        }
+      }
+    },
     "branch.unassigned" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12179,6 +13092,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Visiter"
+          }
+        }
+      }
+    },
+    "branch.vs_30d" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مقارنةً بآخر 30 يومًا"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vs last 30 days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vs 30 derniers jours"
           }
         }
       }
@@ -19434,6 +20370,10 @@
         }
       }
     },
+    "count" : {
+      "comment" : "Label for the value axis in the athlete distribution donut chart.",
+      "isCommentAutoGenerated" : true
+    },
     "Daedo / KP&P" : {
       "comment" : "Brand of a popular PSS (personal sound system) brand.",
       "isCommentAutoGenerated" : true,
@@ -22430,6 +23370,7 @@
     },
     "empty.no_branches" : {
       "comment" : "A message displayed when a user has not yet selected a branch.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "ar" : {
@@ -36182,6 +37123,10 @@
         }
       }
     },
+    "Score" : {
+      "comment" : "Value for the y-axis label",
+      "isCommentAutoGenerated" : true
+    },
     "score.bodyKick" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -45133,6 +46078,14 @@
           }
         }
       }
+    },
+    "week" : {
+      "comment" : "Label for the x-axis.",
+      "isCommentAutoGenerated" : true
+    },
+    "Week" : {
+      "comment" : "X-axis label",
+      "isCommentAutoGenerated" : true
     },
     "weightcut.current" : {
       "extractionState" : "manual",

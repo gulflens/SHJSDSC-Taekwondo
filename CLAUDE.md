@@ -314,6 +314,29 @@ coaching radar are demo-derived (deterministic functions of the real scores
 + a stable per-branch FNV seed) so the dashboard is populated and
 reproducible without a separate analytics table.
 
+## Stage 1.12 — Athletes module remodel
+
+Premium athlete-management dashboard, replacing the flat `List`. Header +
+6 executive analytics cards + filter pills + an adaptive two-panel workspace
+(athlete performance cards + a preview panel on iPad; list with a pushed full
+profile on iPhone). `AthleteListView` keeps its `scope` API.
+
+Athletes module — file map (`Features/Athletes/`):
+- `AthleteListView` (the dashboard — header, analytics, filter pills, list +
+  preview panels; keeps Add / Import navigation destinations)
+- `AthleteIntelKit` (`AthleteIntel` view-model + `AthleteIntel.make`,
+  `AthleteMetricKind`, `AthleteGradeRing`, `MiniMetricRing`, `AthleteTagChip`,
+  `AthleteInsightCard`, `SearchAthleteField`)
+- `AthleteDashboardCards` (`AthletePerformanceCard`, `AthletePreviewPanel`,
+  `AthletePerformanceTrendChart`)
+
+`AthleteIntel.make(athlete:score:branchName:)` builds the view-model:
+composite / grade / the five metric scores are real (from the athlete's
+`PerformanceScore`); the 12-week performance trend and recent-activity feed
+are demo-derived deterministically. Executive cards reuse
+`ExecutiveAnalyticsCard` / `MiniSparkline` / `TrendIndicator` from
+`BranchOverviewKit`.
+
 ## Embedded model dossiers
 Heavy per-athlete records (`coachNotes`, `documents`, `ranking`, plus existing
 `emergencyContacts` / `injuries` / `weightHistory`) live as embedded Codable
