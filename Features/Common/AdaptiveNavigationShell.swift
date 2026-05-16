@@ -193,6 +193,8 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
     }
 
     /// Logo + collapse button only — no static page titles or subtitles.
+    /// The collapse button sits on a compact top row; the logo spans the
+    /// full sidebar width below it.
     @ViewBuilder
     private var sidebarHeader: some View {
         if isSidebarCollapsed {
@@ -203,24 +205,27 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
             }
             .frame(maxWidth: .infinity)
         } else {
-            HStack(alignment: .center, spacing: 8) {
+            VStack(spacing: 6) {
+                HStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    sidebarToggleButton
+                }
                 sidebarLogo
-                Spacer(minLength: 0)
-                sidebarToggleButton
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 28)
-            .padding(.bottom, 16)
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
+            .padding(.bottom, 14)
         }
     }
 
-    /// Brand logo — adapts to light/dark via the asset catalogue, and to
+    /// Brand logo — fills the sidebar width (height follows the artwork's
+    /// aspect ratio). Adapts to light/dark via the asset catalogue, and to
     /// Arabic vs English/French via the layout direction.
     private var sidebarLogo: some View {
         Image(layoutDirection == .rightToLeft ? "SidebarLogoAr" : "SidebarLogo")
             .resizable()
             .scaledToFit()
-            .frame(height: 30 * uiScale)
+            .frame(maxWidth: .infinity)
             .accessibilityLabel(Text(verbatim: "SSDC Taekwondo"))
     }
 
