@@ -206,12 +206,7 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
                 .padding(.horizontal, isSidebarCollapsed ? 8 : 12)
                 .padding(.top, 8)
             }
-            if let profileItem {
-                Divider().opacity(0.4)
-                sidebarRow(profileItem, isProfile: true)
-                    .padding(.horizontal, isSidebarCollapsed ? 8 : 12)
-                    .padding(.vertical, 8)
-            }
+            sidebarUserFooter
         }
         .background(Color.sidebarBackground.ignoresSafeArea())
         #if os(iOS)
@@ -281,30 +276,19 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         .help(Text(isSidebarCollapsed ? "nav.sidebar.expand" : "nav.sidebar.collapse"))
     }
 
-    private func sidebarRow(_ item: SidebarItem, isProfile: Bool = false) -> some View {
+    private func sidebarRow(_ item: SidebarItem) -> some View {
         let isSelected = selection == item.id
         return Button {
-            selection = item.id
-            // Hard root-context switch — rebuild the detail stack from scratch.
-            navigationResetID = UUID()
-            collapseSidebarIfExpanded()
+            selectItem(item)
         } label: {
             HStack(spacing: 12) {
-                rowIcon(item, isSelected: isSelected, isProfile: isProfile)
+                rowIcon(item, isSelected: isSelected)
                 if !isSidebarCollapsed {
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(item.titleKey)
-                            .font(.system(size: 14 * uiScale, weight: isSelected ? .semibold : .medium))
-                            .foregroundStyle(Color.sidebarForeground)
-                            .lineLimit(1)
-                        if isProfile, let user = session.currentUser {
-                            Text(verbatim: user.fullName)
-                                .font(.system(size: 11 * uiScale))
-                                .foregroundStyle(Color.sidebarForeground.opacity(0.55))
-                                .lineLimit(1)
-                        }
-                    }
-                    .transition(.opacity)
+                    Text(item.titleKey)
+                        .font(.system(size: 14 * uiScale, weight: isSelected ? .semibold : .medium))
+                        .foregroundStyle(Color.sidebarForeground)
+                        .lineLimit(1)
+                        .transition(.opacity)
                     Spacer(minLength: 0)
                 }
             }
@@ -320,22 +304,98 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         .help(Text(item.titleKey))
     }
 
-    @ViewBuilder
-    private func rowIcon(_ item: SidebarItem, isSelected: Bool, isProfile: Bool) -> some View {
-        if isProfile, let user = session.currentUser {
-            Avatar(seed: user.avatarSeed, label: initials(for: user), size: 28)
-        } else {
-            ZStack {
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.18))
-                }
-                Image(systemName: item.systemIcon)
-                    .font(.system(size: 15 * uiScale, weight: .semibold))
-                    .foregroundStyle(isSelected ? Color.accentColor : Color.sidebarForeground.opacity(0.7))
+    private func rowIcon(_ item: SidebarItem, isSelected: Bool) -> some View {
+        ZStack {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.18))
             }
-            .frame(width: 32 * uiScale, height: 32 * uiScale)
+            Image(systemName: item.systemIcon)
+                .font(.system(size: 15 * uiScale, weight: .semibold))
+                .foregroundStyle(isSelected ? Color.accentColor : Color.sidebarForeground.opacity(0.7))
         }
+        .frame(width: 32 * uiScale, height: 32 * uiScale)
+    }
+
+    /// Selects a sidebar destination and performs the hard root-context
+    /// switch — rebuilds the detail stack and collapses the sidebar.
+    private func selectItem(_ item: SidebarItem) {
+        selection = item.id
+        navigationResetID = UUID()
+        collapseSidebarIfExpanded()
+    }
+
+    // MARK: - User footer card
+
+    /// Account card pinned to the bottom of the sidebar — avatar with an
+    /// online dot, the signed-in user's name and role, and a tap target that
+    /// opens the profile destination. Collapses to just the avatar in
+    /// icon-only mode. Hidden when the role exposes no `profileItem`.
+    @ViewBuilder
+    private var sidebarUserFooter: some View {
+        if let profileItem, let user = session.currentUser {
+            let isSelected = selection == profileItem.id
+            Divider().opacity(0.4)
+            Button {
+                selectItem(profileItem)
+            } label: {
+                Group {
+                    if isSidebarCollapsed {
+                        userAvatar(user, size: 34)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        HStack(spacing: 11) {
+                            userAvatar(user, size: 38)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(verbatim: user.fullName)
+                                    .font(.system(size: 13.5 * uiScale, weight: .semibold))
+                                    .foregroundStyle(Color.sidebarForeground)
+                                    .lineLimit(1)
+                                Text(localizedKey: user.role.label)
+                                    .font(.system(size: 11 * uiScale, weight: .medium))
+                                    .foregroundStyle(Color.sidebarForeground.opacity(0.55))
+                                    .lineLimit(1)
+                            }
+                            .transition(.opacity)
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.forward")
+                                .font(.system(size: 11 * uiScale, weight: .semibold))
+                                .foregroundStyle(Color.sidebarForeground.opacity(0.4))
+                        }
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 9)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(isSelected ? AnyShapeStyle(.regularMaterial)
+                                                 : AnyShapeStyle(Color.sidebarForeground.opacity(0.05)))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(isSelected ? Color.accentColor.opacity(0.25)
+                                                   : Color.sidebarForeground.opacity(0.08),
+                                        lineWidth: 1)
+                        )
+                    }
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(Text(profileItem.titleKey))
+            .padding(.horizontal, isSidebarCollapsed ? 8 : 12)
+            .padding(.vertical, 8)
+        }
+    }
+
+    /// Circular user avatar with an online-status dot ringed against the
+    /// sidebar background. Dot scales with the avatar.
+    private func userAvatar(_ user: User, size: CGFloat) -> some View {
+        Avatar(seed: user.avatarSeed, label: initials(for: user), size: size)
+            .overlay(alignment: .bottomTrailing) {
+                Circle()
+                    .fill(Color.secondaryAccent)
+                    .frame(width: size * 0.30, height: size * 0.30)
+                    .overlay(Circle().stroke(Color.sidebarBackground, lineWidth: 2))
+            }
     }
 
     @ViewBuilder
