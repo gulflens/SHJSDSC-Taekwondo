@@ -27,6 +27,8 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
     /// on macOS it widens the sidebar column and icon boxes so the chrome
     /// keeps pace with the zoomed text.
     @Environment(\.uiScale) private var uiScale
+    /// Drives the Arabic vs English/French logo variant.
+    @Environment(\.layoutDirection) private var layoutDirection
     @State private var selection: String?
     /// Sidebar collapse state on iPad. Persists across launches so HQ users
     /// who prefer the icon-only mode get it back next time. Keyed per-app
@@ -190,36 +192,36 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         .animation(.easeInOut(duration: 0.22), value: isSidebarCollapsed)
     }
 
+    /// Logo + collapse button only — no static page titles or subtitles.
     @ViewBuilder
     private var sidebarHeader: some View {
         if isSidebarCollapsed {
-            // Centered collapse-toggle, no app title visible.
             VStack(spacing: 0) {
                 sidebarToggleButton
                     .padding(.top, 24)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 14)
             }
             .frame(maxWidth: .infinity)
         } else {
-            HStack(alignment: .top, spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(appTitle)
-                        .font(.system(size: 17 * uiScale, weight: .bold))
-                        .foregroundStyle(Color.sidebarForeground)
-                        .lineLimit(1)
-                    Text("nav.console_subtitle")
-                        .font(.system(size: 11 * uiScale))
-                        .foregroundStyle(Color.sidebarForeground.opacity(0.55))
-                        .lineLimit(1)
-                }
+            HStack(alignment: .center, spacing: 8) {
+                sidebarLogo
                 Spacer(minLength: 0)
-                sidebarPinButton
                 sidebarToggleButton
             }
             .padding(.horizontal, 16)
-            .padding(.top, 24)
-            .padding(.bottom, 12)
+            .padding(.top, 28)
+            .padding(.bottom, 16)
         }
+    }
+
+    /// Brand logo — adapts to light/dark via the asset catalogue, and to
+    /// Arabic vs English/French via the layout direction.
+    private var sidebarLogo: some View {
+        Image(layoutDirection == .rightToLeft ? "SidebarLogoAr" : "SidebarLogo")
+            .resizable()
+            .scaledToFit()
+            .frame(height: 30 * uiScale)
+            .accessibilityLabel(Text(verbatim: "SSDC Taekwondo"))
     }
 
     private var sidebarToggleButton: some View {
@@ -237,28 +239,6 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(isSidebarCollapsed ? "nav.sidebar.expand" : "nav.sidebar.collapse"))
         .help(Text(isSidebarCollapsed ? "nav.sidebar.expand" : "nav.sidebar.collapse"))
-    }
-
-    /// Pin toggle — only shown in the expanded header. Pinning keeps the
-    /// sidebar from auto-collapsing when the user taps a row or the detail
-    /// pane; it also force-expands in case the state was somehow collapsed.
-    private var sidebarPinButton: some View {
-        Button {
-            isSidebarPinned.toggle()
-            if isSidebarPinned { isSidebarCollapsed = false }
-        } label: {
-            Image(systemName: isSidebarPinned ? "pin.fill" : "pin")
-                .font(.system(size: 13 * uiScale, weight: .semibold))
-                .foregroundStyle(isSidebarPinned ? Color.accentColor : Color.sidebarForeground.opacity(0.7))
-                .frame(width: 32 * uiScale, height: 32 * uiScale)
-                .background(
-                    (isSidebarPinned ? Color.accentColor.opacity(0.15) : Color.sidebarForeground.opacity(0.08)),
-                    in: Circle()
-                )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(isSidebarPinned ? "nav.sidebar.unpin" : "nav.sidebar.pin"))
-        .help(Text(isSidebarPinned ? "nav.sidebar.unpin" : "nav.sidebar.pin"))
     }
 
     private func sidebarRow(_ item: SidebarItem, isProfile: Bool = false) -> some View {
