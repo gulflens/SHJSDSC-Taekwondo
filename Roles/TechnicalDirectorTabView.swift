@@ -23,7 +23,7 @@ public struct TechnicalDirectorTabView: View {
         ) { id in
             switch id {
             case "overview":       TDDashboardView()
-            case "branches":       BranchHeatMapView()
+            case "branches":       BranchPerformanceView()
             case "athletes":       AthleteListView(scope: .all)
             case "coaches":        CoachListView()
             case "tournaments":    TournamentListView()

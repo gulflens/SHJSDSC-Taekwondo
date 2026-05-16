@@ -290,6 +290,30 @@ Certifications module — file map (`Features/Operations/`):
 `CertificationKind` gained `systemIcon` and `categoryLabelKey`. The custom
 table is hand-built (no `List` / `Table`) — column header + `LazyVStack` rows.
 
+## Stage 1.11 — Branch Performance Overview remodel
+
+Replaces the old progress-bar heat map with a federation-grade executive
+dashboard. Header + 6 executive analytics cards + a branch performance
+ranking + a Key Insights panel + three comparison charts.
+
+Branch overview — file map:
+- `BranchPerformanceView` (`Features/Branches/` — the dashboard; routed from
+  the "branches" sidebar item for Admin / TD / Developer. `BranchHeatMapView`
+  was deleted)
+- `BranchOverviewKit` (`ExecutiveAnalyticsCard`, `MiniSparkline`,
+  `TrendIndicator`, `BranchGradeRing`, `PerformanceMetricRing`,
+  `BranchStatusChip`, `RankBadge`, `KeyInsightCard`, `BranchSectionCard`)
+- `BranchCharts` (`AthleteDistributionChart` donut, `AttendanceTrendChart`
+  12-week multi-line — both Swift Charts — and a hand-drawn `CoachingRadarChart`)
+- `BranchAnalyticsEngine` (`Core/Services/`, pure — sibling to `ScoreEngine`)
+
+`BranchAnalyticsEngine` turns repository data into `BranchAnalytics`:
+composite / grade / the six metric scores are real averages of seeded
+`PerformanceScore` data; growth %, the 12-week attendance trend and the
+coaching radar are demo-derived (deterministic functions of the real scores
++ a stable per-branch FNV seed) so the dashboard is populated and
+reproducible without a separate analytics table.
+
 ## Embedded model dossiers
 Heavy per-athlete records (`coachNotes`, `documents`, `ranking`, plus existing
 `emergencyContacts` / `injuries` / `weightHistory`) live as embedded Codable
