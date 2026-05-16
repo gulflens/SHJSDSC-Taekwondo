@@ -30,6 +30,11 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
     /// Drives the Arabic vs English/French logo variant.
     @Environment(\.layoutDirection) private var layoutDirection
     @State private var selection: String?
+    /// Bumped on every sidebar tap. Keys the detail `NavigationStack`'s `.id`
+    /// so each tap rebuilds it from scratch — popping any pushed views and
+    /// resetting the module's transient state (sheets, selections, drafts).
+    /// Sidebar navigation is a hard root-context switch, not browser history.
+    @State private var navigationResetID = UUID()
     /// Sidebar collapse state on iPad. Persists across launches so HQ users
     /// who prefer the icon-only mode get it back next time. Keyed per-app
     /// (not per-role) — switching roles in demo mode preserves it.
@@ -280,6 +285,8 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         let isSelected = selection == item.id
         return Button {
             selection = item.id
+            // Hard root-context switch — rebuild the detail stack from scratch.
+            navigationResetID = UUID()
             collapseSidebarIfExpanded()
         } label: {
             HStack(spacing: 12) {
@@ -364,6 +371,9 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
             .navigationTitle(Text(currentDetailTitle))
             .appNavigationChrome()
         }
+        // A fresh `.id` on every sidebar tap rebuilds the whole stack —
+        // pushed views are popped and the module reopens at its root.
+        .id(navigationResetID)
     }
 
     private var currentDetailTitle: LocalizedStringKey {
