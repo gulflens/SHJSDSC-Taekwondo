@@ -110,9 +110,13 @@ public struct AnnouncementsView: View {
             statTiles(store)
             filterPills
             if isWide {
-                HStack(alignment: .top, spacing: 16) {
-                    listPanel(store).frame(maxWidth: .infinity)
-                    detailColumn.frame(width: 440)
+                GeometryReader { geo in
+                    let gap: CGFloat = 16
+                    let w = max(0, geo.size.width - gap)
+                    HStack(alignment: .top, spacing: gap) {
+                        listPanel(store).frame(width: w * 0.4)
+                        detailColumn.frame(width: w * 0.6)
+                    }
                 }
             } else {
                 listPanel(store)

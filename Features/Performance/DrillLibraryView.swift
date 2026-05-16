@@ -71,9 +71,13 @@ public struct DrillLibraryView: View {
         if loading {
             Spacer(); ProgressView(); Spacer()
         } else if isWide {
-            HStack(alignment: .top, spacing: 16) {
-                listPanel.frame(maxWidth: .infinity)
-                detailColumn.frame(width: 420)
+            GeometryReader { geo in
+                let gap: CGFloat = 16
+                let w = max(0, geo.size.width - gap)
+                HStack(alignment: .top, spacing: gap) {
+                    listPanel.frame(width: w * 0.4)
+                    detailColumn.frame(width: w * 0.6)
+                }
             }
             .padding(.horizontal, 18)
             .padding(.bottom, 18)

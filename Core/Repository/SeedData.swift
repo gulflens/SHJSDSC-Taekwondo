@@ -913,10 +913,10 @@ public enum SeedData {
             status: .published,
             category: .event,
             imageAssetName: "announcement_parent_meeting",
+            audiences: [.parents],
             location: "Al Rahmania Main Hall",
             eventStart: days(9),
             eventEnd: days(9),
-            audiences: [.parents],
             delivery: [
                 AnnouncementDelivery(channel: .inApp, state: .delivered),
                 AnnouncementDelivery(channel: .email, state: .sent),
@@ -938,11 +938,11 @@ public enum SeedData {
             status: .published,
             category: .event,
             imageAssetName: "announcement_referee_clinic",
+            audiences: [.coaches, .branchManagers],
             location: "Al Rahmania Main Hall",
             eventStart: days(14),
             eventEnd: days(14),
             registrationDeadline: days(11),
-            audiences: [.coaches, .branchManagers],
             delivery: [
                 AnnouncementDelivery(channel: .inApp, state: .delivered),
                 AnnouncementDelivery(channel: .email, state: .sent)

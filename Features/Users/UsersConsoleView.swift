@@ -18,6 +18,8 @@ public struct UsersConsoleView: View {
     @State private var page = 0
     @State private var showCreate = false
     @State private var createRole: Role = .coach
+    /// Measured width of the table/detail split row — drives the 40/60 ratio.
+    @State private var splitWidth: CGFloat = 0
 
     public init() {}
 
@@ -239,12 +241,25 @@ public struct UsersConsoleView: View {
     private var mainArea: some View {
         if isWide {
             HStack(alignment: .top, spacing: 18) {
-                tableCard.frame(maxWidth: .infinity)
-                detailPane.frame(width: 320)
+                tableCard.frame(width: panelWidth(0.4))
+                detailPane.frame(width: panelWidth(0.6))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear { splitWidth = geo.size.width }
+                        .onChange(of: geo.size.width) { _, w in splitWidth = w }
+                }
+            )
         } else {
             tableCard
         }
+    }
+
+    /// 40 / 60 split of the available width, minus the 18 pt gap.
+    private func panelWidth(_ fraction: CGFloat) -> CGFloat {
+        max(0, splitWidth - 18) * fraction
     }
 
     private var tableCard: some View {
