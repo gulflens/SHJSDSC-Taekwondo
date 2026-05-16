@@ -271,13 +271,14 @@ public struct UsersConsoleView: View {
                                titleKey: "users.empty.title", messageKey: "users.empty.message")
                     .padding(.vertical, 16)
             } else {
-                ForEach(Array(rows.enumerated()), id: \.element.id) { index, user in
-                    if index > 0 { Divider().opacity(0.4) }
-                    userRow(user)
+                LazyVStack(spacing: 8) {
+                    ForEach(rows) { user in
+                        userRow(user)
+                    }
                 }
             }
             if !filtered.isEmpty {
-                Divider().opacity(0.5)
+                Divider().opacity(0.5).padding(.top, 8)
                 paginationFooter
             }
         }
@@ -290,15 +291,17 @@ public struct UsersConsoleView: View {
     @ViewBuilder
     private func userRow(_ user: User) -> some View {
         if isWide {
-            Button { selectedUser = user } label: {
-                UserRowContent(user: user, branchName: branchName(user), selected: selectedUser?.id == user.id)
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { selectedUser = user }
+            } label: {
+                UserRowContent(user: user, selected: selectedUser?.id == user.id)
             }
             .buttonStyle(.plain)
         } else {
             NavigationLink {
                 UserDetailScreen(user: user, branchName: branchName(user))
             } label: {
-                UserRowContent(user: user, branchName: branchName(user), selected: false)
+                UserRowContent(user: user, selected: false)
             }
             .buttonStyle(.plain)
         }
@@ -416,16 +419,15 @@ public struct UsersConsoleView: View {
 
 private struct UserRowContent: View {
     let user: User
-    let branchName: String
     let selected: Bool
-    @Environment(\.horizontalSizeClass) private var hSize
-    private var isWide: Bool { hSize == .regular }
 
     var body: some View {
-        HStack(spacing: 12) {
-            Avatar(seed: user.avatarSeed, label: initials(user.fullName), size: 38)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: user.fullName).scaledFont(.subheadline, weight: .semibold).lineLimit(1)
+        HStack(spacing: 11) {
+            Avatar(seed: user.avatarSeed, label: initials(user.fullName), size: 42)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(verbatim: user.fullName)
+                    .scaledFont(.subheadline, weight: .semibold)
+                    .lineLimit(1)
                 Group {
                     if let email = user.email, !email.isEmpty {
                         Text(verbatim: email)
@@ -435,30 +437,24 @@ private struct UserRowContent: View {
                 }
                 .scaledFont(.caption2).foregroundStyle(.secondary).lineLimit(1)
             }
-            if isWide {
-                Spacer(minLength: 8)
-                rolePill.frame(width: 150, alignment: .leading)
-                Text(verbatim: branchName)
-                    .scaledFont(.caption, weight: .medium)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 130, alignment: .leading).lineLimit(1)
-                accessChip.frame(width: 116, alignment: .leading)
-                statusChip.frame(width: 84, alignment: .leading)
-                Image(systemName: "ellipsis").scaledFont(.caption, weight: .semibold)
-                    .foregroundStyle(.secondary).frame(width: 20)
-            } else {
-                Spacer(minLength: 8)
-                VStack(alignment: .trailing, spacing: 4) {
-                    rolePill
-                    accessChip
-                }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 5) {
+                rolePill
+                accessChip
             }
+            .frame(maxWidth: 150, alignment: .trailing)
         }
-        .padding(.horizontal, 6).padding(.vertical, 10)
+        .padding(.horizontal, 11).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(selected ? Color.accentColor.opacity(0.08) : Color.clear)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(selected ? Color.accentColor.opacity(0.07) : Color.secondary.opacity(0.04))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(selected ? Color.accentColor : Color.secondary.opacity(0.08),
+                        lineWidth: selected ? 1.5 : 1)
+        )
+        .shadow(color: selected ? Color.accentColor.opacity(0.16) : .clear, radius: 8, y: 3)
         .contentShape(Rectangle())
     }
 
@@ -487,14 +483,6 @@ private struct UserRowContent: View {
         case .readOnly: .secondary
         case .restricted: .orange
         }
-    }
-
-    private var statusChip: some View {
-        HStack(spacing: 4) {
-            Circle().fill(Color.secondaryAccent).frame(width: 6, height: 6)
-            Text("users.status.active").scaledFont(.caption2, weight: .semibold)
-        }
-        .foregroundStyle(Color.secondaryAccent)
     }
 
     private func initials(_ name: String) -> String {
