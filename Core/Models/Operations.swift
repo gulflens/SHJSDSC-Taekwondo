@@ -172,6 +172,20 @@ public enum CertificationKind: String, Codable, CaseIterable, Sendable, Hashable
     case firstAid, safeguarding, wtCoaching, doping, refereeing
 
     public var labelKey: String { "cert.\(rawValue)" }
+
+    /// Grouping shown under the branch in the certifications table.
+    public var categoryLabelKey: String { "cert.category.\(rawValue)" }
+
+    /// SF Symbol for the row's status icon tile.
+    public var systemIcon: String {
+        switch self {
+        case .firstAid:     "cross.case.fill"
+        case .safeguarding: "shield.lefthalf.filled"
+        case .wtCoaching:   "rosette"
+        case .doping:       "drop.fill"
+        case .refereeing:   "flag.checkered"
+        }
+    }
 }
 
 public enum CertificationSeverity: String, Sendable, Hashable {

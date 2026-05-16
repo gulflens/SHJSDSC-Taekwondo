@@ -273,6 +273,23 @@ load `announcement_<slug>` asset images, falling back to a category gradient.
 covers pre-1.9 fields — the detail/row "Edit" action opens it as a fresh
 compose. A true editor covering the dossier fields is a follow-up.
 
+## Stage 1.10 — Certifications dashboard remodel
+
+Federation-grade compliance dashboard. Fixed header + compliance overview
+card + status filter pills + a custom certifications table with pagination.
+Single-column (no detail panel) — the page scrolls as one surface.
+
+Certifications module — file map (`Features/Operations/`):
+- `CertificationsListView` (full screen — header with search / Filter menu /
+  Add button, compliance overview card, filter pills, custom table, pagination
+  footer; iPhone uses stacked cards. Keeps the Add + Renew sheets)
+- `CertificationsKit` (`CertificationSeverity.tint`, `CertificationStatusIcon`,
+  `StatusBadgeView`, `ExpiryMetadataView`, `ComplianceRing`,
+  `SearchCertificationField`)
+
+`CertificationKind` gained `systemIcon` and `categoryLabelKey`. The custom
+table is hand-built (no `List` / `Table`) — column header + `LazyVStack` rows.
+
 ## Embedded model dossiers
 Heavy per-athlete records (`coachNotes`, `documents`, `ranking`, plus existing
 `emergencyContacts` / `injuries` / `weightHistory`) live as embedded Codable
