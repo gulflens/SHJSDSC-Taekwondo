@@ -37,7 +37,6 @@ public struct UsersConsoleView: View {
             .padding(.horizontal, isWide ? 22 : 14)
             .padding(.top, 14)
             .padding(.bottom, 28)
-            .frame(maxWidth: 1320)
             .frame(maxWidth: .infinity)
         }
         .background(Color.appBackground.ignoresSafeArea())
