@@ -132,18 +132,40 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         }
     }
 
-    // MARK: - iPad: NavigationSplitView with layered sidebar
+    // MARK: - Regular width: sidebar + detail
 
+    /// Expanded / collapsed sidebar column width.
+    private var sidebarColumnWidth: CGFloat {
+        (isSidebarCollapsed ? collapsedSidebarWidth : expandedSidebarIdeal) * uiScale
+    }
+
+    @ViewBuilder
     private var regularShell: some View {
-        // Pin the sidebar column open — `NavigationSplitView` otherwise
-        // auto-hides it on window resize and leaves no way back, since the
-        // expand/collapse toggle lives inside the sidebar itself. The shell's
-        // own `isSidebarCollapsed` icon-rail mode handles reclaiming space.
+        #if os(macOS)
+        // macOS: a plain HStack rather than NavigationSplitView. The sidebar
+        // is fully custom-drawn, so NavigationSplitView added nothing but
+        // bugs — under RTL (Arabic) it opened a white gap beside the sidebar
+        // and mis-sized the detail column, and it auto-hid the sidebar on
+        // window resize. An HStack mirrors cleanly for Arabic, never drops
+        // the sidebar, and butts the panes together with no gap.
+        HStack(spacing: 0) {
+            sidebarContent
+                .frame(width: sidebarColumnWidth)
+            Divider()
+            detailContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .simultaneousGesture(
+                    TapGesture().onEnded { collapseSidebarIfExpanded() }
+                )
+        }
+        #else
+        // iPad: native NavigationSplitView. Pin the column open — it would
+        // otherwise auto-hide the sidebar on resize with no way back.
         NavigationSplitView(columnVisibility: .constant(.all)) {
             sidebarContent
                 .navigationSplitViewColumnWidth(
                     min: (isSidebarCollapsed ? collapsedSidebarWidth : 240) * uiScale,
-                    ideal: (isSidebarCollapsed ? collapsedSidebarWidth : expandedSidebarIdeal) * uiScale,
+                    ideal: sidebarColumnWidth,
                     max: (isSidebarCollapsed ? collapsedSidebarWidth : 340) * uiScale
                 )
         } detail: {
@@ -153,6 +175,7 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
                 )
         }
         .navigationSplitViewStyle(.balanced)
+        #endif
     }
 
     /// Auto-collapses the iPad sidebar to icon-only the moment the user
@@ -218,15 +241,22 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         }
     }
 
-    /// Brand logo — fills the sidebar width (height follows the artwork's
-    /// aspect ratio). Adapts to light/dark via the asset catalogue, and to
-    /// Arabic vs English/French via the layout direction.
+    /// Brand logo — sized to 75% of the sidebar width and centered (height
+    /// follows the artwork's aspect ratio). Adapts to light/dark via the
+    /// asset catalogue and to Arabic vs English/French via layout direction.
     private var sidebarLogo: some View {
-        Image(layoutDirection == .rightToLeft ? "SidebarLogoAr" : "SidebarLogo")
-            .resizable()
-            .scaledToFit()
-            .frame(maxWidth: .infinity)
-            .accessibilityLabel(Text(verbatim: "SSDC Taekwondo"))
+        // Logo artwork is a fixed 1365×784 export.
+        let artworkAspect: CGFloat = 1365.0 / 784.0
+        let widthFraction: CGFloat = 0.75
+        return GeometryReader { geo in
+            Image(layoutDirection == .rightToLeft ? "SidebarLogoAr" : "SidebarLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: geo.size.width * widthFraction)
+                .frame(maxWidth: .infinity)
+        }
+        .aspectRatio(artworkAspect / widthFraction, contentMode: .fit)
+        .accessibilityLabel(Text(verbatim: "SSDC Taekwondo"))
     }
 
     private var sidebarToggleButton: some View {
