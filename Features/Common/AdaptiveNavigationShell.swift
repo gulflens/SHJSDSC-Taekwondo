@@ -144,15 +144,21 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
         (isSidebarCollapsed ? collapsedSidebarWidth : expandedSidebarIdeal) * uiScale
     }
 
-    @ViewBuilder
+    /// Sidebar + detail laid out as a plain `HStack` on **both macOS and
+    /// iPad**.
+    ///
+    /// iPad previously used `NavigationSplitView`, but it caches its detail
+    /// column: changing the detail `NavigationStack`'s `.id` — the sidebar's
+    /// navigation-reset mechanism (`selectItem` → `navigationResetID`) — was
+    /// ignored while a profile (coach / athlete / branch) was pushed, so the
+    /// sidebar tap appeared dead until the user manually backed out.
+    ///
+    /// The custom sidebar needs nothing `NavigationSplitView` provides (the
+    /// code already pinned `columnVisibility` to `.all`). A plain `HStack`
+    /// rebuilds the detail reliably on every tap, mirrors cleanly under RTL,
+    /// and never drops the sidebar — macOS has shipped this exact layout
+    /// since the same class of `NavigationSplitView` bugs forced the switch.
     private var regularShell: some View {
-        #if os(macOS)
-        // macOS: a plain HStack rather than NavigationSplitView. The sidebar
-        // is fully custom-drawn, so NavigationSplitView added nothing but
-        // bugs — under RTL (Arabic) it opened a white gap beside the sidebar
-        // and mis-sized the detail column, and it auto-hid the sidebar on
-        // window resize. An HStack mirrors cleanly for Arabic, never drops
-        // the sidebar, and butts the panes together with no gap.
         HStack(spacing: 0) {
             sidebarContent
                 .frame(width: sidebarColumnWidth)
@@ -163,24 +169,6 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
                     TapGesture().onEnded { collapseSidebarIfExpanded() }
                 )
         }
-        #else
-        // iPad: native NavigationSplitView. Pin the column open — it would
-        // otherwise auto-hide the sidebar on resize with no way back.
-        NavigationSplitView(columnVisibility: .constant(.all)) {
-            sidebarContent
-                .navigationSplitViewColumnWidth(
-                    min: (isSidebarCollapsed ? collapsedSidebarWidth : 240) * uiScale,
-                    ideal: sidebarColumnWidth,
-                    max: (isSidebarCollapsed ? collapsedSidebarWidth : 340) * uiScale
-                )
-        } detail: {
-            detailContent
-                .simultaneousGesture(
-                    TapGesture().onEnded { collapseSidebarIfExpanded() }
-                )
-        }
-        .navigationSplitViewStyle(.balanced)
-        #endif
     }
 
     /// Auto-collapses the iPad sidebar to icon-only the moment the user
