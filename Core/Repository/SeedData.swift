@@ -449,6 +449,132 @@ public enum SeedData {
             athletes[i].weightHistory = history
         }
 
+        // === Coaching pathway: assistant coaches (Stage 1.15) ===
+        // Assistant coaches are promoted athletes who keep competing while
+        // learning to coach. They are Athletes carrying an embedded coaching
+        // dossier — never a standalone entity. Yassin mentors two (Ahmed +
+        // Rashid); Elias and Dr Ali mentor one each.
+        let assistantCoachDossiers: [EntityID: AssistantCoachProfile] = [
+            a1.id: AssistantCoachProfile(
+                supervisingCoachID: coachYassin.id,
+                primaryBranchID: branchAlNouf.id,
+                supportBranchIDs: [branchAlNasserya.id],
+                permissions: [.takeAttendance, .assistWarmUp, .assistDrills,
+                              .monitorKidsGroups, .assistDuringClasses],
+                developmentLevel: .assistantCoach,
+                startedCoachingAt: days(-280),
+                assistedSessionCount: 34,
+                evaluations: [
+                    CoachingEvaluation(
+                        date: days(-30), evaluatorCoachID: coachYassin.id,
+                        evaluatorName: coachYassin.fullName,
+                        overallScore: 4, reliability: 4, leadership: 3,
+                        notes: "Dependable with the cubs group. Build confidence leading warm-ups solo."
+                    ),
+                    CoachingEvaluation(
+                        date: days(-160), evaluatorCoachID: coachYassin.id,
+                        evaluatorName: coachYassin.fullName,
+                        overallScore: 3, reliability: 4, leadership: 3,
+                        notes: "Strong start. Encourage clearer instruction during drills."
+                    ),
+                ]
+            ),
+            a6.id: AssistantCoachProfile(
+                supervisingCoachID: coachYassin.id,
+                primaryBranchID: branchIndustrial18.id,
+                supportBranchIDs: [branchAlNouf.id],
+                permissions: Set(CoachingPermission.assistantCoachGrantable),
+                developmentLevel: .juniorCoach,
+                startedCoachingAt: days(-620),
+                assistedSessionCount: 88,
+                evaluations: [
+                    CoachingEvaluation(
+                        date: days(-21), evaluatorCoachID: coachYassin.id,
+                        evaluatorName: coachYassin.fullName,
+                        overallScore: 5, reliability: 5, leadership: 5,
+                        notes: "Ready to run kids sessions independently. Strong candidate for Junior Coach promotion."
+                    ),
+                    CoachingEvaluation(
+                        date: days(-120), evaluatorCoachID: coachYassin.id,
+                        evaluatorName: coachYassin.fullName,
+                        overallScore: 4, reliability: 5, leadership: 4,
+                        notes: "Excellent rapport with athletes. Keep developing competition-corner experience."
+                    ),
+                    CoachingEvaluation(
+                        date: days(-260), evaluatorCoachID: coachYassin.id,
+                        evaluatorName: coachYassin.fullName,
+                        overallScore: 4, reliability: 4, leadership: 4,
+                        notes: "Reliable across both branches. Leadership growing fast."
+                    ),
+                ]
+            ),
+            a4.id: AssistantCoachProfile(
+                supervisingCoachID: coachElias.id,
+                primaryBranchID: branchAlNouf.id,
+                supportBranchIDs: [],
+                permissions: [.takeAttendance, .assistWarmUp, .assistDrills],
+                developmentLevel: .assistantCoach,
+                startedCoachingAt: days(-150),
+                assistedSessionCount: 18,
+                evaluations: [
+                    CoachingEvaluation(
+                        date: days(-40), evaluatorCoachID: coachElias.id,
+                        evaluatorName: coachElias.fullName,
+                        overallScore: 3, reliability: 3, leadership: 3,
+                        notes: "Early days — pair with a senior assistant for the first months."
+                    ),
+                ]
+            ),
+            g5.id: AssistantCoachProfile(
+                supervisingCoachID: coachAli.id,
+                primaryBranchID: branchAlRahmania.id,
+                supportBranchIDs: [branchAlNasserya.id],
+                permissions: Set(CoachingPermission.assistantCoachGrantable),
+                developmentLevel: .juniorCoach,
+                startedCoachingAt: days(-500),
+                assistedSessionCount: 71,
+                evaluations: [
+                    CoachingEvaluation(
+                        date: days(-18), evaluatorCoachID: coachAli.id,
+                        evaluatorName: coachAli.fullName,
+                        overallScore: 5, reliability: 5, leadership: 4,
+                        notes: "Outstanding with the juniors. Federation-grade coaching instincts."
+                    ),
+                    CoachingEvaluation(
+                        date: days(-140), evaluatorCoachID: coachAli.id,
+                        evaluatorName: coachAli.fullName,
+                        overallScore: 4, reliability: 5, leadership: 4,
+                        notes: "Consistent and trusted. Ready for more competition responsibility."
+                    ),
+                    CoachingEvaluation(
+                        date: days(-300), evaluatorCoachID: coachAli.id,
+                        evaluatorName: coachAli.fullName,
+                        overallScore: 4, reliability: 4, leadership: 3,
+                        notes: "Promising. Focus on projecting voice and presence in larger groups."
+                    ),
+                ]
+            ),
+        ]
+        // Extra program-role memberships beyond the auto-derived ones.
+        let extraProgramRoles: [EntityID: Set<ProgramRole>] = [
+            g5.id: [.eliteSquad],
+            g2.id: [.eliteSquad],
+            a9.id: [.demoTeam],
+        ]
+        for i in athletes.indices {
+            let id = athletes[i].id
+            if athletes[i].status == .competitionTeam {
+                athletes[i].programRoles.insert(.competitionTeam)
+            }
+            if let extra = extraProgramRoles[id] {
+                athletes[i].programRoles.formUnion(extra)
+            }
+            if let dossier = assistantCoachDossiers[id] {
+                athletes[i].assistantCoach = dossier
+                athletes[i].programRoles.insert(.assistantCoach)
+            }
+        }
+
         let userAthlete = User(
             id: a1.id, fullName: a1.fullName, fullNameAr: a1.fullNameAr,
             role: .athlete, primaryBranchID: a1.branchID, avatarSeed: a1.avatarSeed

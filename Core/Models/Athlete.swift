@@ -106,6 +106,18 @@ public struct Athlete: Codable, Identifiable, Hashable, Sendable {
     /// Current Rankings card when this is nil.
     public var ranking: AthleteRanking?
 
+    // === Coaching pathway (Stage 1.15) ===
+    /// Program memberships the athlete holds beyond being an athlete — drives
+    /// the Roles section chips. Always includes `.athlete`. The declaration
+    /// default keeps synthesised `Codable` backward-compatible with rows that
+    /// predate this field.
+    public var programRoles: Set<ProgramRole> = [.athlete]
+    /// Coaching dossier — non-nil iff the athlete also serves as an assistant
+    /// coach (`programRoles` then also contains `.assistantCoach`). An
+    /// assistant coach is an athlete with this dossier, never a separate
+    /// entity — see `AssistantCoachProfile`.
+    public var assistantCoach: AssistantCoachProfile?
+
     public init(
         id: EntityID = UUID(),
         memberNumber: Int,

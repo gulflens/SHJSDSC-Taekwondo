@@ -395,6 +395,67 @@ cards reuse `ExecutiveAnalyticsCard` / `MiniSparkline` from `BranchOverviewKit`
 and the `homeSpark` generator from `RoleHomeKit`. Assigned-athlete counts are
 real — grouped from `Athlete.primaryCoachID`.
 
+## Stage 1.15 — Assistant Coach & coaching development
+
+Models the SSDC coaching *development pathway* — a sports-development
+structure, deliberately not an HR hierarchy. An Assistant Coach is **not** a
+standalone entity: it is an active `Athlete` who additionally carries an
+embedded coaching dossier. The duality lives entirely on `Athlete`:
+`programRoles.contains(.assistantCoach)` + a non-nil `assistantCoach`. This
+keeps the Repository surface stable (embedded-dossier pattern) and the athlete
+keeps every athlete capability — belt, attendance, competitions.
+
+Model layer — `Core/Models/CoachingDevelopment.swift`:
+- `ProgramRole` (athlete / assistantCoach / competitionTeam / eliteSquad /
+  demoTeam) — drives the athlete profile's Roles chips. Multi-role by design.
+- `CoachingPermission` — assistant coaches hold a *subset*; the senior-only
+  actions in `.restricted` (grading approval, suspension, branch management,
+  coach evaluation, system admin) can never be granted at this tier.
+- `DevelopmentLevel` — the pipeline rung: athlete → assistantCoach →
+  juniorCoach → coach → headCoach → technicalDirector.
+- `CoachingEvaluation` — a supervising coach's mentorship feedback (overall /
+  reliability / leadership, 1...5).
+- `AssistantCoachProfile` — the embedded dossier: `supervisingCoachID`,
+  `primaryBranchID` + `supportBranchIDs`, `permissions`, `developmentLevel`,
+  `assistedSessionCount`, `evaluations`; computed `coachEvaluationScore` and
+  `promotionReadiness` (deterministic blend — no analytics table).
+
+`Athlete` gained `programRoles: Set<ProgramRole>` (declaration default
+`[.athlete]` keeps synthesised Codable backward-compatible) and
+`assistantCoach: AssistantCoachProfile?`. Seed data promotes four athletes to
+assistant coaches (Ahmed + Rashid under Yassin, Hamad under Elias, Hessa under
+Dr Ali) and auto-derives `.competitionTeam` program roles from status.
+
+UX layer — `Features/Coaching/` (reuses Stage 1.6 card tokens, no new
+design tokens; colour tints live in the kit, never on `Core/`):
+- `CoachingKit` — `ProgramRole.tint` / `DevelopmentLevel.tint` /
+  `CoachingPermission.tint`, `RoleChipView`, `BranchAssignmentChip`,
+  `DevelopmentLevelBadge`, `ReadinessMeter`, `EvaluationStars`,
+  `PipelineStageNode`
+- `AssistantCoachCard` — premium card: identity + pipeline rung + branch
+  chips + readiness + coaching activity
+- `CoachingDevelopmentCard` + `FlowChipRow` (wrapping `Layout`) — the full
+  dossier: pipeline, mentorship, branches, allowed-vs-restricted permissions,
+  evaluations
+- `AthleteRoleSection` — the athlete profile's Roles section (chips + dossier
+  when an assistant coach); embedded at the top of `AthleteMoreTab`
+- `CoachSupervisionPanel` — the coach profile's "Assistant Coaches" section
+  (derives the roster by `supervisingCoachID`); embedded in the coach
+  profile's Athletes tab
+- `MentorshipRelationshipView` — one mentor + their assistant coaches as a
+  connected tree unit
+- `CoachHierarchyView` — the coaching structure: TD/Head Coach → coaches →
+  assistant coaches
+- `CoachingPipelineView` — the athlete-to-leadership progression strip
+- `CoachingDevelopmentView` — the Technical Director's development dashboard
+  (KPIs + pipeline + hierarchy + branch coverage + every assistant coach);
+  routed from a new "development" sidebar item in `TechnicalDirectorTabView`
+
+Supervision is *derived*, never a stored back-reference: an assistant coach's
+mentor is `assistantCoach.supervisingCoachID`; the coach side scans athletes.
+No new Repository methods — the embedded-dossier pattern keeps the protocol
+surface stable.
+
 ## Subview navigation chrome
 
 The system `NavigationStack` back button is unreliable in this app's shell —

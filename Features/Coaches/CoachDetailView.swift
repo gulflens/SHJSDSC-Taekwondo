@@ -79,7 +79,10 @@ public struct CoachDetailView: View {
                             isWide: isWide
                         )
                     case .athletes:
-                        CoachAthletesTab(athletes: assignedAthletes, isWide: isWide)
+                        VStack(spacing: 14) {
+                            CoachAthletesTab(athletes: assignedAthletes, isWide: isWide)
+                            CoachSupervisionPanel(coach: coach, isWide: isWide)
+                        }
                     case .performance:
                         CoachPerformanceTab(
                             coach: coach,

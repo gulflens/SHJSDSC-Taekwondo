@@ -16,6 +16,7 @@ public struct AthleteMoreTab: View {
 
     public var body: some View {
         VStack(spacing: 14) {
+            AthleteRoleSection(athlete: athlete)
             familyCard
             emergencyContactsCard
             SectionCard("more.belt_progression", icon: "circle.hexagongrid.fill") {

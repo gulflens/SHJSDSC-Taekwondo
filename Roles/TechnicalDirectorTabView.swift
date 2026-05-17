@@ -11,6 +11,7 @@ public struct TechnicalDirectorTabView: View {
                 SidebarItem("branches",        titleKey: "tab.branches",         icon: "building.2.fill"),
                 SidebarItem("athletes",        titleKey: "tab.athletes",         icon: "person.3.fill"),
                 SidebarItem("coaches",         titleKey: "tab.coaches",          icon: "person.crop.rectangle.stack.fill"),
+                SidebarItem("development",     titleKey: "tab.development",      icon: "figure.taekwondo"),
                 SidebarItem("tournaments",     titleKey: "tab.tournaments",      icon: "rosette"),
                 SidebarItem("grading",         titleKey: "tab.grading",          icon: "medal.fill"),
                 SidebarItem("announcements",   titleKey: "tab.announcements",    icon: "megaphone.fill"),
@@ -26,6 +27,7 @@ public struct TechnicalDirectorTabView: View {
             case "branches":       TDDashboardView()
             case "athletes":       AthleteListView(scope: .all)
             case "coaches":        CoachListView()
+            case "development":    CoachingDevelopmentView()
             case "tournaments":    TournamentListView()
             case "grading":        GradingDashboardView()
             case "announcements":  AnnouncementsView()
