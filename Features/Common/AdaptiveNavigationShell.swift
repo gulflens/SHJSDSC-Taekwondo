@@ -49,8 +49,10 @@ public struct AdaptiveNavigationShell<Detail: View>: View {
     private let primaryCompactTabCount = 4
 
     /// Width of the sidebar in collapsed (icon-only) and expanded states.
+    /// The expanded width is tuned to sit just past the longest tab label —
+    /// the row content (icon + label) leaves no large empty gutter.
     private let collapsedSidebarWidth: CGFloat = 72
-    private let expandedSidebarIdeal: CGFloat = 280
+    private let expandedSidebarIdeal: CGFloat = 230
 
     public init(
         appTitle: LocalizedStringKey,
