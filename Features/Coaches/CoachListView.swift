@@ -153,28 +153,33 @@ public struct CoachListView: View {
     // MARK: Content
 
     private var content: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                analyticsRow
-                filterPills
-                if isWide {
-                    GeometryReader { geo in
-                        let gap: CGFloat = 16
-                        let w = max(0, geo.size.width - gap)
-                        HStack(alignment: .top, spacing: gap) {
-                            listColumn.frame(width: w * 0.62)
-                            detailColumn.frame(width: w * 0.38)
+        // The list+detail split is shown only on a wide landscape canvas;
+        // iPhone and iPad-portrait drop the panel and push a detail screen.
+        GeometryReader { canvas in
+            let split = usesSplitDetailLayout(for: canvas.size)
+            ScrollView {
+                VStack(spacing: 14) {
+                    analyticsRow
+                    filterPills
+                    if split {
+                        GeometryReader { geo in
+                            let gap: CGFloat = 16
+                            let w = max(0, geo.size.width - gap)
+                            HStack(alignment: .top, spacing: gap) {
+                                listColumn(split: true).frame(width: w * 0.62)
+                                detailColumn.frame(width: w * 0.38)
+                            }
                         }
+                        .frame(height: 560)
+                    } else {
+                        listColumn(split: false)
                     }
-                    .frame(height: 560)
-                } else {
-                    listColumn
+                    insightsCard
                 }
-                insightsCard
+                .padding(.horizontal, isWide ? 22 : 14)
+                .padding(.top, 4)
+                .padding(.bottom, 18)
             }
-            .padding(.horizontal, isWide ? 22 : 14)
-            .padding(.top, 4)
-            .padding(.bottom, 18)
         }
     }
 
@@ -236,7 +241,7 @@ public struct CoachListView: View {
 
     // MARK: List column
 
-    private var listColumn: some View {
+    private func listColumn(split: Bool) -> some View {
         VStack(spacing: 0) {
             if filteredIntels.isEmpty {
                 EmptyStateCard(icon: "person.crop.circle.badge.questionmark",
@@ -248,7 +253,7 @@ public struct CoachListView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(pageSlice) { intel in
-                            coachRow(intel)
+                            coachRow(intel, split: split)
                         }
                     }
                     .padding(12)
@@ -264,8 +269,8 @@ public struct CoachListView: View {
     }
 
     @ViewBuilder
-    private func coachRow(_ intel: CoachIntel) -> some View {
-        if isWide {
+    private func coachRow(_ intel: CoachIntel, split: Bool) -> some View {
+        if split {
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) { selectedID = intel.id }
             } label: {

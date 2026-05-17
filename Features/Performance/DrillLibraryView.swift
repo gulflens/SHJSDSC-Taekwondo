@@ -70,27 +70,34 @@ public struct DrillLibraryView: View {
     private var content: some View {
         if loading {
             Spacer(); ProgressView(); Spacer()
-        } else if isWide {
-            GeometryReader { geo in
-                let gap: CGFloat = 16
-                let w = max(0, geo.size.width - gap)
-                HStack(alignment: .top, spacing: gap) {
-                    listPanel.frame(width: w * 0.5)
-                    detailColumn.frame(width: w * 0.5)
+        } else {
+            // The list+detail split is shown only on a wide landscape canvas;
+            // iPhone and iPad-portrait drop the panel and push a detail screen.
+            GeometryReader { canvas in
+                let split = usesSplitDetailLayout(for: canvas.size)
+                if split {
+                    GeometryReader { geo in
+                        let gap: CGFloat = 16
+                        let w = max(0, geo.size.width - gap)
+                        HStack(alignment: .top, spacing: gap) {
+                            listPanel(split: true).frame(width: w * 0.5)
+                            detailColumn.frame(width: w * 0.5)
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 18)
+                } else {
+                    listPanel(split: false)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 14)
                 }
             }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 18)
-        } else {
-            listPanel
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
         }
     }
 
     // MARK: List panel
 
-    private var listPanel: some View {
+    private func listPanel(split: Bool) -> some View {
         VStack(spacing: 0) {
             HStack {
                 Text(verbatim: String(format: NSLocalizedString("drill.count.fmt", comment: ""),
@@ -114,7 +121,7 @@ public struct DrillLibraryView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(pageSlice) { drill in
-                            drillRow(drill)
+                            drillRow(drill, split: split)
                         }
                     }
                     .padding(12)
@@ -134,8 +141,8 @@ public struct DrillLibraryView: View {
     }
 
     @ViewBuilder
-    private func drillRow(_ drill: DrillLibraryEntry) -> some View {
-        if isWide {
+    private func drillRow(_ drill: DrillLibraryEntry, split: Bool) -> some View {
+        if split {
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) { selectedID = drill.id }
             } label: {

@@ -168,25 +168,30 @@ public struct AthleteListView: View {
     // MARK: Content
 
     private var content: some View {
-        VStack(spacing: 14) {
-            analyticsRow
-            filterPills
-            if isWide {
-                GeometryReader { geo in
-                    let gap: CGFloat = 16
-                    let w = max(0, geo.size.width - gap)
-                    HStack(alignment: .top, spacing: gap) {
-                        listPanel.frame(width: w * 0.62)
-                        detailColumn.frame(width: w * 0.38)
+        // The list+detail split is shown only on a wide landscape canvas;
+        // iPhone and iPad-portrait drop the panel and push a detail screen.
+        GeometryReader { canvas in
+            let split = usesSplitDetailLayout(for: canvas.size)
+            VStack(spacing: 14) {
+                analyticsRow
+                filterPills
+                if split {
+                    GeometryReader { geo in
+                        let gap: CGFloat = 16
+                        let w = max(0, geo.size.width - gap)
+                        HStack(alignment: .top, spacing: gap) {
+                            listPanel(split: true).frame(width: w * 0.62)
+                            detailColumn.frame(width: w * 0.38)
+                        }
                     }
+                } else {
+                    listPanel(split: false)
                 }
-            } else {
-                listPanel
             }
+            .padding(.horizontal, isWide ? 22 : 14)
+            .padding(.top, 4)
+            .padding(.bottom, 14)
         }
-        .padding(.horizontal, isWide ? 22 : 14)
-        .padding(.top, 4)
-        .padding(.bottom, 14)
     }
 
     // MARK: Executive analytics
@@ -256,7 +261,7 @@ public struct AthleteListView: View {
 
     // MARK: List panel
 
-    private var listPanel: some View {
+    private func listPanel(split: Bool) -> some View {
         VStack(spacing: 0) {
             if filteredIntels.isEmpty {
                 EmptyStateCard(icon: "person.crop.circle.badge.questionmark",
@@ -268,7 +273,7 @@ public struct AthleteListView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(pageSlice) { intel in
-                            athleteRow(intel)
+                            athleteRow(intel, split: split)
                         }
                     }
                     .padding(12)
@@ -284,8 +289,8 @@ public struct AthleteListView: View {
     }
 
     @ViewBuilder
-    private func athleteRow(_ intel: AthleteIntel) -> some View {
-        if isWide {
+    private func athleteRow(_ intel: AthleteIntel, split: Bool) -> some View {
+        if split {
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) { selectedID = intel.id }
             } label: {
