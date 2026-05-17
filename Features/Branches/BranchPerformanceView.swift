@@ -136,22 +136,27 @@ public struct BranchPerformanceView: View {
     // MARK: Dashboard
 
     private var dashboard: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                analyticsRow
-                // The ranking spans the full width; Key Insights sit beneath
-                // it as a tile grid; the comparison charts follow.
-                rankingCard
-                insightsCard
-                if isWide {
-                    chartsRow
-                } else {
-                    chartsColumn
+        // The ranking row's detail level follows the orientation — full
+        // detail on a wide landscape canvas, a minimal row in portrait.
+        GeometryReader { canvas in
+            let landscape = usesSplitDetailLayout(for: canvas.size)
+            ScrollView {
+                VStack(spacing: 16) {
+                    analyticsRow
+                    // The ranking spans the full width; Key Insights sit
+                    // beneath it as a tile grid; the comparison charts follow.
+                    rankingCard(landscape: landscape)
+                    insightsCard
+                    if isWide {
+                        chartsRow
+                    } else {
+                        chartsColumn
+                    }
                 }
+                .padding(.horizontal, isWide ? 22 : 14)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, isWide ? 22 : 14)
-            .padding(.top, 4)
-            .padding(.bottom, 24)
         }
     }
 
@@ -203,7 +208,7 @@ public struct BranchPerformanceView: View {
 
     // MARK: Ranking
 
-    private var rankingCard: some View {
+    private func rankingCard(landscape: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("branch.ranking.title").scaledFont(.headline, weight: .bold)
@@ -217,7 +222,7 @@ public struct BranchPerformanceView: View {
             LazyVStack(spacing: 0) {
                 ForEach(Array(rankedAnalytics.enumerated()), id: \.element.id) { idx, a in
                     if idx > 0 { Divider().opacity(0.4) }
-                    branchRow(a)
+                    branchRow(a, landscape: landscape)
                 }
             }
             .padding(8)
@@ -229,8 +234,8 @@ public struct BranchPerformanceView: View {
     }
 
     @ViewBuilder
-    private func branchRow(_ a: BranchAnalytics) -> some View {
-        if isWide {
+    private func branchRow(_ a: BranchAnalytics, landscape: Bool) -> some View {
+        if landscape {
             HStack(alignment: .center, spacing: 14) {
                 RankBadge(a.rank)
                 BranchGradeRing(grade: a.grade, score: a.compositeScore, size: 74)
@@ -252,22 +257,20 @@ public struct BranchPerformanceView: View {
             }
             .padding(.horizontal, 10).padding(.vertical, 12)
         } else {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    RankBadge(a.rank)
-                    BranchGradeRing(grade: a.grade, score: a.compositeScore, size: 64)
-                    branchInfo(a)
-                    Spacer(minLength: 0)
-                }
-                HStack {
-                    TrendIndicator(pct: a.growthPct)
-                    Text("branch.growth_30d").scaledFont(.caption2).foregroundStyle(.secondary)
-                    Spacer(minLength: 8)
-                    BranchStatusChip(a.trend)
-                }
-                metricRings(a)
+            // Portrait — minimal row: branch name, growth/decline %, score.
+            HStack(spacing: 12) {
+                Text(verbatim: a.branch.name)
+                    .scaledFont(.subheadline, weight: .bold)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                TrendIndicator(pct: a.growthPct)
+                Text(verbatim: "\(Int(a.compositeScore.rounded()))")
+                    .scaledFont(.headline, weight: .bold, monospacedDigit: true)
+                    .foregroundStyle(.primary)
+                    .environment(\.layoutDirection, .leftToRight)
+                    .frame(minWidth: 38, alignment: .trailing)
             }
-            .padding(.horizontal, 10).padding(.vertical, 12)
+            .padding(.horizontal, 12).padding(.vertical, 14)
         }
     }
 
