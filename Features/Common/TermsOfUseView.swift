@@ -18,7 +18,7 @@ public struct TermsOfUseView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.terms"))
+        .subviewChrome(Text("settings.terms"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

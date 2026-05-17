@@ -81,9 +81,7 @@ public struct AdminCreateAccountView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.appBackground.ignoresSafeArea())
-        #if os(iOS)
-        .toolbar(.hidden, for: .navigationBar)
-        #endif
+        .subviewChrome(Text("admin.create_account"))
     }
 
     // MARK: - Status

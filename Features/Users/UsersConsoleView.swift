@@ -531,7 +531,7 @@ private struct UserDetailScreen: View {
                 .padding(16)
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(Text(verbatim: user.fullName))
+        .subviewChrome(Text(verbatim: user.fullName))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

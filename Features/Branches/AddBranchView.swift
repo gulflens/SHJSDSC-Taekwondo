@@ -43,20 +43,13 @@ public struct AddBranchView: View {
             .padding(.horizontal, 16).padding(.top, 8)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("branch.add"))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button {
-                    Task { await save() }
-                } label: {
-                    if saving { ProgressView() } else { Text("action.save") }
-                }
-                .disabled(saving || !isValid)
-                .bareToolbarButton()
+        .subviewChrome(Text("branch.add")) {
+            Button {
+                Task { await save() }
+            } label: {
+                if saving { ProgressView() } else { Text("action.save") }
             }
+            .disabled(saving || !isValid)
         }
         .alert("branch.save_error", isPresented: $showErrorAlert) {
             Button("action.ok", role: .cancel) {}

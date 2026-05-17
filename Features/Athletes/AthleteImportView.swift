@@ -40,7 +40,7 @@ public struct AthleteImportView: View {
             .padding(.horizontal, 16).padding(.top, 12)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("athlete.import"))
+        .subviewChrome(Text("athlete.import"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

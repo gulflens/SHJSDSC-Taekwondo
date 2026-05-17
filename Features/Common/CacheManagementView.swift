@@ -26,7 +26,7 @@ public struct CacheManagementView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.system.cache"))
+        .subviewChrome(Text("settings.system.cache"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

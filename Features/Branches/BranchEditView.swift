@@ -70,7 +70,7 @@ public struct BranchEditView: View {
             }
         }
         .background(Color.appBackground)
-        .navigationTitle(Text(verbatim: store?.branch?.name ?? ""))
+        .subviewChrome(Text(verbatim: store?.branch?.name ?? ""))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

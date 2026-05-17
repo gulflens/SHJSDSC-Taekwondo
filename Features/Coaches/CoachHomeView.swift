@@ -51,8 +51,12 @@ public struct CoachHomeView: View {
             }
         }
         .navigationDestination(isPresented: $showingSquad) { SquadListView() }
-        .navigationDestination(isPresented: $showingDrills) { DrillLibraryView() }
-        .navigationDestination(isPresented: $showingAnnouncements) { AnnouncementsView() }
+        .navigationDestination(isPresented: $showingDrills) {
+            DrillLibraryView().subviewChrome(Text("coach.home.drills"))
+        }
+        .navigationDestination(isPresented: $showingAnnouncements) {
+            AnnouncementsView().subviewChrome(Text("announcement.dashboard.title"))
+        }
         #if os(iOS)
         .fullScreenCover(item: $liveSession) { s in
             LiveClassView(session: s)

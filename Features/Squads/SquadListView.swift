@@ -16,14 +16,11 @@ public struct SquadListView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(Text("squad.title"))
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button { showingCreate = true } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel(Text("squad.create"))
+        .subviewChrome(Text("squad.title")) {
+            Button { showingCreate = true } label: {
+                Image(systemName: "plus")
             }
+            .accessibilityLabel(Text("squad.create"))
         }
         .sheet(isPresented: $showingCreate) {
             if let store {

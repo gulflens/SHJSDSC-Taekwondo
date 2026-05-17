@@ -25,7 +25,7 @@ public struct DataSyncView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.system.sync"))
+        .subviewChrome(Text("settings.system.sync"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -422,7 +422,7 @@ struct AnnouncementDetailScreen: View {
             .padding(14)
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(Text(verbatim: announcement.title))
+        .subviewChrome(Text(verbatim: announcement.title))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

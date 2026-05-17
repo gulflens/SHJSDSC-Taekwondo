@@ -42,7 +42,7 @@ public struct ChangePasswordView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("profile.security.password"))
+        .subviewChrome(Text("profile.security.password"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

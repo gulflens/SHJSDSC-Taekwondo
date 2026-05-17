@@ -96,7 +96,7 @@ public struct GradingScoreEntryView: View {
                 }
             }
         }
-        .navigationTitle(Text("grading.score"))
+        .subviewChrome(Text("grading.score"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -163,7 +163,8 @@ public struct TDDashboardView: View {
     }
 
     private var gradingLink: some View {
-        NavigationLink(destination: GradingDashboardView()) {
+        NavigationLink(destination: GradingDashboardView()
+            .subviewChrome(Text("grading.dashboard"))) {
             linkRow(icon: "rosette", labelKey: "grading.dashboard")
         }
         .buttonStyle(.plain)

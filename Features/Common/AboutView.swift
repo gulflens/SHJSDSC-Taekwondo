@@ -20,7 +20,7 @@ public struct AboutView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.about"))
+        .subviewChrome(Text("settings.about"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -25,17 +25,13 @@ public struct SquadDetailView: View {
             }
             membersSection
         }
-        .navigationTitle(Text(verbatim: group.name))
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showingEdit = true
-                } label: {
-                    Image(systemName: "pencil")
-                }
-                .accessibilityLabel(Text("squad.edit"))
-                .bareToolbarButton()
+        .subviewChrome(Text(verbatim: group.name)) {
+            Button {
+                showingEdit = true
+            } label: {
+                Image(systemName: "pencil")
             }
+            .accessibilityLabel(Text("squad.edit"))
         }
         .sheet(isPresented: $showingEdit) {
             NavigationStack {

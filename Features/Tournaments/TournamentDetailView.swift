@@ -23,38 +23,29 @@ public struct TournamentDetailView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(Text(verbatim: tournament?.name ?? ""))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
+        .subviewChrome(Text(verbatim: tournament?.name ?? "")) {
             if let role = session.currentUser?.role,
                PermissionMatrix.allowed(role: role, permission: .createTournament) {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showRegister = true
-                    } label: {
-                        Image(systemName: "person.badge.plus")
-                    }
-                    .accessibilityLabel(Text("tournament.register"))
-                    .bareToolbarButton()
+                Button {
+                    showRegister = true
+                } label: {
+                    Image(systemName: "person.badge.plus")
                 }
+                .accessibilityLabel(Text("tournament.register"))
             }
             if let t = tournament, !registrations.isEmpty {
-                ToolbarItem(placement: .primaryAction) {
-                    ExportButton(
-                        baseFilename: "tournament-\(t.name.replacingOccurrences(of: " ", with: "_"))",
-                        csvProvider: {
-                            CSVReportExporter().exportTournamentResults(
-                                tournament: t,
-                                registrations: registrations,
-                                athletes: Array(athleteLookup.values),
-                                matches: [],
-                                format: .csv
-                            )
-                        }
-                    )
-                }
+                ExportButton(
+                    baseFilename: "tournament-\(t.name.replacingOccurrences(of: " ", with: "_"))",
+                    csvProvider: {
+                        CSVReportExporter().exportTournamentResults(
+                            tournament: t,
+                            registrations: registrations,
+                            athletes: Array(athleteLookup.values),
+                            matches: [],
+                            format: .csv
+                        )
+                    }
+                )
             }
         }
         .sheet(isPresented: $showRegister) {

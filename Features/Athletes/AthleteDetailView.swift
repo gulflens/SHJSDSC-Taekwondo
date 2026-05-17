@@ -150,32 +150,23 @@ public struct AthleteDetailView: View {
             .padding(.bottom, 24)
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(Text(verbatim: athlete.fullName))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
+        .subviewChrome(Text(verbatim: athlete.fullName)) {
             if let role = session.currentUser?.role,
                PermissionMatrix.allowed(role: role, permission: .exportReports) {
-                ToolbarItem(placement: .primaryAction) {
-                    ExportButton(
-                        baseFilename: "athlete-\(athlete.fullName.replacingOccurrences(of: " ", with: "_"))",
-                        csvProvider: {
-                            CSVReportExporter().exportAthletes([athlete], format: .csv)
-                        }
-                    )
-                }
+                ExportButton(
+                    baseFilename: "athlete-\(athlete.fullName.replacingOccurrences(of: " ", with: "_"))",
+                    csvProvider: {
+                        CSVReportExporter().exportAthletes([athlete], format: .csv)
+                    }
+                )
             }
             if canEditAthlete {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingEdit = true
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .accessibilityLabel(Text("athlete.edit"))
-                    .bareToolbarButton()
+                Button {
+                    showingEdit = true
+                } label: {
+                    Image(systemName: "pencil")
                 }
+                .accessibilityLabel(Text("athlete.edit"))
             }
         }
         .navigationDestination(isPresented: $showingEdit) {

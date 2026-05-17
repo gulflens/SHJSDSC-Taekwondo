@@ -103,22 +103,15 @@ public struct BranchProfileView: View {
             }
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(Text(verbatim: store?.branch?.name ?? ""))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
+        .subviewChrome(Text(verbatim: store?.branch?.name ?? "")) {
             if let role = session.currentUser?.role,
                PermissionMatrix.allowed(role: role, permission: .editBranchProfile) {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingEdit = true
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                    }
-                    .accessibilityLabel(Text("manager.dashboard"))
-                    .bareToolbarButton()
+                Button {
+                    showingEdit = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
                 }
+                .accessibilityLabel(Text("manager.dashboard"))
             }
         }
         .navigationDestination(isPresented: $showingEdit) {

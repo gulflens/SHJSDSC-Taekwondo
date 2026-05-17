@@ -20,7 +20,7 @@ public struct GradingSessionView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(Text("grading.session"))
+        .subviewChrome(Text("grading.session"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

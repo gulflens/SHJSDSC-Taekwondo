@@ -98,10 +98,7 @@ public struct AttendanceMarkView: View {
             }
             saveBar
         }
-        .navigationTitle(Text("tab.classes"))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
+        .subviewChrome(Text("tab.classes"))
         .task { await load() }
     }
 

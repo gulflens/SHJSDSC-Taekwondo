@@ -369,6 +369,27 @@ Also fixed three Stage 1.12 format keys (`athlete.branch.fmt`,
 `athlete.weight.fmt`, `athlete.height.fmt`) that shipped without
 localizations and rendered as raw keys.
 
+## Subview navigation chrome
+
+The system `NavigationStack` back button is unreliable in this app's shell —
+absent entirely on macOS (the shell is a plain `HStack`, so an embedded
+`NavigationStack` has no toolbar surface). Every **pushed subview** therefore
+draws its own bar via `.subviewChrome(_:)` (`Features/Common/SubviewChrome.swift`):
+a guaranteed back button + title + optional trailing action slot, rendered as
+a `safeAreaInset` so it works identically on macOS / iPad / iPhone. On iOS the
+system navigation bar is hidden under it (no double bar).
+
+Rules:
+- Apply `.subviewChrome(Text(...))` in place of `.navigationTitle(_:)` on a
+  view that is **pushed** (a `NavigationLink` / `navigationDestination`
+  destination). Migrate any `.toolbar` action items into the trailing slot:
+  `.subviewChrome(title) { actionButtons }`.
+- Do NOT apply it to top-level sidebar root views — they are not pushed.
+- When a root-type view is itself pushed as a subview (e.g. a home dashboard
+  pushing `AthleteListView`), apply `.subviewChrome` at the push site, not
+  inside the view.
+- Sheet/`fullScreenCover` contents keep their own `NavigationStack` + toolbar.
+
 ## Embedded model dossiers
 Heavy per-athlete records (`coachNotes`, `documents`, `ranking`, plus existing
 `emergencyContacts` / `injuries` / `weightHistory`) live as embedded Codable

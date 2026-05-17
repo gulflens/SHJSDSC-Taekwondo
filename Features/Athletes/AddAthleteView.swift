@@ -82,20 +82,13 @@ public struct AddAthleteView: View {
             .padding(.top, 8)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text(editing == nil ? "athlete.add" : "athlete.edit"))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button {
-                    Task { await save() }
-                } label: {
-                    if saving { ProgressView() } else { Text("action.save") }
-                }
-                .disabled(saving || !isValid)
-                .bareToolbarButton()
+        .subviewChrome(Text(editing == nil ? "athlete.add" : "athlete.edit")) {
+            Button {
+                Task { await save() }
+            } label: {
+                if saving { ProgressView() } else { Text("action.save") }
             }
+            .disabled(saving || !isValid)
         }
         .alert("athlete.save_error", isPresented: $showErrorAlert) {
             Button("action.ok", role: .cancel) {}

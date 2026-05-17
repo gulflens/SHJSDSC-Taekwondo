@@ -77,7 +77,7 @@ private struct PickerShell<Content: View>: View {
             .padding(.bottom, 28)
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(Text(titleKey))
+        .subviewChrome(Text(titleKey))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

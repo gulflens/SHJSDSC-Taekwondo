@@ -121,21 +121,14 @@ public struct CoachDetailView: View {
             .padding(.bottom, 24)
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(Text(verbatim: coach.fullName))
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
+        .subviewChrome(Text(verbatim: coach.fullName)) {
             if canEditCoach {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingEdit = true
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .accessibilityLabel(Text("coach.edit"))
-                    .bareToolbarButton()
+                Button {
+                    showingEdit = true
+                } label: {
+                    Image(systemName: "pencil")
                 }
+                .accessibilityLabel(Text("coach.edit"))
             }
         }
         .navigationDestination(isPresented: $showingEdit) {

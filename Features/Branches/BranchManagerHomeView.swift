@@ -104,7 +104,7 @@ public struct BranchManagerHomeView: View {
             BranchEditView(branchID: branch.id, initialTab: .financials)
         }
         .navigationDestination(isPresented: $showingAnnouncement) {
-            AnnouncementsView()
+            AnnouncementsView().subviewChrome(Text("announcement.dashboard.title"))
         }
     }
 
@@ -235,7 +235,8 @@ public struct BranchManagerHomeView: View {
                             Divider().opacity(0.3)
                         }
                     }
-                    NavigationLink(destination: AthleteListView(scope: .byBranch(branch.id))) {
+                    NavigationLink(destination: AthleteListView(scope: .byBranch(branch.id))
+                        .subviewChrome(Text("athlete.dashboard.title"))) {
                         HStack(spacing: 4) {
                             Text("manager.view_attendance")
                                 .scaledFont(.caption, weight: .semibold)
@@ -373,7 +374,8 @@ public struct BranchManagerHomeView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
-                NavigationLink(destination: AthleteListView(scope: .byBranch(branch.id))) {
+                NavigationLink(destination: AthleteListView(scope: .byBranch(branch.id))
+                        .subviewChrome(Text("athlete.dashboard.title"))) {
                     Image(systemName: "chevron.right")
                         .scaledFont(.subheadline, weight: .semibold)
                         .foregroundStyle(.secondary)

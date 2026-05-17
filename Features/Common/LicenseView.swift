@@ -21,7 +21,7 @@ public struct LicenseView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.licenses"))
+        .subviewChrome(Text("settings.licenses"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

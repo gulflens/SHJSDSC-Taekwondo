@@ -29,7 +29,7 @@ public struct LoginActivityView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("profile.security.login_activity"))
+        .subviewChrome(Text("profile.security.login_activity"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

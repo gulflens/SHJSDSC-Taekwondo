@@ -28,7 +28,7 @@ public struct OfflineModeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.system.offline"))
+        .subviewChrome(Text("settings.system.offline"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

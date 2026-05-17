@@ -19,7 +19,7 @@ public struct PrivacyPolicyView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color.appBackground)
-        .navigationTitle(Text("settings.privacy"))
+        .subviewChrome(Text("settings.privacy"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -22,7 +22,7 @@ public struct BracketView: View {
                     .padding()
             }
         }
-        .navigationTitle(Text("tournament.bracket"))
+        .subviewChrome(Text("tournament.bracket"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

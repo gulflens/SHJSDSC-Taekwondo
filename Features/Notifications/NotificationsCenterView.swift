@@ -16,7 +16,7 @@ public struct NotificationsCenterView: View {
                     .scaledFont(.caption)
             }
         }
-        .navigationTitle(Text("settings.notifications"))
+        .subviewChrome(Text("settings.notifications"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
