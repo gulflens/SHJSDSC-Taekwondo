@@ -23,7 +23,7 @@ public struct DrillLibraryView: View {
     @State private var editing: DrillLibraryEntry?
     @State private var showingEditor = false
 
-    private let rowsPerPage = 9
+    @State private var rowsPerPage = 10
 
     public init(isLibrary: Binding<Bool> = .constant(true)) {
         _isLibrary = isLibrary
@@ -51,6 +51,7 @@ public struct DrillLibraryView: View {
         .onChange(of: searchText) { _, _ in page = 0 }
         .onChange(of: categoryFilter) { _, _ in page = 0 }
         .onChange(of: difficultyFilter) { _, _ in page = 0 }
+        .onChange(of: rowsPerPage) { _, _ in page = 0 }
         .sheet(isPresented: $showingEditor) {
             NavigationStack {
                 DrillEditorSheet(
@@ -73,8 +74,8 @@ public struct DrillLibraryView: View {
         } else {
             // The list+detail split is shown only on a wide landscape canvas;
             // iPhone and iPad-portrait drop the panel and push a detail screen.
-            GeometryReader { canvas in
-                let split = usesSplitDetailLayout(for: canvas.size)
+            GeometryReader { _ in
+                let split = usesSplitDetailLayout()
                 if split {
                     GeometryReader { geo in
                         let gap: CGFloat = 16
@@ -104,6 +105,7 @@ public struct DrillLibraryView: View {
                                       filtered.count))
                     .scaledFont(.subheadline, weight: .semibold)
                 Spacer(minLength: 8)
+                RowsPerPageMenu(rowsPerPage: $rowsPerPage)
                 sortMenu
             }
             .padding(.horizontal, 14)

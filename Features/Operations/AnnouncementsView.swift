@@ -17,7 +17,7 @@ public struct AnnouncementsView: View {
     @State private var page = 0
     @State private var showCompose = false
 
-    private let rowsPerPage = 8
+    @State private var rowsPerPage = 10
 
     public init() {}
 
@@ -44,6 +44,7 @@ public struct AnnouncementsView: View {
         }
         .onChange(of: searchText) { _, _ in page = 0 }
         .onChange(of: statusFilter) { _, _ in page = 0 }
+        .onChange(of: rowsPerPage) { _, _ in page = 0 }
         .sheet(isPresented: $showCompose) {
             NavigationStack {
                 ComposeAnnouncementView { _ in Task { await reload() } }
@@ -108,8 +109,8 @@ public struct AnnouncementsView: View {
     private func content(_ store: OperationsStore) -> some View {
         // The list+detail split is shown only on a wide landscape canvas;
         // iPhone and iPad-portrait drop the panel and push a detail screen.
-        GeometryReader { canvas in
-            let split = usesSplitDetailLayout(for: canvas.size)
+        GeometryReader { _ in
+            let split = usesSplitDetailLayout()
             VStack(spacing: 14) {
                 statTiles(store)
                 filterPills
@@ -264,6 +265,7 @@ public struct AnnouncementsView: View {
         let lower = total == 0 ? 0 : page * rowsPerPage + 1
         let upper = min(total, (page + 1) * rowsPerPage)
         return HStack(spacing: 10) {
+            RowsPerPageMenu(rowsPerPage: $rowsPerPage)
             Text(verbatim: String(format: NSLocalizedString("announcement.showing.fmt", comment: ""),
                                    lower, upper, total))
                 .scaledFont(.caption2).foregroundStyle(.secondary)

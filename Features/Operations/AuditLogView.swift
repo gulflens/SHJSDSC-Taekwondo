@@ -301,20 +301,7 @@ public struct AuditLogView: View {
 
     @ViewBuilder
     private func footerControls(total: Int, pageCount: Int, lower: Int, upper: Int) -> some View {
-        Menu {
-            ForEach([10, 25, 50], id: \.self) { n in
-                Button { rowsPerPage = n } label: { Text(verbatim: "\(n)") }
-            }
-        } label: {
-            HStack(spacing: 5) {
-                Text("audit.rows_per_page").scaledFont(.caption).foregroundStyle(.secondary)
-                Text(verbatim: "\(rowsPerPage)").scaledFont(.caption, weight: .semibold)
-                Image(systemName: "chevron.up.chevron.down").scaledFont(.caption2).foregroundStyle(.secondary)
-            }
-        }
-        .menuStyle(.button)
-        .buttonStyle(.plain)
-        .menuIndicator(.hidden)
+        RowsPerPageMenu(rowsPerPage: $rowsPerPage)
 
         Text(verbatim: String(format: NSLocalizedString("audit.showing.fmt", comment: ""), lower, upper, total))
             .scaledFont(.caption)

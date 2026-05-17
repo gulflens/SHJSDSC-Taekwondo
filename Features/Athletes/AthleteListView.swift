@@ -29,7 +29,7 @@ public struct AthleteListView: View {
     @State private var selectedAthleteForProfile: Athlete?
 
     public let scope: AthleteListScope
-    private let rowsPerPage = 10
+    @State private var rowsPerPage = 10
 
     public init(scope: AthleteListScope) {
         self.scope = scope
@@ -58,6 +58,7 @@ public struct AthleteListView: View {
         .onChange(of: query) { _, _ in page = 0 }
         .onChange(of: filter) { _, _ in page = 0 }
         .onChange(of: branchFilter) { _, _ in page = 0 }
+        .onChange(of: rowsPerPage) { _, _ in page = 0 }
         .navigationDestination(isPresented: $showingAdd) {
             AddAthleteView(initialBranchID: scopeBranchID()) { newAthlete in
                 store?.insertOrUpdate(newAthlete)
@@ -170,8 +171,8 @@ public struct AthleteListView: View {
     private var content: some View {
         // The list+detail split is shown only on a wide landscape canvas;
         // iPhone and iPad-portrait drop the panel and push a detail screen.
-        GeometryReader { canvas in
-            let split = usesSplitDetailLayout(for: canvas.size)
+        GeometryReader { _ in
+            let split = usesSplitDetailLayout()
             VStack(spacing: 14) {
                 analyticsRow
                 filterPills
@@ -312,6 +313,7 @@ public struct AthleteListView: View {
         let lower = total == 0 ? 0 : page * rowsPerPage + 1
         let upper = min(total, (page + 1) * rowsPerPage)
         return HStack(spacing: 10) {
+            RowsPerPageMenu(rowsPerPage: $rowsPerPage)
             Text(verbatim: String(format: NSLocalizedString("athlete.showing.fmt", comment: ""),
                                    lower, upper, total))
                 .scaledFont(.caption2).foregroundStyle(.secondary)

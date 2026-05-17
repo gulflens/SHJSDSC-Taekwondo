@@ -22,7 +22,7 @@ public struct CertificationsListView: View {
     @State private var kindFilter: CertificationKind?
     @State private var page = 0
 
-    private let rowsPerPage = 10
+    @State private var rowsPerPage = 10
 
     public init() {}
 
@@ -45,6 +45,7 @@ public struct CertificationsListView: View {
         .onChange(of: search) { _, _ in page = 0 }
         .onChange(of: statusFilter) { _, _ in page = 0 }
         .onChange(of: kindFilter) { _, _ in page = 0 }
+        .onChange(of: rowsPerPage) { _, _ in page = 0 }
         .sheet(item: $renewing) { cert in renewSheet(cert: cert) }
         .sheet(isPresented: $showingAdd) {
             NavigationStack {
@@ -383,6 +384,7 @@ public struct CertificationsListView: View {
         let lower = total == 0 ? 0 : page * rowsPerPage + 1
         let upper = min(total, (page + 1) * rowsPerPage)
         return HStack(spacing: 10) {
+            RowsPerPageMenu(rowsPerPage: $rowsPerPage)
             Text(verbatim: String(format: NSLocalizedString("cert.showing.fmt", comment: ""),
                                    lower, upper, total))
                 .scaledFont(.caption2).foregroundStyle(.secondary)

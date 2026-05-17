@@ -98,6 +98,51 @@ public struct ViewAllButton: View {
     }
 }
 
+// MARK: - Rows-per-page menu
+
+/// Compact "Rows per page" picker for the footer (or header) of any paginated
+/// list. Offers 10 / 20 / 50 / 100 by default; a tick marks the current value.
+public struct RowsPerPageMenu: View {
+    @Binding private var rowsPerPage: Int
+    private let options: [Int]
+
+    public init(rowsPerPage: Binding<Int>, options: [Int] = [10, 20, 50, 100]) {
+        _rowsPerPage = rowsPerPage
+        self.options = options
+    }
+
+    public var body: some View {
+        Menu {
+            ForEach(options, id: \.self) { n in
+                Button {
+                    rowsPerPage = n
+                } label: {
+                    if n == rowsPerPage {
+                        Label { Text(verbatim: "\(n)") } icon: { Image(systemName: "checkmark") }
+                    } else {
+                        Text(verbatim: "\(n)")
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Text("audit.rows_per_page")
+                    .scaledFont(.caption)
+                    .foregroundStyle(.secondary)
+                Text(verbatim: "\(rowsPerPage)")
+                    .scaledFont(.caption, weight: .semibold)
+                    .environment(\.layoutDirection, .leftToRight)
+                Image(systemName: "chevron.up.chevron.down")
+                    .scaledFont(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+    }
+}
+
 // MARK: - Identity chips
 
 /// Subtle two-line ID chip: top caption ("UAE Federation ID") + bottom value

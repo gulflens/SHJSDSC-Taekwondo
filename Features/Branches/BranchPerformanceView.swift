@@ -139,7 +139,8 @@ public struct BranchPerformanceView: View {
         // The ranking row's detail level follows the orientation — full
         // detail on a wide landscape canvas, a minimal row in portrait.
         GeometryReader { canvas in
-            let landscape = usesSplitDetailLayout(for: canvas.size)
+            // Portrait vs landscape decides the ranking row's detail level.
+            let landscape = canvas.size.width > canvas.size.height
             ScrollView {
                 VStack(spacing: 16) {
                     analyticsRow

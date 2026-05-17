@@ -26,7 +26,7 @@ public struct CoachListView: View {
 
     public init() {}
 
-    private let rowsPerPage = 10
+    @State private var rowsPerPage = 10
     private var isWide: Bool { hSize == .regular }
 
     public var body: some View {
@@ -43,6 +43,7 @@ public struct CoachListView: View {
         .onChange(of: query) { _, _ in page = 0 }
         .onChange(of: filter) { _, _ in page = 0 }
         .onChange(of: branchFilter) { _, _ in page = 0 }
+        .onChange(of: rowsPerPage) { _, _ in page = 0 }
         .navigationDestination(isPresented: $showingAdd) {
             AddCoachView(initialBranchID: session.currentUser?.primaryBranchID) { newCoach in
                 if let i = coaches.firstIndex(where: { $0.id == newCoach.id }) {
@@ -155,8 +156,8 @@ public struct CoachListView: View {
     private var content: some View {
         // The list+detail split is shown only on a wide landscape canvas;
         // iPhone and iPad-portrait drop the panel and push a detail screen.
-        GeometryReader { canvas in
-            let split = usesSplitDetailLayout(for: canvas.size)
+        GeometryReader { _ in
+            let split = usesSplitDetailLayout()
             ScrollView {
                 VStack(spacing: 14) {
                     analyticsRow
@@ -292,6 +293,7 @@ public struct CoachListView: View {
         let lower = total == 0 ? 0 : page * rowsPerPage + 1
         let upper = min(total, (page + 1) * rowsPerPage)
         return HStack(spacing: 10) {
+            RowsPerPageMenu(rowsPerPage: $rowsPerPage)
             Text(verbatim: String(format: NSLocalizedString("coach.showing.fmt", comment: ""),
                                    lower, upper, total))
                 .scaledFont(.caption2).foregroundStyle(.secondary)

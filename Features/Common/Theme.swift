@@ -284,21 +284,17 @@ public enum IPadUIScale: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-/// Whether a list module should render its side-by-side list + detail split.
+/// Whether a list module shows its side-by-side list + detail split.
 ///
-/// The split layout is reserved for a genuinely wide canvas — iPad in
-/// landscape (and macOS). iPhone, and **iPad in portrait**, return `false`:
-/// those drop the detail panel and push a separate detail screen instead.
-///
-/// `size` is the module's canvas, measured by a `GeometryReader`. Once the
-/// iPhone idiom is excluded, width-greater-than-height is a reliable,
-/// rotation-reactive proxy for a landscape interface — `horizontalSizeClass`
-/// cannot tell iPad portrait from landscape (both are `.regular`).
-public func usesSplitDetailLayout(for size: CGSize) -> Bool {
-    #if os(iOS)
-    guard UIDevice.current.userInterfaceIdiom == .pad else { return false }
+/// The split is a **macOS-only** layout. iPhone and iPad — in every
+/// orientation — return `false`: the list fills the full width and tapping a
+/// row pushes a separate detail screen instead of updating an inline panel.
+public func usesSplitDetailLayout() -> Bool {
+    #if os(macOS)
+    return true
+    #else
+    return false
     #endif
-    return size.width > size.height
 }
 
 // MARK: - UI scale environment + scaled-font helper

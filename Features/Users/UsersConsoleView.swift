@@ -117,8 +117,8 @@ public struct UsersConsoleView: View {
     private var content: some View {
         // The list+detail split is shown only on a wide landscape canvas;
         // iPhone and iPad-portrait drop the panel and push a detail screen.
-        GeometryReader { canvas in
-            let split = usesSplitDetailLayout(for: canvas.size)
+        GeometryReader { _ in
+            let split = usesSplitDetailLayout()
             VStack(spacing: 14) {
                 statBand
                 filterPills
@@ -288,18 +288,7 @@ public struct UsersConsoleView: View {
         let lower = total == 0 ? 0 : page * rowsPerPage + 1
         let upper = min(total, (page + 1) * rowsPerPage)
         return HStack(spacing: 12) {
-            Menu {
-                ForEach([10, 25, 50], id: \.self) { n in
-                    Button { rowsPerPage = n } label: { Text(verbatim: "\(n)") }
-                }
-            } label: {
-                HStack(spacing: 5) {
-                    Text("audit.rows_per_page").scaledFont(.caption).foregroundStyle(.secondary)
-                    Text(verbatim: "\(rowsPerPage)").scaledFont(.caption, weight: .semibold)
-                    Image(systemName: "chevron.up.chevron.down").scaledFont(.caption2).foregroundStyle(.secondary)
-                }
-            }
-            .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+            RowsPerPageMenu(rowsPerPage: $rowsPerPage)
             Text(verbatim: String(format: NSLocalizedString("audit.showing.fmt", comment: ""), lower, upper, total))
                 .scaledFont(.caption).foregroundStyle(.secondary)
             Spacer(minLength: 0)
