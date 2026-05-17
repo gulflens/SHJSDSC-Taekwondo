@@ -487,7 +487,7 @@ public final class CachingRepository: Repository, AuthenticatingRepository {
         try await base.finalizeMatch(match)
     }
 
-    public nonisolated func scoreEventStream(matchID: EntityID) -> AsyncStream<ScoreEvent> {
+    public func scoreEventStream(matchID: EntityID) -> AsyncStream<ScoreEvent> {
         base.scoreEventStream(matchID: matchID)
     }
 
