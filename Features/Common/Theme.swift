@@ -233,6 +233,57 @@ public enum MacUIScale: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// iPad UI zoom preset. The app's layouts are tuned for a comfortable iPad
+/// reading distance, but some users want a larger interface. This enum drives
+/// an **opt-in** zoom on iPad: `\.uiScale` (which every `.scaledFont` view and
+/// every uiScale-aware dimension honours) plus `.controlSize` for native
+/// controls. `.standard` is a true 1.0 baseline — iPad renders exactly as
+/// before until the user picks a larger tier in Settings → Appearance.
+public enum IPadUIScale: String, CaseIterable, Identifiable, Sendable {
+    case standard
+    case large
+    case xLarge
+    case xxLarge
+
+    public var id: String { rawValue }
+
+    /// Linear multiplier applied via `\.uiScale`. `1.0` at `.standard` so the
+    /// baseline is a genuine no-op.
+    public var scaleFactor: CGFloat {
+        switch self {
+        case .standard: 1.0
+        case .large:    1.20
+        case .xLarge:   1.40
+        case .xxLarge:  1.60
+        }
+    }
+
+    /// Native-control sizing so text fields, buttons, pickers and steppers
+    /// keep pace with the zoomed text.
+    public var controlSize: ControlSize {
+        switch self {
+        case .standard:         .regular
+        case .large:            .large
+        case .xLarge, .xxLarge: .extraLarge
+        }
+    }
+
+    /// Reuses the macOS UI-zoom labels — the tiers read identically.
+    public var labelKey: LocalizedStringKey {
+        switch self {
+        case .standard: "settings.ui_scale.standard"
+        case .large:    "settings.ui_scale.large"
+        case .xLarge:   "settings.ui_scale.xlarge"
+        case .xxLarge:  "settings.ui_scale.xxlarge"
+        }
+    }
+
+    /// Tolerant lookup — unrecognised strings fall back to the 1.0 baseline.
+    public static func from(_ raw: String) -> IPadUIScale {
+        IPadUIScale(rawValue: raw) ?? .standard
+    }
+}
+
 // MARK: - UI scale environment + scaled-font helper
 
 private struct UIScaleKey: EnvironmentKey {

@@ -18,6 +18,7 @@ public struct MoreView: View {
     @AppStorage("prefs.theme") private var themePref: String = "system"
     @AppStorage("prefs.accent") private var accentPref: String = "blue"
     @AppStorage("prefs.macUIScale") private var macUIScalePref: String = "xLarge"
+    @AppStorage("prefs.ipadUIScale") private var ipadUIScalePref: String = IPadUIScale.standard.rawValue
     @AppStorage("prefs.twoFactor") private var twoFactorPref: Bool = false
     @AppStorage("prefs.biometric") private var biometricPref: Bool = false
     @AppStorage("prefs.dateFormat") private var dateFormatPref: String = "DD MMM YYYY"
@@ -163,6 +164,18 @@ public struct MoreView: View {
                         .scaledFont(.caption)
                         .foregroundStyle(.secondary)
                     UIScaleSelectorView(selection: $macUIScalePref)
+                }
+                #else
+                // iPad-only — iPhone layouts are already comfortably sized.
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("settings.ui_scale")
+                            .scaledFont(.subheadline, weight: .semibold)
+                        Text("settings.ui_scale.subtitle")
+                            .scaledFont(.caption)
+                            .foregroundStyle(.secondary)
+                        IPadUIScaleSelectorView(selection: $ipadUIScalePref)
+                    }
                 }
                 #endif
             }
@@ -651,6 +664,22 @@ private struct UIScaleSelectorView: View {
     var body: some View {
         HStack(spacing: 10) {
             ForEach(MacUIScale.allCases) { scale in
+                UIScaleButton(value: scale.rawValue, label: scale.labelKey, selection: $selection)
+            }
+        }
+    }
+}
+
+/// iPad UI-zoom picker — the four `IPadUIScale` tiers as a segmented row.
+/// Reuses `UIScaleButton` so it matches the macOS picker exactly; the shared
+/// tier raw values ("standard"/"large"/"xLarge"/"xxLarge") also drive the
+/// growing-"Aa" preview glyph.
+private struct IPadUIScaleSelectorView: View {
+    @Binding var selection: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            ForEach(IPadUIScale.allCases) { scale in
                 UIScaleButton(value: scale.rawValue, label: scale.labelKey, selection: $selection)
             }
         }

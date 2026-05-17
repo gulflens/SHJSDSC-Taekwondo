@@ -12,6 +12,10 @@ struct SHJSDSCApp: App {
     /// designed for, so we ship with a comfortable "xLarge" default and let
     /// the user dial it via Settings → Appearance → UI Zoom.
     @AppStorage("prefs.macUIScale") private var macUIScalePref: String = "xLarge"
+    /// Opt-in iPad UI zoom. Defaults to `.standard` (1.0) so iPad is unchanged
+    /// until the user dials it via Settings → Appearance → UI Zoom. iPhone
+    /// never exposes the picker, so the preference stays at the baseline there.
+    @AppStorage("prefs.ipadUIScale") private var ipadUIScalePref: String = IPadUIScale.standard.rawValue
     @AppStorage("hasRequestedNotifAuth") private var hasRequestedNotifAuth: Bool = false
     @State private var hasBootstrapped = false
     /// Optional Face ID / Touch ID app lock (Settings → Security). Starts
@@ -115,6 +119,11 @@ struct SHJSDSCApp: App {
             .controlSize(MacUIScale.from(macUIScalePref).controlSize)
             .environment(\.uiScale, MacUIScale.from(macUIScalePref).scaleFactor)
             #endif
+            #if os(iOS)
+            // iPad UI Zoom — the opt-in twin of the macOS picker. iPhone keeps
+            // the preference at `.standard`, so this is a no-op there.
+            .modifier(IPadUIZoomModifier(scalePref: ipadUIScalePref))
+            #endif
             .task {
                 await session.bootstrap()
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -190,6 +199,26 @@ struct SHJSDSCApp: App {
             print("SHJSDSCApp.scheduleSundayDigestIfEnabled:", error)
         }
     }
+
+    #if os(iOS)
+    /// Applies the opt-in iPad UI zoom — `\.uiScale` (every `.scaledFont` view
+    /// honours it) plus `.controlSize` for native controls. At `.standard` it
+    /// passes through untouched, so iPhone and un-zoomed iPad are unaffected.
+    fileprivate struct IPadUIZoomModifier: ViewModifier {
+        let scalePref: String
+
+        func body(content: Content) -> some View {
+            let scale = IPadUIScale.from(scalePref)
+            if scale == .standard {
+                content
+            } else {
+                content
+                    .environment(\.uiScale, scale.scaleFactor)
+                    .controlSize(scale.controlSize)
+            }
+        }
+    }
+    #endif
 
     #if os(macOS)
     fileprivate struct ZoomCommands: Commands {
