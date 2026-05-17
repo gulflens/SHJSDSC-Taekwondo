@@ -369,6 +369,32 @@ Also fixed three Stage 1.12 format keys (`athlete.branch.fmt`,
 `athlete.weight.fmt`, `athlete.height.fmt`) that shipped without
 localizations and rendered as raw keys.
 
+## Stage 1.14 — Coaches module remodel
+
+Premium coach-management dashboard, replacing the flat `List` — the visual
+twin of the Stage 1.12 Athletes module. Header + 6 executive analytics cards
++ filter pills + an adaptive two-panel workspace (coach performance cards + a
+preview panel on iPad; list with a pushed full profile on iPhone) + a
+coaching-intelligence insights strip.
+
+Coaches module — file map (`Features/Coaches/`):
+- `CoachListView` (the dashboard — header, analytics, filter pills, list +
+  preview panels, insights; keeps the Add navigation destination)
+- `CoachIntelKit` (`CoachIntel` view-model + `CoachIntel.make`,
+  `CoachMetricKind`, `CoachGradeRing`, `CoachStatusChip`, `CoachMetricBlock`,
+  `CoachInsightCard`, `SearchCoachField`)
+- `CoachDashboardCards` (`CoachPerformanceCard`, `CoachPreviewPanel`,
+  `CoachRadarChart` — hand-drawn 6-axis radar — `CoachCertificationRow`)
+
+`CoachIntel.make(coach:branchName:athleteCount:)` builds the view-model: dan
+rank, experience, certifications and the discipline competencies are real
+`Coach` data; the six radar axes (Teaching / Leadership / Performance /
+Technical / Discipline / Attendance), session counts and the activity feed
+are demo-derived deterministically from a stable per-coach FNV seed. Executive
+cards reuse `ExecutiveAnalyticsCard` / `MiniSparkline` from `BranchOverviewKit`
+and the `homeSpark` generator from `RoleHomeKit`. Assigned-athlete counts are
+real — grouped from `Athlete.primaryCoachID`.
+
 ## Subview navigation chrome
 
 The system `NavigationStack` back button is unreliable in this app's shell —
