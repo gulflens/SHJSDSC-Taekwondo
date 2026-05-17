@@ -139,15 +139,13 @@ public struct BranchPerformanceView: View {
         ScrollView {
             VStack(spacing: 16) {
                 analyticsRow
+                // The ranking spans the full width; Key Insights sit beneath
+                // it as a tile grid; the comparison charts follow.
+                rankingCard
+                insightsCard
                 if isWide {
-                    HStack(alignment: .top, spacing: 16) {
-                        rankingCard.frame(maxWidth: .infinity)
-                        insightsCard.frame(width: 320)
-                    }
                     chartsRow
                 } else {
-                    rankingCard
-                    insightsCard
                     chartsColumn
                 }
             }
@@ -302,7 +300,11 @@ public struct BranchPerformanceView: View {
 
     private var insightsCard: some View {
         BranchSectionCard(titleKey: "branch.insights.title") {
-            VStack(spacing: 8) {
+            // Tile grid — two columns on iPad, single column on iPhone.
+            let cols = isWide
+                ? Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
+                : [GridItem(.flexible())]
+            LazyVGrid(columns: cols, spacing: 10) {
                 ForEach(insights) { insight in
                     KeyInsightCard(systemIcon: insightIcon(insight.kind),
                                    tint: insightTint(insight.kind),
