@@ -127,9 +127,13 @@ public struct SignInView: View {
                             }
                         }
 
-                        // Always-available one-tap developer login. The
-                        // seeded developer account is hard-wired here so it
-                        // never gets locked out behind a forgotten password.
+                        #if DEBUG
+                        // DEBUG-only shortcuts. Both are no-credential logins
+                        // meant for development against demo data — they are
+                        // compiled out of Release builds so they never ship.
+                        // One-tap developer login: the seeded developer
+                        // account is hard-wired here so it never gets locked
+                        // out behind a forgotten password.
                         Button {
                             Task { await session.signInAsDeveloper() }
                         } label: {
@@ -152,6 +156,7 @@ public struct SignInView: View {
                                 .scaledFont(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        #endif
                     }
                     .padding(.bottom, 24)
                 }
