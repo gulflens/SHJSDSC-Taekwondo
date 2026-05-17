@@ -23,8 +23,8 @@ public struct DeveloperTabView: View {
             profileItem: SidebarItem("profile", titleKey: "tab.profile", icon: "person.crop.circle.fill")
         ) { id in
             switch id {
-            case "overview":       HQDashboardView()
-            case "branches":       BranchPerformanceView()
+            case "overview":       BranchPerformanceView()
+            case "branches":       HQDashboardView()
             case "athletes":       AthleteListView(scope: .all)
             case "coaches":        CoachListView()
             case "tournaments":    TournamentListView()
