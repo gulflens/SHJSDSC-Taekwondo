@@ -237,6 +237,21 @@ public final class AppSession {
         }
     }
 
+    /// One-tap sign-in straight into the seeded developer account
+    /// (Ayman Maklad, `.developer`). Wired to the "Sign in as Developer"
+    /// shortcut on the sign-in screen so the developer account is always
+    /// reachable without typing credentials — useful while the build still
+    /// runs on demo data. Falls back to the demo session if no developer
+    /// user exists in the active repository.
+    public func signInAsDeveloper() async {
+        let users = (try? await repository.availableUsers()) ?? []
+        if let dev = users.first(where: { $0.role == .developer }) {
+            await switchTo(dev)
+        } else {
+            await signInDemoFallback()
+        }
+    }
+
     public func claimRole(fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws {
         if let auth = repository as? AuthenticatingRepository {
             try await auth.claimRole(fullName: fullName, fullNameAr: fullNameAr, role: role, branchID: branchID)

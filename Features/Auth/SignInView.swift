@@ -127,6 +127,24 @@ public struct SignInView: View {
                             }
                         }
 
+                        // Always-available one-tap developer login. The
+                        // seeded developer account is hard-wired here so it
+                        // never gets locked out behind a forgotten password.
+                        Button {
+                            Task { await session.signInAsDeveloper() }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "hammer.fill")
+                                Text("auth.sign_in_developer")
+                            }
+                            .scaledFont(.callout, weight: .semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.roundedRectangle(radius: 12))
+                        .tint(.accentColor)
+
                         Button {
                             Task { await session.signInDemoFallback() }
                         } label: {

@@ -50143,6 +50143,29 @@
           }
         }
       }
+    },
+    "auth.sign_in_developer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل الدخول كمطوّر"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in as Developer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se connecter en développeur"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
