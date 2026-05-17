@@ -2387,8 +2387,11 @@ public enum SeedData {
             ))
         }
 
+        // Demo credentials — every seeded account, including the developer /
+        // project-owner account below, signs in with password "12345678"
+        // (the SHA-256 hash that value produces is shared across all rows).
         let credentials = [
-            SeedCredential(email: "gulflens.studio@gmail.com", passwordHash: "d19f3c3cde74772f7d534e92d9cc63955694fe9083f63ca10f8aaad00802140c", userID: userDev.id),
+            SeedCredential(email: "gulflens.studio@gmail.com", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userDev.id),
             SeedCredential(email: "admin@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userAdmin.id),
             SeedCredential(email: "td@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userTD.id),
             SeedCredential(email: "coach@shjsdsc.ae", passwordHash: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", userID: userCoach.id),

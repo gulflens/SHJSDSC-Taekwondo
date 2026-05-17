@@ -118,8 +118,9 @@ public actor DemoStore {
         self.athleteGroups = seed.athleteGroups
         self.currentUserID = seed.defaultCurrentUserID
         for cred in seed.credentials {
-            emailPasswordHashes[cred.email] = cred.passwordHash
-            emailUserIDs[cred.email] = cred.userID
+            let key = DemoStore.normalizedEmail(cred.email)
+            emailPasswordHashes[key] = cred.passwordHash
+            emailUserIDs[key] = cred.userID
         }
         self.memberNumberCounter = max(1001, (seed.athletes.map(\.memberNumber).max() ?? 1000) + 1)
     }
@@ -130,18 +131,26 @@ public actor DemoStore {
         return value
     }
 
+    /// Email lookup key — trimmed and lower-cased so sign-in tolerates stray
+    /// whitespace and any capitalisation the keyboard or a paste introduces.
+    nonisolated static func normalizedEmail(_ email: String) -> String {
+        email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     public func validateSignIn(email: String, password: String) throws {
+        let key = DemoStore.normalizedEmail(email)
         let inputHash = PasswordHasher.sha256(password)
-        guard let storedHash = emailPasswordHashes[email], storedHash == inputHash,
-              let userID = emailUserIDs[email] else {
+        guard let storedHash = emailPasswordHashes[key], storedHash == inputHash,
+              let userID = emailUserIDs[key] else {
             throw DemoAuthError.invalidCredentials
         }
         currentUserID = userID
     }
 
     public func registerCredential(email: String, password: String, userID: EntityID) {
-        emailPasswordHashes[email] = PasswordHasher.sha256(password)
-        emailUserIDs[email] = userID
+        let key = DemoStore.normalizedEmail(email)
+        emailPasswordHashes[key] = PasswordHasher.sha256(password)
+        emailUserIDs[key] = userID
     }
 
     public func upsertAthlete(_ a: Athlete) {
