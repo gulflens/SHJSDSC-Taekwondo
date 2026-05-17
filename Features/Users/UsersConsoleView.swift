@@ -395,9 +395,12 @@ private struct UserRowContent: View {
         HStack(spacing: 11) {
             Avatar(seed: user.avatarSeed, label: initials(user.fullName), size: 42)
             VStack(alignment: .leading, spacing: 3) {
-                Text(verbatim: user.fullName)
-                    .scaledFont(.subheadline, weight: .semibold)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(verbatim: user.fullName)
+                        .scaledFont(.subheadline, weight: .semibold)
+                        .lineLimit(1)
+                    if user.isAppOwner { ownerBadge }
+                }
                 Group {
                     if let email = user.email, !email.isEmpty {
                         Text(verbatim: email)
@@ -426,6 +429,20 @@ private struct UserRowContent: View {
         )
         .shadow(color: selected ? Color.accentColor.opacity(0.16) : .clear, radius: 8, y: 3)
         .contentShape(Rectangle())
+    }
+
+    /// Marks the permanent project-owner account in the roster.
+    private var ownerBadge: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "lock.shield.fill")
+                .scaledFont(.caption2, weight: .bold)
+            Text("users.owner_badge")
+                .scaledFont(.caption2, weight: .bold)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 7).padding(.vertical, 3)
+        .foregroundStyle(Color.secondaryAccent)
+        .background(Color.secondaryAccent.opacity(0.16), in: Capsule())
     }
 
     private var rolePill: some View {
@@ -479,6 +496,7 @@ private struct UserDetailContent: View {
                 Text(localizedKey: user.role.label).scaledFont(.caption).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
+            if user.isAppOwner { ownerProtectedBanner }
             Divider().opacity(0.5)
             detailRow("person.badge.shield.checkmark.fill", "users.detail.group",
                       LocalizedStringKey(user.role.group.labelKey))
@@ -499,6 +517,28 @@ private struct UserDetailContent: View {
         .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.secondary.opacity(0.10), lineWidth: 1))
         .shadow(color: .black.opacity(0.05), radius: 14, y: 6)
+    }
+
+    /// Banner shown on the project-owner profile — states that the account
+    /// holds permanent full access and is not modifiable by other users.
+    private var ownerProtectedBanner: some View {
+        HStack(spacing: 9) {
+            Image(systemName: "lock.shield.fill")
+                .scaledFont(.subheadline)
+                .foregroundStyle(Color.secondaryAccent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("users.owner_badge")
+                    .scaledFont(.caption, weight: .semibold)
+                Text("users.owner.protected_note")
+                    .scaledFont(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.secondaryAccent.opacity(0.10), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func detailRow(_ icon: String, _ label: LocalizedStringKey, _ value: some View) -> some View {

@@ -171,6 +171,11 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     }
 
     public func createAccount(email: String, password: String, fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws {
+        // The project-owner email is reserved — see `AppOwner`.
+        guard !AppOwner.matches(email) else {
+            throw NSError(domain: "shjsdsc.supabase", code: -2,
+                          userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.owner_email_reserved")])
+        }
         let result = try await client.auth.signUp(email: email, password: password)
         let newUserID = result.user.id
         struct ProfileInsert: Encodable {
@@ -195,6 +200,13 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
     }
 
     public func updateUser(_ user: User) async throws {
+        var user = user
+        // App-owner invariant: the stored owner account can never have its
+        // role or identifying email changed by an update — see `AppOwner`.
+        if let existing: User = try? await self.user(id: user.id), existing.isAppOwner {
+            user.role = .developer
+            user.email = AppOwner.email
+        }
         try await client.from("user_profiles").upsert(user).execute()
     }
 

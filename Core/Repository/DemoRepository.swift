@@ -3,10 +3,13 @@ import CryptoKit
 
 public enum DemoAuthError: Error, LocalizedError {
     case invalidCredentials
+    /// Raised when account creation targets the reserved project-owner email.
+    case ownerEmailReserved
 
     public var errorDescription: String? {
         switch self {
         case .invalidCredentials: String(localized: "auth.invalid_credential")
+        case .ownerEmailReserved: String(localized: "auth.owner_email_reserved")
         }
     }
 }
@@ -406,6 +409,14 @@ public actor DemoStore {
     }
 
     public func upsertUser(_ u: User) {
+        var u = u
+        // App-owner invariant: the owner's role and identifying email are
+        // immutable. No edit — by any user, through any surface — can demote
+        // or rename the project owner. See `AppOwner`.
+        if let existing = users.first(where: { $0.id == u.id }), existing.isAppOwner {
+            u.role = .developer
+            u.email = AppOwner.email
+        }
         if let i = users.firstIndex(where: { $0.id == u.id }) { users[i] = u } else { users.append(u) }
     }
 
@@ -454,6 +465,9 @@ public struct DemoRepository: Repository {
         return all.filter { $0.role == role }
     }
     public func createAccount(email: String, password: String, fullName: String, fullNameAr: String, role: Role, branchID: EntityID?) async throws {
+        // The project-owner email is reserved — it can never be re-registered
+        // to a new account, so the owner login cannot be hijacked.
+        guard !AppOwner.matches(email) else { throw DemoAuthError.ownerEmailReserved }
         let user = User(fullName: fullName, fullNameAr: fullNameAr, role: role, primaryBranchID: branchID, avatarSeed: fullName.lowercased().replacingOccurrences(of: " ", with: ""))
         await store.upsertUser(user)
         await store.registerCredential(email: email, password: password, userID: user.id)

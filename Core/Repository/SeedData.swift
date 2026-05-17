@@ -80,7 +80,9 @@ public enum SeedData {
         }
 
         // === Non-coach users ===
-        let userDev = User(fullName: "Ayman Maklad", fullNameAr: "أيمن مقلد", role: .developer, avatarSeed: "ayman")
+        // The project owner. Carries `AppOwner.email` on the User record so
+        // `isAppOwner` resolves and the owner-protection invariant engages.
+        let userDev = User(fullName: "Ayman Maklad", fullNameAr: "أيمن مقلد", role: .developer, avatarSeed: "ayman", email: AppOwner.email)
         let userAdmin = User(fullName: "Hanadi Al Kabouri", fullNameAr: "هنادي الكعبوري", role: .admin, avatarSeed: "hanadi")
         let userTD = User(fullName: "Dr Ali Alawi", fullNameAr: "د. علي العلوي", role: .technicalDirector, avatarSeed: "ali")
         let userManager = User(fullName: "Osama Al-Radini", fullNameAr: "أسامة الرديني", role: .branchManager, avatarSeed: "osama")

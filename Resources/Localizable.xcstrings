@@ -50166,6 +50166,75 @@
           }
         }
       }
+    },
+    "users.owner_badge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مالك المشروع"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Project Owner"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propriétaire du projet"
+          }
+        }
+      }
+    },
+    "users.owner.protected_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وصول كامل دائم — لا يمكن لأي مستخدم آخر تعديل هذا الحساب."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanent full access — this account cannot be modified by other users."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès complet permanent — ce compte ne peut être modifié par d'autres utilisateurs."
+          }
+        }
+      }
+    },
+    "auth.owner_email_reserved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا البريد الإلكتروني محجوز لحساب مالك المشروع ولا يمكن تسجيله."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This email is reserved for the project-owner account and cannot be registered."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette adresse e-mail est réservée au compte propriétaire du projet."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

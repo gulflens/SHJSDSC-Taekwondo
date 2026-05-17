@@ -278,6 +278,19 @@ public final class AppSession {
         return PermissionMatrix.allowed(role: role, permission: permission)
     }
 
+    /// Whether the current user may modify `user`'s account.
+    ///
+    /// The permanent project-owner account (see `AppOwner`) can only ever be
+    /// modified by the owner themselves — no other user can demote, rename,
+    /// suspend, or otherwise touch it. Any user-management surface that edits,
+    /// deletes, or re-roles an account must gate on this. The data layer
+    /// enforces the same invariant independently, so this is the UI-facing
+    /// half of a defence-in-depth pair, not the sole guard.
+    public func canModify(_ user: User) -> Bool {
+        guard user.isAppOwner else { return true }
+        return currentUser?.isAppOwner == true
+    }
+
     /// Resolved data-visibility scope for the signed-in user. Branch-tier
     /// roles without an assigned branch fall back to own-records-only.
     /// Client-side scoping is a UX layer; server RLS is the real boundary.
