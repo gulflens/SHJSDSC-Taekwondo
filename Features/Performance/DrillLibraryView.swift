@@ -105,7 +105,6 @@ public struct DrillLibraryView: View {
                                       filtered.count))
                     .scaledFont(.subheadline, weight: .semibold)
                 Spacer(minLength: 8)
-                RowsPerPageMenu(rowsPerPage: $rowsPerPage)
                 sortMenu
             }
             .padding(.horizontal, 14)
@@ -127,11 +126,19 @@ public struct DrillLibraryView: View {
                         }
                     }
                     .padding(12)
+                }
+                // Footer — rows-per-page picker + pager, matching every
+                // other list module.
+                Divider().opacity(0.5)
+                HStack(spacing: 10) {
+                    RowsPerPageMenu(rowsPerPage: $rowsPerPage)
+                    Spacer(minLength: 8)
                     if pageCount > 1 {
                         DrillPager(page: $page, pageCount: pageCount)
-                            .padding(.bottom, 14)
                     }
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
             }
         }
         .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
