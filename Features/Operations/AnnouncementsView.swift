@@ -106,25 +106,30 @@ public struct AnnouncementsView: View {
     // MARK: Content
 
     private func content(_ store: OperationsStore) -> some View {
-        VStack(spacing: 14) {
-            statTiles(store)
-            filterPills
-            if isWide {
-                GeometryReader { geo in
-                    let gap: CGFloat = 16
-                    let w = max(0, geo.size.width - gap)
-                    HStack(alignment: .top, spacing: gap) {
-                        listPanel(store).frame(width: w * 0.5)
-                        detailColumn.frame(width: w * 0.5)
+        // The list+detail split is shown only on a wide landscape canvas;
+        // iPhone and iPad-portrait drop the panel and push a detail screen.
+        GeometryReader { canvas in
+            let split = usesSplitDetailLayout(for: canvas.size)
+            VStack(spacing: 14) {
+                statTiles(store)
+                filterPills
+                if split {
+                    GeometryReader { geo in
+                        let gap: CGFloat = 16
+                        let w = max(0, geo.size.width - gap)
+                        HStack(alignment: .top, spacing: gap) {
+                            listPanel(store, split: true).frame(width: w * 0.5)
+                            detailColumn.frame(width: w * 0.5)
+                        }
                     }
+                } else {
+                    listPanel(store, split: false)
                 }
-            } else {
-                listPanel(store)
             }
+            .padding(.horizontal, isWide ? 20 : 14)
+            .padding(.top, 4)
+            .padding(.bottom, 14)
         }
-        .padding(.horizontal, isWide ? 20 : 14)
-        .padding(.top, 4)
-        .padding(.bottom, 14)
     }
 
     private var emptyState: some View {
@@ -195,7 +200,7 @@ public struct AnnouncementsView: View {
 
     // MARK: List panel
 
-    private func listPanel(_ store: OperationsStore) -> some View {
+    private func listPanel(_ store: OperationsStore, split: Bool) -> some View {
         VStack(spacing: 0) {
             if filtered.isEmpty {
                 EmptyStateCard(icon: "magnifyingglass",
@@ -206,7 +211,7 @@ public struct AnnouncementsView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 8) {
-                        ForEach(pageSlice) { row($0) }
+                        ForEach(pageSlice) { row($0, split: split) }
                     }
                     .padding(12)
                 }
@@ -223,8 +228,8 @@ public struct AnnouncementsView: View {
     }
 
     @ViewBuilder
-    private func row(_ announcement: Announcement) -> some View {
-        if isWide {
+    private func row(_ announcement: Announcement, split: Bool) -> some View {
+        if split {
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) { selectedID = announcement.id }
             } label: {

@@ -115,25 +115,30 @@ public struct UsersConsoleView: View {
     // MARK: - Content
 
     private var content: some View {
-        VStack(spacing: 14) {
-            statBand
-            filterPills
-            if isWide {
-                GeometryReader { geo in
-                    let gap: CGFloat = 18
-                    let w = max(0, geo.size.width - gap)
-                    HStack(alignment: .top, spacing: gap) {
-                        tableCard.frame(width: w * 0.5)
-                        detailPane.frame(width: w * 0.5)
+        // The list+detail split is shown only on a wide landscape canvas;
+        // iPhone and iPad-portrait drop the panel and push a detail screen.
+        GeometryReader { canvas in
+            let split = usesSplitDetailLayout(for: canvas.size)
+            VStack(spacing: 14) {
+                statBand
+                filterPills
+                if split {
+                    GeometryReader { geo in
+                        let gap: CGFloat = 18
+                        let w = max(0, geo.size.width - gap)
+                        HStack(alignment: .top, spacing: gap) {
+                            tableCard(split: true).frame(width: w * 0.5)
+                            detailPane.frame(width: w * 0.5)
+                        }
                     }
+                } else {
+                    tableCard(split: false)
                 }
-            } else {
-                tableCard
             }
+            .padding(.horizontal, isWide ? 22 : 14)
+            .padding(.top, 4)
+            .padding(.bottom, 14)
         }
-        .padding(.horizontal, isWide ? 22 : 14)
-        .padding(.top, 4)
-        .padding(.bottom, 14)
     }
 
     private var searchField: some View {
@@ -231,7 +236,7 @@ public struct UsersConsoleView: View {
 
     // MARK: - Table
 
-    private var tableCard: some View {
+    private func tableCard(split: Bool) -> some View {
         VStack(spacing: 0) {
             if filtered.isEmpty {
                 EmptyStateCard(icon: "person.crop.circle.badge.questionmark",
@@ -242,7 +247,7 @@ public struct UsersConsoleView: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(pageSlice) { user in
-                            userRow(user)
+                            userRow(user, split: split)
                         }
                     }
                     .padding(12)
@@ -259,8 +264,8 @@ public struct UsersConsoleView: View {
     }
 
     @ViewBuilder
-    private func userRow(_ user: User) -> some View {
-        if isWide {
+    private func userRow(_ user: User, split: Bool) -> some View {
+        if split {
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) { selectedUser = user }
             } label: {
