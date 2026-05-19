@@ -68,9 +68,14 @@ public struct PoomsaeRecordingListView: View {
         } else {
             List {
                 ForEach(store.recordings) { recording in
-                    RecordingRow(recording: recording)
+                    NavigationLink(value: recording) {
+                        RecordingRow(recording: recording)
+                    }
                 }
                 .onDelete(perform: deleteRows)
+            }
+            .navigationDestination(for: PoomsaeRecording.self) { recording in
+                PoomsaeAnalysisView(recording: recording, fileStore: store.store)
             }
         }
     }
