@@ -11,7 +11,9 @@ import CoreMedia
 // seconds and re-exposed as computed `CMTime` accessors to match the
 // brief-facing API (`startTime` / `endTime` / `peakMotionTime`).
 
-public struct MovementSegment: Codable, Identifiable, Hashable, Sendable {
+// `nonisolated` — constructed by the pure, off-main segmenter (project
+// default isolation is MainActor).
+public nonisolated struct MovementSegment: Codable, Identifiable, Hashable, Sendable {
 
     // MARK: - Stored fields
 
