@@ -10,8 +10,19 @@
 		B05A000000000000000003A3 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B05A000000000000000003A2 /* Supabase */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B05A000000000000000005D1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B05A000000000000000000E2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B05A000000000000000000E1;
+			remoteInfo = SHJSDSC;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		B05A000000000000000000A1 /* SHJSDSC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SHJSDSC.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B05A000000000000000005A1 /* SHJSDSCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SHJSDSCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9F580F52F9F603100CB3B38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = SHJSDSC/Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -41,6 +52,11 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		B05A000000000000000005B1 /* Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Tests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +65,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				B05A000000000000000003A3 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B05A000000000000000005C2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,6 +87,7 @@
 				B05A000000000000000000B4 /* Features */,
 				B05A000000000000000000B5 /* Roles */,
 				B05A000000000000000000B6 /* Resources */,
+				B05A000000000000000005B1 /* Tests */,
 				B05A000000000000000000D2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -72,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				B05A000000000000000000A1 /* SHJSDSC.app */,
+				B05A000000000000000005A1 /* SHJSDSCTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -106,6 +131,29 @@
 			productReference = B05A000000000000000000A1 /* SHJSDSC.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B05A000000000000000005E1 /* SHJSDSCTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B05A000000000000000005F1 /* Build configuration list for PBXNativeTarget "SHJSDSCTests" */;
+			buildPhases = (
+				B05A000000000000000005C1 /* Sources */,
+				B05A000000000000000005C2 /* Frameworks */,
+				B05A000000000000000005C3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B05A000000000000000005D2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B05A000000000000000005B1 /* Tests */,
+			);
+			name = SHJSDSCTests;
+			packageProductDependencies = (
+			);
+			productName = SHJSDSCTests;
+			productReference = B05A000000000000000005A1 /* SHJSDSCTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -118,6 +166,10 @@
 				TargetAttributes = {
 					B05A000000000000000000E1 = {
 						CreatedOnToolsVersion = 26.4.1;
+					};
+					B05A000000000000000005E1 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = B05A000000000000000000E1;
 					};
 				};
 			};
@@ -141,12 +193,20 @@
 			projectRoot = "";
 			targets = (
 				B05A000000000000000000E1 /* SHJSDSC */,
+				B05A000000000000000005E1 /* SHJSDSCTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B05A000000000000000000C3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B05A000000000000000005C3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -163,7 +223,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B05A000000000000000005C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B05A000000000000000005D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B05A000000000000000000E1 /* SHJSDSC */;
+			targetProxy = B05A000000000000000005D1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B05A0000000000000000010A /* Debug */ = {
@@ -386,6 +461,54 @@
 			};
 			name = Release;
 		};
+		B05A0000000000000000050A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LN7SCTRJPN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gulflens.SHJSDSCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SHJSDSC.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SHJSDSC";
+			};
+			name = Debug;
+		};
+		B05A0000000000000000050B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LN7SCTRJPN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gulflens.SHJSDSCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SHJSDSC.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SHJSDSC";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -403,6 +526,15 @@
 			buildConfigurations = (
 				B05A0000000000000000020A /* Debug */,
 				B05A0000000000000000020B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B05A000000000000000005F1 /* Build configuration list for PBXNativeTarget "SHJSDSCTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B05A0000000000000000050A /* Debug */,
+				B05A0000000000000000050B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

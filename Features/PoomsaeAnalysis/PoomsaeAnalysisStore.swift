@@ -70,7 +70,7 @@ public final class PoomsaeAnalysisStore {
             if let cached {
                 poseFrames = cached
                 loadedFromCache = true
-                phase = .ready
+                await runSegmentation()
                 return
             }
         }
@@ -106,6 +106,33 @@ public final class PoomsaeAnalysisStore {
         poseFrames = collected
         loadedFromCache = false
         await persistCache(collected)
+        await runSegmentation()
+    }
+
+    // MARK: - Segmentation
+
+    /// Computes the smoothed motion-energy curve and the movement segments
+    /// off the main actor, then persists the segments onto the recording.
+    private func runSegmentation() async {
+        phase = .segmenting
+        let frames = poseFrames
+        let params = parameters
+        let result = await Task.detached { () -> (energy: [Float], segments: [MovementSegment]) in
+            let raw = PoomsaeMovementSegmenter.motionEnergy(frames: frames)
+            let smoothed = PoomsaeMovementSegmenter.smooth(raw, window: params.smoothingWindow)
+            let segments = PoomsaeMovementSegmenter.segment(frames: frames, parameters: params)
+            return (smoothed, segments)
+        }.value
+        guard !Task.isCancelled else { return }
+
+        motionEnergy = result.energy
+        segments = result.segments
+        recording.segments = result.segments
+        do {
+            try await fileStore.upsert(recording)
+        } catch {
+            print("PoomsaeAnalysisStore.runSegmentation persist:", error)
+        }
         phase = .ready
     }
 
