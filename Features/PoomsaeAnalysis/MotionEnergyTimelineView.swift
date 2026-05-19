@@ -45,7 +45,18 @@ struct MotionEnergyTimelineView: View {
             .contentShape(Rectangle())
             .onTapGesture { location in
                 guard duration > 0, width > 0 else { return }
-                onSeek(Double(location.x / width) * duration)
+                let tapped = Double(location.x / width) * duration
+                // Snap to a segment boundary when the tap lands near one
+                // (tapping a divider seeks to that segment's start).
+                var boundaries = segments.map(\.startSeconds)
+                if let last = segments.last { boundaries.append(last.endSeconds) }
+                let snapWindow = duration * 0.02
+                if let nearest = boundaries.min(by: { abs($0 - tapped) < abs($1 - tapped) }),
+                   abs(nearest - tapped) <= snapWindow {
+                    onSeek(nearest)
+                } else {
+                    onSeek(tapped)
+                }
             }
             .frame(height: height)
         }

@@ -48,10 +48,14 @@ public struct PoomsaeAnalysisView: View {
             }
             .sheet(isPresented: $showSegmentSheet) {
                 NavigationStack {
-                    MovementSegmentListView(segments: store.segments) { segment in
-                        player.seek(to: segment.startSeconds)
-                        showSegmentSheet = false
-                    }
+                    MovementSegmentListView(
+                        segments: store.segments,
+                        onSelect: { segment in
+                            player.seek(to: segment.startSeconds)
+                            showSegmentSheet = false
+                        },
+                        debugMetrics: { SegmentDebugMetrics.compute(for: $0, frames: store.poseFrames) }
+                    )
                     .navigationTitle("Movements")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
@@ -78,9 +82,11 @@ public struct PoomsaeAnalysisView: View {
         if isWide {
             HStack(alignment: .top, spacing: 16) {
                 mainColumn
-                MovementSegmentListView(segments: store.segments) { segment in
-                    player.seek(to: segment.startSeconds)
-                }
+                MovementSegmentListView(
+                    segments: store.segments,
+                    onSelect: { player.seek(to: $0.startSeconds) },
+                    debugMetrics: { SegmentDebugMetrics.compute(for: $0, frames: store.poseFrames) }
+                )
                 .frame(width: 320)
                 .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 16))
             }

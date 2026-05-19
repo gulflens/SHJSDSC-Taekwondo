@@ -1,5 +1,6 @@
 #if os(iOS)
 import SwiftUI
+import CoreMedia
 
 // MARK: - PoomsaeAnalysisKit
 //
@@ -43,6 +44,78 @@ struct ExtractionProgressView: View {
         }
         .padding(24)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+// MARK: - SegmentDebugMetrics
+//
+// Raw per-segment metrics shown in the long-press debug popover (Task 6).
+
+struct SegmentDebugMetrics {
+    let durationSeconds: Double
+    let peakMotionValue: Float
+    let frameCount: Int
+    let averageJointCount: Double
+    let meanConfidence: Double
+
+    /// Computes the metrics for a segment from the pose frames that fall
+    /// within its time span.
+    static func compute(for segment: MovementSegment, frames: [PoseFrame]) -> SegmentDebugMetrics {
+        let inSegment = frames.filter { frame in
+            let t = frame.timestamp.seconds
+            return t >= segment.startSeconds && t <= segment.endSeconds
+        }
+        let jointTotal = inSegment.reduce(0) { $0 + $1.detectedJointCount }
+        var confidenceSum = 0.0
+        var confidenceCount = 0
+        for frame in inSegment {
+            for joint in PoomsaeJoint.allCases {
+                confidenceSum += Double(frame.confidence(for: joint))
+                confidenceCount += 1
+            }
+        }
+        return SegmentDebugMetrics(
+            durationSeconds: segment.durationSeconds,
+            peakMotionValue: segment.peakMotionValue,
+            frameCount: inSegment.count,
+            averageJointCount: inSegment.isEmpty ? 0 : Double(jointTotal) / Double(inSegment.count),
+            meanConfidence: confidenceCount == 0 ? 0 : confidenceSum / Double(confidenceCount)
+        )
+    }
+}
+
+// MARK: - SegmentDebugPopover
+
+struct SegmentDebugPopover: View {
+
+    let segment: MovementSegment
+    let metrics: SegmentDebugMetrics?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Movement \(segment.index + 1) — debug")
+                .font(.headline)
+            Divider()
+            metricRow("Duration", String(format: "%.2f s", segment.durationSeconds))
+            metricRow("Peak motion", String(format: "%.3f", segment.peakMotionValue))
+            metricRow("Peak at", analysisTimecode(segment.peakMotionSeconds))
+            if let metrics {
+                metricRow("Frames", "\(metrics.frameCount)")
+                metricRow("Avg joints", String(format: "%.1f / 17", metrics.averageJointCount))
+                metricRow("Mean confidence", String(format: "%.2f", metrics.meanConfidence))
+            }
+        }
+        .padding(16)
+        .frame(minWidth: 250)
+    }
+
+    private func metricRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label).foregroundStyle(.secondary)
+            Spacer(minLength: 16)
+            Text(value).monospacedDigit()
+        }
+        .font(.subheadline)
     }
 }
 

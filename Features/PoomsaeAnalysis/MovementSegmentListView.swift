@@ -12,6 +12,7 @@ struct MovementSegmentListView: View {
 
     let segments: [MovementSegment]
     var onSelect: (MovementSegment) -> Void = { _ in }
+    var debugMetrics: (MovementSegment) -> SegmentDebugMetrics? = { _ in nil }
 
     var body: some View {
         if segments.isEmpty {
@@ -22,12 +23,11 @@ struct MovementSegmentListView: View {
             )
         } else {
             List(segments) { segment in
-                Button {
-                    onSelect(segment)
-                } label: {
-                    SegmentRow(segment: segment)
-                }
-                .buttonStyle(.plain)
+                SegmentRow(
+                    segment: segment,
+                    debug: debugMetrics(segment),
+                    onSelect: { onSelect(segment) }
+                )
             }
             .listStyle(.plain)
         }
@@ -39,6 +39,10 @@ struct MovementSegmentListView: View {
 struct SegmentRow: View {
 
     let segment: MovementSegment
+    var debug: SegmentDebugMetrics?
+    var onSelect: () -> Void = {}
+
+    @State private var showDebug = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -68,6 +72,12 @@ struct SegmentRow: View {
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
+        .onTapGesture { onSelect() }
+        .onLongPressGesture { showDebug = true }
+        .popover(isPresented: $showDebug) {
+            SegmentDebugPopover(segment: segment, metrics: debug)
+                .presentationCompactAdaptation(.popover)
+        }
     }
 }
 #endif
