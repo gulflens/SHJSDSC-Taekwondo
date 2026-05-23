@@ -201,11 +201,19 @@ public final class SupabaseRepository: Repository, AuthenticatingRepository, @un
 
     public func updateUser(_ user: User) async throws {
         var user = user
-        // App-owner invariant: the stored owner account can never have its
-        // role or identifying email changed by an update — see `AppOwner`.
-        if let existing: User = try? await self.user(id: user.id), existing.isAppOwner {
+        // App-owner invariant: the stored owner account can never have its role
+        // or identifying email changed, and no other account may claim the
+        // reserved email — see `AppOwner`. Read the existing record with `try`
+        // (not `try?`) so a failed read FAILS CLOSED: an owner-affecting update
+        // is blocked rather than slipping through unchecked.
+        let existing: User? = try await self.user(id: user.id)
+        if existing?.isAppOwner == true {
             user.role = .developer
             user.email = AppOwner.email
+        } else if AppOwner.matches(user.email) {
+            // A non-owner record must not adopt the reserved owner email.
+            throw NSError(domain: "shjsdsc.supabase", code: -2,
+                          userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.owner_email_reserved")])
         }
         try await client.from("user_profiles").upsert(user).execute()
     }

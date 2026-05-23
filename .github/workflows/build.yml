@@ -21,7 +21,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_26.app
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # Resolve whatever the newest stable Xcode is on the runner image
+          # instead of hard-pinning a path that rotates out (the old
+          # /Applications/Xcode_26.app no longer exists on macos-15). Pin a
+          # concrete version here (e.g. '16.4') if the build needs one.
+          xcode-version: latest-stable
 
       - name: Cache Swift packages
         uses: actions/cache@v4
@@ -65,7 +71,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_26.app
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # Resolve whatever the newest stable Xcode is on the runner image
+          # instead of hard-pinning a path that rotates out (the old
+          # /Applications/Xcode_26.app no longer exists on macos-15). Pin a
+          # concrete version here (e.g. '16.4') if the build needs one.
+          xcode-version: latest-stable
 
       - name: Cache Swift packages
         uses: actions/cache@v4

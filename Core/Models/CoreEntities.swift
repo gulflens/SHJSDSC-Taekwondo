@@ -189,10 +189,14 @@ public enum AppOwner {
     /// Changing this constant is the *only* way to reassign ownership.
     public static let email = "gulflens.studio@gmail.com"
 
-    /// Whether `candidate` identifies the project-owner account.
+    /// Whether `candidate` identifies the project-owner account. Trims
+    /// surrounding whitespace before comparing so a padded/pasted address
+    /// (" gulflens.studio@gmail.com ") can't slip past the reservation guard
+    /// while still normalising to the owner key in the credential store.
     public static func matches(_ candidate: String?) -> Bool {
         guard let candidate else { return false }
-        return candidate.caseInsensitiveCompare(email) == .orderedSame
+        let trimmed = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.caseInsensitiveCompare(email) == .orderedSame
     }
 }
 

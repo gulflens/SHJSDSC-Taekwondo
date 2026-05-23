@@ -115,8 +115,8 @@ public struct UsersConsoleView: View {
     // MARK: - Content
 
     private var content: some View {
-        // The list+detail split is shown only on a wide landscape canvas;
-        // iPhone and iPad-portrait drop the panel and push a detail screen.
+        // The list+detail split is a macOS-only layout (usesSplitDetailLayout());
+        // on iPhone and iPad — every orientation — the list fills the width and a tapped row pushes a detail screen.
         GeometryReader { _ in
             let split = usesSplitDetailLayout()
             VStack(spacing: 14) {
