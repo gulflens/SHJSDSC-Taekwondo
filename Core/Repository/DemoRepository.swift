@@ -419,12 +419,17 @@ public actor DemoStore {
 
     public func upsertUser(_ u: User) {
         var u = u
+        let existing = users.first(where: { $0.id == u.id })
         // App-owner invariant: the owner's role and identifying email are
-        // immutable. No edit — by any user, through any surface — can demote
-        // or rename the project owner. See `AppOwner`.
-        if let existing = users.first(where: { $0.id == u.id }), existing.isAppOwner {
+        // immutable, and no other account may adopt the reserved email. No edit
+        // — by any user, through any surface — can demote/rename the owner or
+        // mint a second one. See `AppOwner`. (upsertUser is non-throwing, so a
+        // non-owner's reserved-email claim is dropped rather than thrown.)
+        if existing?.isAppOwner == true {
             u.role = .developer
             u.email = AppOwner.email
+        } else if AppOwner.matches(u.email) {
+            u.email = existing?.email
         }
         if let i = users.firstIndex(where: { $0.id == u.id }) { users[i] = u } else { users.append(u) }
     }
