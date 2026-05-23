@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+
+import '../../app/locator.dart';
+import '../../core/models/athlete.dart';
+import '../../core/models/entity_id.dart';
+import '../../core/models/performance_score.dart';
+import '../../core/repository/repository.dart';
+import '../../core/services/score_engine.dart';
+import '../../l10n/app_localizations.dart';
+import '../athletes/athlete_detail_screen.dart';
+import '../athletes/athlete_list_screen.dart' show statusColor;
+import '../common/design_system.dart';
+import '../common/localized_labels.dart';
+
+/// Parent experience — shows only the athletes linked to the signed-in parent
+/// account (`User.linkedAthleteIds`), not the full roster. Tap → full profile.
+class MyChildrenScreen extends StatelessWidget {
+  final List<EntityID> athleteIds;
+  const MyChildrenScreen({super.key, required this.athleteIds});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(l.childrenTitle)),
+      body: FutureBuilder<List<(Athlete, PerformanceScore?)>>(
+        future: _load(getIt<Repository>()),
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final rows = snap.data!;
+          if (rows.isEmpty) {
+            return Center(child: Text(l.familyNoChildren));
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: rows.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, i) =>
+                _ChildCard(athlete: rows[i].$1, score: rows[i].$2),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<List<(Athlete, PerformanceScore?)>> _load(Repository repo) async {
+    final out = <(Athlete, PerformanceScore?)>[];
+    for (final id in athleteIds) {
+      final a = await repo.athlete(id);
+      if (a == null) continue;
+      out.add((a, await repo.score(id)));
+    }
+    return out;
+  }
+}
+
+class _ChildCard extends StatelessWidget {
+  final Athlete athlete;
+  final PerformanceScore? score;
+  const _ChildCard({required this.athlete, this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final composite = score == null ? 0.0 : ScoreEngine.composite(score!);
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => AthleteDetailScreen(athleteId: athlete.id),
+        ),
+      ),
+      child: SectionCard(
+        child: Row(
+          children: [
+            CircleAvatar(radius: 26, child: Text(athlete.initials)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(athlete.fullName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 16)),
+                  const SizedBox(height: 6),
+                  StatusPill(
+                    label: athlete.status.localized(l),
+                    color: statusColor(athlete.status, context),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            GradeRing(
+              composite: composite,
+              grade: LetterGrade.fromScore(composite),
+              size: 52,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
