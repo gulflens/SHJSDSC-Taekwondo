@@ -120,19 +120,23 @@ public final class PerformanceEntryStore {
     /// against a 9-hour benchmark.
     public func wellnessTrend(days: Int = 90) -> [TrendPoint] {
         let cutoff = Date().addingTimeInterval(-Double(days) * 24 * 3600)
-        return wellness
+        // Broken into typed sub-expressions + an explicit closure return type:
+        // the original single chained expression tripped the Swift type-checker
+        // ("unable to type-check in reasonable time") on the six-term sum.
+        let recent: [WellnessEntry] = wellness
             .filter { $0.recordedAt >= cutoff }
             .sorted { $0.recordedAt < $1.recordedAt }
-            .map { entry in
-                let sleep = min(1.0, entry.sleepHours / 9.0)
-                let mood = Double(entry.mood) / 10.0
-                let motivation = Double(entry.motivation) / 10.0
-                let soreness = 1.0 - Double(entry.soreness - 1) / 9.0
-                let stress = 1.0 - Double(entry.stress - 1) / 9.0
-                let rpe = 1.0 - Double(entry.rpePreviousSession - 1) / 9.0
-                let value = (sleep + mood + motivation + soreness + stress + rpe) / 6.0 * 100
-                return TrendPoint(id: entry.id, date: entry.recordedAt, value: value)
-            }
+        return recent.map { entry -> TrendPoint in
+            let sleep: Double = min(1.0, entry.sleepHours / 9.0)
+            let mood: Double = Double(entry.mood) / 10.0
+            let motivation: Double = Double(entry.motivation) / 10.0
+            let soreness: Double = 1.0 - Double(entry.soreness - 1) / 9.0
+            let stress: Double = 1.0 - Double(entry.stress - 1) / 9.0
+            let rpe: Double = 1.0 - Double(entry.rpePreviousSession - 1) / 9.0
+            let total: Double = sleep + mood + motivation + soreness + stress + rpe
+            let value: Double = total / 6.0 * 100
+            return TrendPoint(id: entry.id, date: entry.recordedAt, value: value)
+        }
     }
 
     public func wellnessStreak() -> Int {
