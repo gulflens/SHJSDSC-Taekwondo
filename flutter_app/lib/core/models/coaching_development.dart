@@ -295,11 +295,15 @@ class AssistantCoachProfile {
     return total / evaluations.length;
   }
 
-  /// Whole months the athlete has been on the coaching pathway.
+  /// Whole months the athlete has been on the coaching pathway. Day-of-month
+  /// aware to match Swift's `Calendar.dateComponents([.month], …)`: the current
+  /// month only counts once its start day-of-month is reached.
   int get monthsCoaching {
     final now = DateTime.now();
-    return (now.year - startedCoachingAt.year) * 12 +
+    var months = (now.year - startedCoachingAt.year) * 12 +
         (now.month - startedCoachingAt.month);
+    if (now.day < startedCoachingAt.day) months -= 1;
+    return months < 0 ? 0 : months;
   }
 
   /// 0...1 readiness for promotion to the next development level. Blends the

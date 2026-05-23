@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:supabase/supabase.dart' hide User;
 
 import '../models/athlete.dart';
+import '../models/app_owner.dart';
 import '../models/athlete_group.dart';
 import '../models/audit_log.dart';
 import '../models/belt.dart';
@@ -144,6 +145,8 @@ class SupabaseRepository implements Repository, AuthRepository {
     required Role role,
     EntityID? branchId,
   }) async {
+    // The owner account is reserved — never (re)creatable via sign-up.
+    if (AppOwner.matches(email)) throw const OwnerEmailReservedException();
     // Create the auth.users row, then the matching user_profiles row keyed by
     // the new auth user id. (If the project requires email confirmation the
     // session won't be active until confirmed; sign-in then surfaces that.)
@@ -169,7 +172,23 @@ class SupabaseRepository implements Repository, AuthRepository {
 
   @override
   Future<void> updateUser(User user) async {
-    await _client.from('user_profiles').upsert(_encode(user.toJson()));
+    // Fail closed: read the existing record first so a network/RLS error blocks
+    // the write rather than letting an owner-affecting update through unchecked.
+    final row = await _client
+        .from('user_profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+    final existing = row == null ? null : User.fromJson(_row(row));
+    User next = user;
+    if (existing != null && existing.isAppOwner) {
+      // The owner can't be demoted or renamed — re-pin role + email.
+      next = user.pinnedAsOwner();
+    } else if (user.isAppOwner) {
+      // A non-owner record may not claim the reserved owner email.
+      throw const OwnerEmailReservedException();
+    }
+    await _client.from('user_profiles').upsert(_encode(next.toJson()));
   }
 
   @override

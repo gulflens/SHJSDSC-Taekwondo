@@ -519,3 +519,12 @@ abstract class AuthRepository {
   Future<void> signInWithEmail({required String email, required String password});
   Future<void> signOut();
 }
+
+/// Thrown when account creation or update targets the reserved [AppOwner]
+/// email on a non-owner record — the owner account can't be created,
+/// impersonated, demoted, or renamed by any other user.
+class OwnerEmailReservedException implements Exception {
+  const OwnerEmailReservedException();
+  @override
+  String toString() => 'That email address is reserved.';
+}

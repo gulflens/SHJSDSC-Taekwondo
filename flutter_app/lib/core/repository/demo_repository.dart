@@ -28,6 +28,7 @@ import '../models/performance_entry.dart';
 import '../models/performance_score.dart';
 import '../models/physical_metric.dart';
 import '../models/poomsae_assessment.dart';
+import '../models/app_owner.dart';
 import '../models/role.dart';
 import '../models/schedule.dart';
 import '../models/technical_skill.dart';
@@ -195,6 +196,8 @@ class DemoRepository implements Repository, AuthRepository {
     required Role role,
     EntityID? branchId,
   }) async {
+    // The owner account is reserved — it can never be (re)created via sign-up.
+    if (AppOwner.matches(email)) throw const OwnerEmailReservedException();
     final id = newEntityId();
     _users = [
       ..._users,
@@ -212,9 +215,19 @@ class DemoRepository implements Repository, AuthRepository {
 
   @override
   Future<void> updateUser(User user) async {
+    final existing =
+        _users.cast<User?>().firstWhere((u) => u?.id == user.id, orElse: () => null);
+    User next = user;
+    if (existing != null && existing.isAppOwner) {
+      // The owner can't be demoted or renamed — re-pin role + email.
+      next = user.pinnedAsOwner();
+    } else if (user.isAppOwner) {
+      // A non-owner record may not claim the reserved owner email.
+      throw const OwnerEmailReservedException();
+    }
     _users = [
       for (final u in _users)
-        if (u.id == user.id) user else u,
+        if (u.id == user.id) next else u,
     ];
   }
 
