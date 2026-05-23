@@ -13,6 +13,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  flutter:
+    name: Flutter (analyze + test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: flutter_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Core stays Flutter-free
+        run: |
+          if grep -rnE "^import .*(package:flutter/|supabase_flutter)" lib/core ; then
+            echo "::error::lib/core imports a Flutter/UI package — logic-layer rule violated"
+            exit 1
+          fi
+          echo "✓ lib/core is Flutter-free"
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
   ios:
     name: iOS Simulator build
     runs-on: macos-15
