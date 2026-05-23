@@ -109,6 +109,9 @@ class SessionCubit extends Cubit<SessionState> {
         email: email,
         password: password,
         fullName: fullName,
+        // The sign-up form has no Arabic-name field, so fullNameAr is seeded
+        // from the same value; the user sets it later from account settings
+        // (a future account-edit screen).
         fullNameAr: fullName,
         role: Role.parent,
       );

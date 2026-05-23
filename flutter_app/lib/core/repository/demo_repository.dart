@@ -146,15 +146,24 @@ class DemoRepository implements Repository, AuthRepository {
   @override
   Future<void> setCurrentUser(EntityID id) async => _currentUserId = id;
 
-  // === AuthRepository (demo: credentials ignored, resolves a seeded user) ===
+  // === AuthRepository (demo) ===
+  //
+  // DEMO CONCESSION: the offline build performs NO credential validation — any
+  // [password] is accepted. Sign-in only resolves *which* seeded user to act as
+  // (matched by email, else the owner). Real authentication lives solely on the
+  // SupabaseRepository path; do not treat this as a security boundary.
   @override
   Future<void> signInWithEmail({
     required String email,
     required String password,
   }) async {
-    // Match by email if a seeded user has one; otherwise sign in as the owner.
+    // Asymmetry by design: seeded users' `email` values are stored untrimmed
+    // (see SeedData), so we trim only the incoming address before comparing.
+    // A no-match (e.g. whitespace in the input) falls back to the owner —
+    // harmless here since the password is ignored anyway.
+    final query = email.toLowerCase().trim();
     final match = _users.cast<User?>().firstWhere(
-          (u) => u?.email != null && u!.email!.toLowerCase() == email.toLowerCase().trim(),
+          (u) => u?.email != null && u!.email!.toLowerCase() == query,
           orElse: () => null,
         );
     _currentUserId = (match ?? _users.first).id;
