@@ -1,0 +1,52 @@
+name: shjsdsc
+description: "SHJSDSC Taekwondo — Flutter cross-platform port"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management (mirrors Core/Stores → Cubit/Bloc).
+  # `bloc` is pure Dart (used inside lib/core, keeping it Flutter-free, the way
+  # Swift Core/Stores use Observation not SwiftUI); `flutter_bloc` is the widget
+  # glue (BlocProvider/BlocBuilder) used only in lib/features + lib/app.
+  bloc: ^9.0.0
+  flutter_bloc: ^9.0.0
+  equatable: ^2.0.7
+
+  # Dependency injection (mirrors @Environment(AppSession) single global)
+  get_it: ^8.0.3
+
+  # Navigation (mirrors RoleRouter)
+  go_router: ^14.6.2
+
+  # Backend (mirrors SupabaseRepository). `supabase_flutter` is the Flutter
+  # init wrapper (used only in main()); `supabase` is the pure-Dart client used
+  # inside lib/core/repository (keeps Core Flutter-free).
+  supabase_flutter: ^2.8.0
+  supabase: ^2.6.0
+
+  # Charts (mirrors Swift Charts usage)
+  fl_chart: ^0.69.2
+
+  # Native equivalents for deferred features
+  image_picker: ^1.1.2
+  intl: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  bloc_test: ^10.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true # enables gen-l10n from lib/l10n/*.arb
